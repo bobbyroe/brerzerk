@@ -1,0 +1,242 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Pixi</title>
+<body>
+<script src="pixi.min.js"></script>
+<script>
+
+// Aliases
+var Rectangle = PIXI.Rectangle;
+var Container = PIXI.Container;
+var autoDetectRenderer = PIXI.autoDetectRenderer;
+var loader = PIXI.loader;
+var resources = PIXI.loader.resources;
+var Sprite = PIXI.Sprite;
+PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
+
+//
+var robot_sprite;
+var player_sprite;
+var gameState;
+var timer = 0;
+
+// https://github.com/kittykatattack/learningPixi#keyboard
+var renderer = autoDetectRenderer(
+	1024, 896, 
+	{antialias: false, transparent: false, resolution: 1}
+);
+document.body.appendChild(renderer.view);
+
+var stage = new Container();
+renderer.render(stage);
+
+loader
+	.add("images/robot.png")
+	.add("images/player.png")
+	.load(setup);
+
+function setup() {
+
+	var robot_tex = loader.resources["images/robot.png"].texture;
+	robot_sprite = new Sprite(robot_tex);
+	var rect = new Rectangle(0, 0, 8, 11);
+	robot_tex.frame = rect;
+	robot_sprite.x = 100;
+	robot_sprite.y = 100;
+	robot_sprite.vx = 0;
+	robot_sprite.vy = 0;
+	robot_sprite.scale.set(4, 4);
+	robot_sprite.ctrl_keys = ['KeyW', 'KeyD', 'KeyS', 'KeyA'];
+	stage.addChild(robot_sprite);
+
+	var player_tex = loader.resources["images/player.png"].texture;
+	player_sprite = new Sprite(player_tex);
+	var rect = new Rectangle(0, 0, 8, 17);
+	player_tex.frame = rect;
+	player_sprite.x = 150;
+	player_sprite.y = 90;
+	player_sprite.vx = 0;
+	player_sprite.vy = 0;
+	player_sprite.scale.set(4, 4);
+	player_sprite.ctrl_keys = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft'];
+	stage.addChild(player_sprite);
+
+	setUpPlayerCtrlsFor(player_sprite);
+	setUpPlayerCtrlsFor(robot_sprite);
+
+	// Start the game loop
+	gameState = gamePlay;
+	gameLoop();
+}
+
+function gameLoop() {
+
+	requestAnimationFrame(gameLoop);
+
+	gameState();
+
+	renderer.render(stage);
+}
+
+
+ /**
+  * GAME PLAY LOOP
+  **/
+function gamePlay () {
+
+	timer += 1;
+
+	if (hitTestRectangle(player_sprite, robot_sprite)) {
+	  console.log("//There's a collision");
+	} else {
+		player_sprite.x += player_sprite.vx;
+		player_sprite.y += player_sprite.vy;
+
+		// animate him
+		player_sprite.texture.frame = new Rectangle( (Math.round(timer * 0.2) % 4) * 8, 0, 8, 17);
+
+		robot_sprite.x += robot_sprite.vx;
+		robot_sprite.y += robot_sprite.vy;
+
+		// animate him
+		robot_sprite.texture.frame = new Rectangle( (Math.round(timer * 0.2) % 6) * 8, 0, 8, 11);
+	}
+	
+}
+
+function keyboard (code) {
+
+	var key = {
+		code: code,
+		isDown: false,
+		isUp: true,
+		press: null,
+		release: null
+	};
+
+	key.downHandler = function (evt) {
+
+		if (evt.code === key.code) {
+			if (key.isUp && key.press) { key.press(); }
+			key.isDown = true;
+			key.isUp = false;
+		}
+		evt.preventDefault();
+	};
+
+	key.upHandler = function(evt) {
+		if (evt.code === key.code) {
+			if (key.isDown && key.release) { key.release(); }
+			key.isDown = false;
+			key.isUp = true;
+		}
+		evt.preventDefault();
+	};
+
+	window.addEventListener("keydown", key.downHandler.bind(key), false);
+	window.addEventListener("keyup", key.upHandler.bind(key), false);
+	
+	return key;
+}
+
+function hitTestRectangle(r1, r2) {
+
+	var hit = false;
+	var combinedHalfWidths;
+	var combinedHalfHeights;
+	var vx;
+	var vy;
+
+	//Find the center points of each sprite
+	r1.centerX = r1.x + r1.width / 2;
+	r1.centerY = r1.y + r1.height / 2;
+	r2.centerX = r2.x + r2.width / 2;
+	r2.centerY = r2.y + r2.height / 2;
+
+	//Find the half-widths and half-heights of each sprite
+	r1.halfWidth = r1.width / 2;
+	r1.halfHeight = r1.height / 2;
+	r2.halfWidth = r2.width / 2;
+	r2.halfHeight = r2.height / 2;
+
+	//Calculate the distance vector between the sprites
+	vx = r1.centerX - r2.centerX;
+	vy = r1.centerY - r2.centerY;
+
+	//Figure out the combined half-widths and half-heights
+	combinedHalfWidths = r1.halfWidth + r2.halfWidth;
+	combinedHalfHeights = r1.halfHeight + r2.halfHeight;
+
+	//Check for a collision on the x axis
+	if (Math.abs(vx) < combinedHalfWidths) {
+
+		//A collision might be occuring. Check for a collision on the y axis
+		if (Math.abs(vy) < combinedHalfHeights) {
+
+			//There's definitely a collision happening
+			hit = true;
+		} else {
+
+			//There's no collision on the y axis
+			hit = false;
+		}
+	} else {
+
+		//There's no collision on the x axis
+		hit = false;
+	}
+
+	//`hit` will be either `true` or `false`
+	return hit;
+};
+
+function setUpPlayerCtrlsFor (sprite) {
+
+	var moveUp = keyboard(sprite.ctrl_keys[0]);
+	var moveRight = keyboard(sprite.ctrl_keys[1]);
+	var moveDown = keyboard(sprite.ctrl_keys[2]);
+	var moveLeft = keyboard(sprite.ctrl_keys[3]);
+
+	moveLeft.press = function () {
+		sprite.vx = -1;
+	};
+
+	moveLeft.release = function () {
+		if (moveRight.isDown === false) {
+			sprite.vx = 0;
+		}
+	};
+
+	moveRight.press = function () {
+		sprite.vx = 1;
+	};
+
+	moveRight.release = function () {
+		if (moveLeft.isDown === false) {
+			sprite.vx = 0;
+		}
+	};
+
+	moveUp.press = function () {
+		sprite.vy = -1;
+	};
+
+	moveUp.release = function () {
+		if (moveDown.isDown === false) {
+			sprite.vy = 0;
+		}
+	};
+
+	moveDown.press = function () {
+		sprite.vy = 1;
+	};
+
+	moveDown.release = function () {
+		if (moveUp.isDown === false) {
+			sprite.vy = 0;
+		}
+	};
+}
+
+</script>
+</body>
