@@ -12,6 +12,7 @@ var autoDetectRenderer = PIXI.autoDetectRenderer;
 var loader = PIXI.loader;
 var resources = PIXI.loader.resources;
 var Sprite = PIXI.Sprite;
+var Grfx = PIXI.Graphics;
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 
 //
@@ -20,9 +21,9 @@ var player_sprite;
 var gameState;
 var timer = 0;
 
-// https://github.com/kittykatattack/learningPixi#keyboard
+// https://github.com/kittykatattack/learningPixi#pixis-graphic-primitives
 var renderer = autoDetectRenderer(
-	1024, 896, 
+	1024, 768, 
 	{antialias: false, transparent: false, resolution: 1}
 );
 document.body.appendChild(renderer.view);
@@ -32,7 +33,7 @@ renderer.render(stage);
 
 loader
 	.add("images/robot.png")
-	.add("images/player.png")
+	.add("images/player-green.png")
 	.load(setup);
 
 function setup() {
@@ -47,9 +48,10 @@ function setup() {
 	robot_sprite.vy = 0;
 	robot_sprite.scale.set(4, 4);
 	robot_sprite.ctrl_keys = ['KeyW', 'KeyD', 'KeyS', 'KeyA'];
+	robot_sprite.rate = 1;
 	stage.addChild(robot_sprite);
 
-	var player_tex = loader.resources["images/player.png"].texture;
+	var player_tex = loader.resources["images/player-green.png"].texture;
 	player_sprite = new Sprite(player_tex);
 	var rect = new Rectangle(0, 0, 8, 17);
 	player_tex.frame = rect;
@@ -59,10 +61,13 @@ function setup() {
 	player_sprite.vy = 0;
 	player_sprite.scale.set(4, 4);
 	player_sprite.ctrl_keys = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft'];
+	player_sprite.rate = 2;
 	stage.addChild(player_sprite);
 
 	setUpPlayerCtrlsFor(player_sprite);
 	setUpPlayerCtrlsFor(robot_sprite);
+
+	drawWalls();
 
 	// Start the game loop
 	gameState = gamePlay;
@@ -93,7 +98,7 @@ function gamePlay () {
 		player_sprite.y += player_sprite.vy;
 
 		// animate him
-		player_sprite.texture.frame = new Rectangle( (Math.round(timer * 0.2) % 4) * 8, 0, 8, 17);
+		player_sprite.texture.frame = getTexFrameFor(player_sprite);
 
 		robot_sprite.x += robot_sprite.vx;
 		robot_sprite.y += robot_sprite.vy;
@@ -146,18 +151,19 @@ function hitTestRectangle(r1, r2) {
 	var combinedHalfHeights;
 	var vx;
 	var vy;
+	var fudge_factor = 2;
 
 	//Find the center points of each sprite
-	r1.centerX = r1.x + r1.width / 2;
-	r1.centerY = r1.y + r1.height / 2;
-	r2.centerX = r2.x + r2.width / 2;
-	r2.centerY = r2.y + r2.height / 2;
+	r1.centerX = r1.x + r1.width * 0.5;
+	r1.centerY = r1.y + r1.height * 0.5;
+	r2.centerX = r2.x + r2.width * 0.5;
+	r2.centerY = r2.y + r2.height * 0.5;
 
 	//Find the half-widths and half-heights of each sprite
-	r1.halfWidth = r1.width / 2;
-	r1.halfHeight = r1.height / 2;
-	r2.halfWidth = r2.width / 2;
-	r2.halfHeight = r2.height / 2;
+	r1.halfWidth = r1.width * 0.5 - fudge_factor;
+	r1.halfHeight = r1.height * 0.5 - fudge_factor;
+	r2.halfWidth = r2.width * 0.5 - fudge_factor;
+	r2.halfHeight = r2.height * 0.5 - fudge_factor;
 
 	//Calculate the distance vector between the sprites
 	vx = r1.centerX - r2.centerX;
@@ -198,7 +204,7 @@ function setUpPlayerCtrlsFor (sprite) {
 	var moveLeft = keyboard(sprite.ctrl_keys[3]);
 
 	moveLeft.press = function () {
-		sprite.vx = -1;
+		sprite.vx = sprite.rate * -1;
 	};
 
 	moveLeft.release = function () {
@@ -208,7 +214,7 @@ function setUpPlayerCtrlsFor (sprite) {
 	};
 
 	moveRight.press = function () {
-		sprite.vx = 1;
+		sprite.vx = sprite.rate;
 	};
 
 	moveRight.release = function () {
@@ -218,7 +224,7 @@ function setUpPlayerCtrlsFor (sprite) {
 	};
 
 	moveUp.press = function () {
-		sprite.vy = -1;
+		sprite.vy = sprite.rate * -1;
 	};
 
 	moveUp.release = function () {
@@ -228,7 +234,7 @@ function setUpPlayerCtrlsFor (sprite) {
 	};
 
 	moveDown.press = function () {
-		sprite.vy = 1;
+		sprite.vy = sprite.rate;
 	};
 
 	moveDown.release = function () {
@@ -237,6 +243,75 @@ function setUpPlayerCtrlsFor (sprite) {
 		}
 	};
 }
+
+function getTexFrameFor (sprite) {
+	return new Rectangle( (Math.round(timer * 0.2) % 4) * 8, 0, 8, 17);
+}
+
+function drawWalls () {
+	
+	var num_cols = 5;
+	var num_rows = 3;
+	var box_width = 200;
+	var box_height = 235;
+	var x_pos = 10;
+	var y_pos = 10;
+	var box = null;
+	var rect = null;
+	var sides = "top,right,bottom,left".split(',');
+	var random_side = '';
+
+	for (var w = 0; w < num_rows; w++) {
+
+		x_pos = 10;
+
+		for (var h = 0; h < num_cols; h++) {
+			box = new Container();
+			box.x = x_pos;
+			box.y = y_pos;
+			random_side = sides[Math.floor(Math.random() * sides.length)];
+			rect = new Grfx();
+			// rect.beginFill(Math.random() * 0xFFFFFF); // debug
+			rect.beginFill(0x0000FF);
+
+			switch (random_side) {
+
+				case 'top': 
+				rect.drawRect(0, 0, box_width + 10, 10);
+				rect.x = 0;
+				rect.y = 0;
+				break;
+
+				case 'right': 
+				rect.drawRect(0, 0, 10, box_height + 5);
+				rect.x = box_width;
+				rect.y = 0;
+				break;
+
+				case 'bottom': 
+				rect.drawRect(0, 0, box_width + 5, 10);
+				rect.x = 0;
+				rect.y = box_height;
+				break;
+
+				case 'left': 
+				rect.drawRect(0, 0, 10, box_height + 5);
+				rect.x = 0;
+				rect.y = 0;
+				break;
+			}
+
+			rect.endFill();
+			box.addChild(rect);
+			stage.addChild(box);
+
+			x_pos += box_width;
+		}
+
+		y_pos += box_height;
+	}
+}
+
 
 </script>
 </body>
