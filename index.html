@@ -23,6 +23,7 @@ var timer = 0;
 var num_players_remaining = 2;
 var death_start_timer = -1;
 var colors8 = [0xFFFFFF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFF0000, 0x00FF00];
+var walls = [];
 
 // https://github.com/kittykatattack/learningPixi#pixis-graphic-primitives
 var renderer = autoDetectRenderer(
@@ -101,17 +102,14 @@ function gamePlay () {
 
 	timer += 1;
 
-	if (hitTestRectangle(player_sprite, robot_sprite)) {
-	  
-	  death_start_timer = timer;
-	  if (num_players_remaining > 0) {
-	  	  num_players_remaining -= 1;
-	  	  gameState = playerDead;
-	  } else {
-	  	  gameState = gameOver;
-	  }
-	  
-
+	if (hitTestAny() === true) {
+		death_start_timer = timer;
+		if (num_players_remaining > 0) {
+			  num_players_remaining -= 1;
+			  gameState = playerDead;
+		} else {
+			  gameState = gameOver;
+		}
 	} else {
 		player_sprite.x += player_sprite.vx;
 		player_sprite.y += player_sprite.vy;
@@ -142,10 +140,19 @@ function gamePlay () {
 	
 }
 
-function playerHit () {
-	handlePlayerHit();
+function gameOver () {
+	setup();
 }
 
+function hitTestAny () {
+	var was_hit = hitTestRectangle(player_sprite, robot_sprite);
+
+	for (var i = 0, len = walls.length; i < len; i++) {
+		was_hit = was_hit || hitTestRectangle(player_sprite, walls[i]);
+	}
+
+	return was_hit;
+}
 function keyboard (code) {
 
 	var key = {
@@ -304,7 +311,6 @@ function drawWalls () {
 	var box_height = 235;
 	var x_pos = 10;
 	var y_pos = 10;
-	var box = null;
 	var rect = null;
 	var sides = "top,right,bottom,left".split(',');
 	var random_side = '';
@@ -314,44 +320,42 @@ function drawWalls () {
 		x_pos = 10;
 
 		for (var h = 0; h < num_cols; h++) {
-			box = new Container();
-			box.x = x_pos;
-			box.y = y_pos;
 			random_side = sides[Math.floor(Math.random() * sides.length)];
 			rect = new Grfx();
-			// rect.beginFill(Math.random() * 0xFFFFFF); // debug
 			rect.beginFill(0x0000FF);
-
+			rect.lineStyle(1, 0xFF3300, 1); // debug
 			switch (random_side) {
 
 				case 'top': 
-				rect.drawRect(0, 0, box_width + 10, 10);
+				rect.drawRect(x_pos, y_pos, box_width + 10, 10);
 				rect.x = 0;
 				rect.y = 0;
 				break;
 
 				case 'right': 
-				rect.drawRect(0, 0, 10, box_height + 5);
+				rect.drawRect(x_pos, y_pos, 10, box_height + 5);
 				rect.x = box_width;
 				rect.y = 0;
 				break;
 
 				case 'bottom': 
-				rect.drawRect(0, 0, box_width + 5, 10);
+				rect.drawRect(x_pos, y_pos, box_width + 5, 10);
 				rect.x = 0;
 				rect.y = box_height;
 				break;
 
 				case 'left': 
-				rect.drawRect(0, 0, 10, box_height + 5);
+				rect.drawRect(x_pos, y_pos, 10, box_height + 5);
 				rect.x = 0;
 				rect.y = 0;
 				break;
 			}
 
 			rect.endFill();
-			box.addChild(rect);
-			stage.addChild(box);
+			stage.addChild(rect);
+
+			// for hit testing
+			walls.push(rect);
 
 			x_pos += box_width;
 		}
@@ -384,10 +388,6 @@ function playerDead () {
 		stage.removeChild(robot_sprite);
 		// robot_sprite.destroy();
 	}
-
-	// hack, adjust robot position to compensate for large sprite
-	// robot_sprite.x -= 4;
-	// robot_sprite.y -= 5;
 }
 
 </script>
