@@ -343,40 +343,44 @@ function drawWalls () {
 		for (var h = 0; h < num_cols; h++) {
 			random_side = sides[Math.floor(Math.random() * sides.length)];
 
+			// room borders
 			if (w === 0) { random_side = 'top'; }
+			if (h === num_cols - 1) { random_side = 'right'; }
 			if (w === num_rows - 1) { random_side = 'bottom'; }
 			if (h === 0) { random_side = 'left'; }
-			if (h === num_cols - 1) { random_side = 'right'; }
+
+			// corners
+			if (w === 0 && h === 0) { random_side = 'top,left'; }
+			if (w === 0 && h === num_cols - 1) { random_side = 'top,right'; }
+			if (w === num_rows - 1 && h === num_cols - 1) { random_side = 'right,bottom'; }
+			if (w === num_rows - 1 && h === 0) { random_side = 'bottom,left'; }
+
+			// "doors"
+			if (w === 0 && h === 2) { random_side = ''; }
+			if (w === 1 && h === num_cols - 1) { random_side = ''; }
+			if (w === num_rows - 1 && h === 2) { random_side = ''; }
+			if (w === 1 && h === 0) { random_side = ''; }
+
 			rect = new Grfx();
 			rect.beginFill(color);
 			// rect.lineStyle(1, 0xFF3300, 1); // debug
-			switch (random_side) {
 
-				case 'top': 
+			if (/top/.test(random_side)) {
 				rect.drawRect(0, 0, box_width + 10, 10);
-				rect.x = x_pos;
-				rect.y = y_pos;
-				break;
-
-				case 'right': 
+			}
+			if (/right/.test(random_side)) {
+				rect.drawRect(box_width, 0, 10, box_height + 5);
+			}
+			if (/bottom/.test(random_side)) {
+				rect.drawRect(0, box_height, box_width + 5, 10);
+			}
+			if (/left/.test(random_side)) {
 				rect.drawRect(0, 0, 10, box_height + 5);
-				rect.x = x_pos + box_width;
-				rect.y = y_pos;
-				break;
-
-				case 'bottom': 
-				rect.drawRect(0, 0, box_width + 5, 10);
-				rect.x = x_pos;
-				rect.y = y_pos + box_height;
-				break;
-
-				case 'left': 
-				rect.drawRect(0, 0, 10, box_height + 5);
-				rect.x = x_pos;
-				rect.y = y_pos;
-				break;
 			}
 
+
+			rect.x = x_pos;
+			rect.y = y_pos;
 			rect.endFill();
 			rect.name = `Rectangle ${h}, ${w}`;
 			stage.addChild(rect);
