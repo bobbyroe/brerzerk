@@ -333,7 +333,7 @@ function drawWalls () {
 	var y_pos = 10;
 	var rect = null;
 	var sides = "top,right,bottom,left".split(',');
-	var random_side = '';
+	var random_sides = [];
 	var color = 0x0000FF;
 
 	for (var w = 0; w < num_rows; w++) {
@@ -341,52 +341,54 @@ function drawWalls () {
 		x_pos = 10;
 
 		for (var h = 0; h < num_cols; h++) {
-			random_side = sides[Math.floor(Math.random() * sides.length)];
+			random_sides = [ sides[Math.floor(Math.random() * sides.length)] ];
 
 			// room borders
-			if (w === 0) { random_side = 'top'; }
-			if (h === num_cols - 1) { random_side = 'right'; }
-			if (w === num_rows - 1) { random_side = 'bottom'; }
-			if (h === 0) { random_side = 'left'; }
+			if (w === 0) { random_sides = ['top']; }
+			if (h === num_cols - 1) { random_sides = ['right']; }
+			if (w === num_rows - 1) { random_sides = ['bottom']; }
+			if (h === 0) { random_sides = ['left']; }
 
 			// corners
-			if (w === 0 && h === 0) { random_side = 'top,left'; }
-			if (w === 0 && h === num_cols - 1) { random_side = 'top,right'; }
-			if (w === num_rows - 1 && h === num_cols - 1) { random_side = 'right,bottom'; }
-			if (w === num_rows - 1 && h === 0) { random_side = 'bottom,left'; }
+			if (w === 0 && h === 0) { random_sides = 'top,left'.split(','); }
+			if (w === 0 && h === num_cols - 1) { random_sides = 'top,right'.split(','); }
+			if (w === num_rows - 1 && h === num_cols - 1) { random_sides = 'right,bottom'.split(','); }
+			if (w === num_rows - 1 && h === 0) { random_sides = 'bottom,left'.split(','); }
 
 			// "doors"
-			if (w === 0 && h === 2) { random_side = ''; }
-			if (w === 1 && h === num_cols - 1) { random_side = ''; }
-			if (w === num_rows - 1 && h === 2) { random_side = ''; }
-			if (w === 1 && h === 0) { random_side = ''; }
+			if (w === 0 && h === 2) { random_sides = []; }
+			if (w === 1 && h === num_cols - 1) { random_sides = []; }
+			if (w === num_rows - 1 && h === 2) { random_sides = []; }
+			if (w === 1 && h === 0) { random_sides = []; }
 
-			rect = new Grfx();
-			rect.beginFill(color);
-			// rect.lineStyle(1, 0xFF3300, 1); // debug
+			random_sides.forEach( function (s) {
+				rect = new Grfx();
+				rect.beginFill(color);
 
-			if (/top/.test(random_side)) {
-				rect.drawRect(0, 0, box_width + 10, 10);
-			}
-			if (/right/.test(random_side)) {
-				rect.drawRect(box_width, 0, 10, box_height + 5);
-			}
-			if (/bottom/.test(random_side)) {
-				rect.drawRect(0, box_height, box_width + 5, 10);
-			}
-			if (/left/.test(random_side)) {
-				rect.drawRect(0, 0, 10, box_height + 5);
-			}
+				switch (s) {
+					case 'top': 
+					rect.drawRect(0, 0, box_width + 10, 10);
+					break;
+					case 'right': 
+					rect.drawRect(box_width, 0, 10, box_height + 5);
+					break;
+					case 'bottom': 
+					rect.drawRect(0, box_height, box_width + 5, 10);
+					break;
+					case 'left': 
+					rect.drawRect(0, 0, 10, box_height + 5);
+					break;
+				}
 
+				rect.x = x_pos;
+				rect.y = y_pos;
+				rect.endFill();
+				// rect.name = `Rectangle ${h}, ${w}`; // debug
+				stage.addChild(rect);
 
-			rect.x = x_pos;
-			rect.y = y_pos;
-			rect.endFill();
-			rect.name = `Rectangle ${h}, ${w}`;
-			stage.addChild(rect);
-
-			// for hit testing
-			walls.push(rect);
+				// for hit testing
+				walls.push(rect);
+			});
 
 			x_pos += box_width;
 		}
