@@ -10,7 +10,6 @@ var Grfx = PIXI.Graphics;
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 
 //
-var robot_sprite;
 var player_sprite;
 var gameState;
 var timer = 0;
@@ -19,6 +18,8 @@ var death_start_timer = -1;
 var colors8 = [0xFFFFFF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFF0000, 0x00FF00];
 var walls = [];
 var robots = [];
+var player_blinking_duration = 120;
+var DEBUG = false;
 
 // https://github.com/kittykatattack/learningPixi#pixis-graphic-primitives
 var renderer = autoDetectRenderer(
@@ -26,6 +27,10 @@ var renderer = autoDetectRenderer(
 	{antialias: false, transparent: false, resolution: 1}
 );
 document.body.appendChild(renderer.view);
+
+var debug_timer = document.createElement('div');
+debug_timer.style = "position:absolute; top:30px;left:50px;color:#FFFFFF";
+document.body.appendChild(debug_timer);
 
 var stage = new Container();
 renderer.render(stage);
@@ -38,43 +43,52 @@ loader
 
 function setup() {
 
-	addRobots();
+	timer = 0;
 
-	var player_tex = loader.resources["images/player.png"].texture;
-	player_sprite = new Sprite(player_tex);
-	var rect = new Rectangle(0, 0, 8, 17);
-	player_tex.frame = rect;
-	player_sprite.x = 150;
-	player_sprite.y = 90;
-	player_sprite.vx = 0;
-	player_sprite.vy = 0;
-	player_sprite.scale.set(4, 4);
-	player_sprite.ctrl_keys = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft'];
-	player_sprite.rate = 2;
-	player_sprite.death_anim_duration = 80;
-	player_sprite.tint = 0x00FF00;
-	stage.addChild(player_sprite);
-
-	setUpPlayerCtrlsFor(player_sprite);
-	setUpPlayerCtrlsFor(robot_sprite);
+	addPlayer();
 
 	drawWalls();
 
 	// Start the game loop
-	gameState = gamePlay;
+	gameState = gameStart;
 	gameLoop();
 }
 
 function gameLoop() {
 
 	requestAnimationFrame(gameLoop);
-
 	timer += 1;
+	if (DEBUG === true) { debug_timer.textContent = timer; }
 	gameState();
 
 	renderer.render(stage);
 }
 
+function gameStart () {
+
+	if (timer < player_blinking_duration) {
+		player_sprite.visible = (timer % 40 > 20);
+	} else {
+		player_sprite.visible = true;
+		addRobots();
+		gameState = gamePlay;
+	}
+}
+
+function gameRestarting () {
+
+	// clean up
+	stage.removeChildren();
+	walls = [];
+	robots = [];
+
+	timer = 0;
+	addPlayer();
+	drawWalls();
+	gameState = gameStart;
+
+	console.log(num_players_remaining);
+}
 
  /**
   * GAME PLAY LOOP
@@ -86,6 +100,7 @@ function gamePlay () {
 }
 
 function updatePlayer () {
+
 	if (hitTestPlayer() === true) {
 		death_start_timer = timer;
 		if (num_players_remaining > 0) {
@@ -108,11 +123,12 @@ function updateRobots () {
 
 	var cur_robot;
 
-	for (var i = 0, len = robots.length; i < len; i++) {
+	for (var i = 0, r_len = robots.length; i < r_len; i++) {
 		cur_robot = robots[i];
 		
 		if (hitTestRobot(cur_robot) === true) {
 			// BOOM!
+			// cur_robot.death_start_timer = timer;
 			robotDead(cur_robot);
 		} else {
 			cur_robot.x += cur_robot.vx;
@@ -139,12 +155,16 @@ function updateRobots () {
 }
 
 function gameOver () {
-	setup();
+
+	stage.removeChildren();
+	console.log("GAME OVER");
 }
 
 function hitTestPlayer () {
+
 	var was_hit = false;
 	var robot_hit = false;
+
 	for (var h = 0, h_len = robots.length; h < h_len; h++) {
 		robot_hit = hitTestRectangle(player_sprite, robots[h]);
 		was_hit = was_hit || robot_hit;
@@ -158,8 +178,9 @@ function hitTestPlayer () {
 }
 
 function hitTestRobot (sprite) {
+
 	var was_hit = hitTestRectangle(player_sprite, sprite);
-	
+
 	for (var i = 0, len = walls.length; i < len; i++) {
 		was_hit = was_hit || hitTestRectangle(sprite, walls[i]);
 	}
@@ -402,26 +423,88 @@ function drawWalls () {
 	}
 }
 
+function addPlayer () {
+
+	var player_tex = loader.resources["images/player.png"].texture;
+	player_sprite = new Sprite(player_tex);
+	var rect = new Rectangle(0, 0, 8, 17);
+	player_tex.frame = rect;
+	player_sprite.x = 150;
+	player_sprite.y = 90;
+	player_sprite.vx = 0;
+	player_sprite.vy = 0;
+	player_sprite.scale.set(4, 4);
+	player_sprite.ctrl_keys = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft'];
+	player_sprite.rate = 2;
+	player_sprite.death_anim_duration = 80;
+	player_sprite.tint = 0x00FF00;
+	stage.addChild(player_sprite);
+
+	setUpPlayerCtrlsFor(player_sprite);
+}
+
 function addRobots () {
+
+	var max_num_robots = 9, min_num_robots = 3;
+	var num_robots = Math.floor(Math.random() * max_num_robots) + min_num_robots;
 	var robot_tex = loader.resources["images/robot.png"].texture;
 	var robot_explode_tex = loader.resources["images/robot-explode.png"].texture;
-	robot_sprite = new Sprite(robot_tex);
-	var rect = new Rectangle(0, 0, 8, 11);
-	robot_tex.frame = rect;
-	robot_sprite.x = 100;
-	robot_sprite.y = 100;
-	robot_sprite.vx = 0;
-	robot_sprite.vy = 0;
-	robot_sprite.scale.set(4, 4);
-	robot_sprite.ctrl_keys = ['KeyW', 'KeyD', 'KeyS', 'KeyA'];
-	robot_sprite.rate = 1;
-	robot_sprite.explode_tex = robot_explode_tex;
-	robot_sprite.explode_tex.num_frames = 3;
-	robot_sprite.tint = 0xFF0000;
-	stage.addChild(robot_sprite);
+	var rect, robot_sprite, random_index, robot_pos;
+	var possible_positions = getPossiblePositions();
 
-	// for hit testing 
-	robots.push(robot_sprite);
+	for (var r = 0; r < num_robots; r++) {
+		robot_sprite = new Sprite(robot_tex);
+		rect = new Rectangle(0, 0, 8, 11);
+		robot_tex.frame = rect;
+
+		random_index = Math.floor(Math.random() * possible_positions.length);
+		robot_pos = possible_positions.splice(random_index, 1)[0];
+		robot_sprite.x = robot_pos.x;
+		robot_sprite.y = robot_pos.y;
+		robot_sprite.vx = 0;
+		robot_sprite.vy = 0;
+		robot_sprite.scale.set(4, 4);
+		robot_sprite.ctrl_keys = ['KeyW', 'KeyD', 'KeyS', 'KeyA'];
+		robot_sprite.rate = 1;
+		robot_sprite.explode_tex = robot_explode_tex;
+		robot_sprite.explode_tex.num_frames = 3;
+		robot_sprite.tint = 0xFF0000;
+		robot_sprite.death_start_timer = -1;
+		stage.addChild(robot_sprite);
+		// for hit testing 
+		robots.push(robot_sprite);
+	}
+
+	// setUpPlayerCtrlsFor(robot_sprite);	
+}
+
+function getPossiblePositions () {
+
+	var num_cols = 5;
+	var num_rows = 3;
+	var box_width = 200;
+	var box_height = 235;
+	var x_pos = box_width * 0.5;
+	var y_pos = box_height * 0.5;
+	var positions = [];
+	var pos = {};
+
+	for (var w = 0; w < num_rows; w++) {
+
+		x_pos = box_width * 0.5;
+		for (var h = 0; h < num_cols; h++) {
+			
+			pos = {
+				x: x_pos,
+				y: y_pos
+			};
+			positions.push(pos);
+			x_pos += box_width;
+		}
+
+		y_pos += box_height;
+	}
+	return positions;
 }
 
 function playerDead () {
@@ -432,6 +515,9 @@ function playerDead () {
 		player_sprite.tint = colors8[Math.floor(Math.random() * colors8.length)];
 	} else {
 		stage.removeChild(player_sprite);
+		if (timer - death_start_timer - player_sprite.death_anim_duration > player_blinking_duration) {
+			gameState = gameRestarting;
+		}
 	}
 	updateRobots();
 }
@@ -448,7 +534,7 @@ function robotDead (sprite) {
 		sprite.texture.frame = new Rectangle( frame_num * 18, 0, 18, 18);
 	} else {
 		stage.removeChild(sprite);
-		robots.splice(robots.indexOf(sprite), 1);
+		// robots.splice(robots.indexOf(sprite), 1);
 		// robot_sprite.destroy();
 	}
 }
