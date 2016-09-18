@@ -88,6 +88,7 @@ function gameRestarting () {
 	removeListeners();
 
 	timer = 0;
+	death_start_timer = -1;
 	addPlayer();
 	drawWalls();
 	gameState = gameStart;
@@ -265,7 +266,7 @@ function updateRobots () {
 			}
 
 			if (cur_robot.vx === 0 && cur_robot.vy === 0) {
-				cur_robot.texture.frame = new Rectangle( (Math.round(timer * 0.2) % 6) * 8, 0, 8, 11);
+				cur_robot.texture.frame = new Rectangle( (Math.round( (timer + cur_robot.timer_offset) * 0.2) % 6) * 8, 0, 8, 11);
 			}
 		}
 	}
@@ -416,7 +417,7 @@ function hitTestRectangle(r1, r2) {
 
 			//There's definitely a collision happening
 			hit = true;
-			console.log(r2); // debug
+			console.log(r1, '\n', r2); // debug
 		} else {
 
 			//There's no collision on the y axis
@@ -611,20 +612,26 @@ function drawWalls () {
 				switch (s) {
 					case 'top': 
 					rect.drawRect(0, 0, box_width + 10, 10);
+					rect.x = x_pos;
+					rect.y = y_pos;
 					break;
 					case 'right': 
-					rect.drawRect(box_width, 0, 10, box_height + 5);
+					rect.drawRect(0, 0, 10, box_height + 5);
+					rect.x = x_pos + box_width;
+					rect.y = y_pos;
 					break;
 					case 'bottom': 
-					rect.drawRect(0, box_height, box_width + 5, 10);
+					rect.drawRect(0, 0, box_width + 5, 10);
+					rect.x = x_pos;
+					rect.y = y_pos + box_height;
 					break;
 					case 'left': 
 					rect.drawRect(0, 0, 10, box_height + 5);
+					rect.x = x_pos;
+					rect.y = y_pos;
 					break;
 				}
 
-				rect.x = x_pos;
-				rect.y = y_pos;
 				rect.endFill();
 				rect.name = `Rectangle ${h}, ${w}, ${s}`; // debug
 				stage.addChild(rect);
@@ -690,6 +697,7 @@ function addRobots () {
 		robot_sprite.explode_tex.num_frames = 3;
 		robot_sprite.tint = 0xFF0000;
 		robot_sprite.death_start_timer = -1;
+		robot_sprite.timer_offset = Math.floor(Math.random() * 20);
 		stage.addChild(robot_sprite);
 		// for hit testing 
 		robots.push(robot_sprite);
@@ -745,7 +753,8 @@ function playerDead () {
 function robotDead (sprite) {
 
 	// robot death
-	var frame_num = (Math.round((timer - death_start_timer) * 0.1) % 4);
+	if (sprite.death_start_timer === -1) { sprite.death_start_timer = timer; }
+	var frame_num = (Math.floor((timer - death_start_timer) * 0.1) % 4);
 	
 	if (frame_num < sprite.explode_tex.num_frames) {
 		sprite.texture = sprite.explode_tex;
@@ -753,12 +762,15 @@ function robotDead (sprite) {
 		sprite.anchor.y = 0.28;
 		sprite.texture.frame = new Rectangle( frame_num * 18, 0, 18, 18);
 	} else {
-		stage.removeChild(sprite);
-		// robots.splice(robots.indexOf(sprite), 1);
-		// robot_sprite.destroy();
+		setTimeout(removeRobot, 1, sprite);
 	}
 }
 
+function removeRobot (sprite) {
+	stage.removeChild(sprite);
+	robots.splice(robots.indexOf(sprite), 1);
+	sprite.destroy();
+}
 // helper fn
 function degToRad (deg) {
 
