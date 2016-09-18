@@ -20,8 +20,10 @@ var walls = [];
 var robots = [];
 var player_blinking_duration = 30; // 120;
 var DEBUG = false;
-var shots = [];
+var bullets = [];
+var robot_bullets = [];
 var bullet_velocity = 4;
+var listeners = [];
 
 // https://github.com/kittykatattack/learningPixi#pixis-graphic-primitives
 var renderer = autoDetectRenderer(
@@ -83,6 +85,7 @@ function gameRestarting () {
 	stage.removeChildren();
 	walls = [];
 	robots = [];
+	removeListeners();
 
 	timer = 0;
 	addPlayer();
@@ -97,14 +100,126 @@ function gameRestarting () {
   **/
 function gamePlay () {
 
+	hitTestAll();
 	updatePlayer();
 	updateRobots();
-	updateShots();
+	updateBullets();
+}
+
+function hitTestAll () {
+
+	// check every wall
+	for (var a = 0, a_len = walls.length; a < a_len; a++) {
+		var cur_wall = walls[a];
+
+		// player
+		if (hitTestRectangle(player_sprite, cur_wall) ) {
+			player_sprite.was_hit = true;
+		}
+		
+		// all robots
+		for (var b = 0, b_len = robots.length; b < b_len; b++) {
+			if (hitTestRectangle(cur_wall, robots[b]) ) {
+				robots[b].was_hit = true;
+			}
+		}
+
+		// robot bullets
+		for (var c = 0, c_len = robot_bullets.length; c < c_len; c++) {
+			if (hitTestRectangle(cur_wall, robot_bullets[c]) ) {
+				robot_bullets[c].was_hit = true;
+			}
+		}
+
+		// player bullets
+		for (var d = 0, d_len = bullets.length; d < d_len; d++) {
+			if (hitTestRectangle(cur_wall, bullets[d]) ) {
+				bullets[d].was_hit = true;
+			}
+		}
+	}
+
+	// check every robot
+	for (var e = 0, e_len = robots.length; e < e_len; e++) {
+
+		var cur_robot = robots[e];
+		// player
+		if (hitTestRectangle(player_sprite, cur_robot) ) {
+			player_sprite.was_hit = true;
+			cur_robot.was_hit = true;
+			break;
+		}
+
+		// evil otto
+		// if (hitTestRectangle(evil_otto, cur_robot) ) {
+		// 	cur_robot.was_hit = true;
+		// }
+
+		// all robots
+		for (var f = 0, f_len = robots.length; f < f_len; f++) {
+			if (robots[f] !== cur_robot) {
+				if (hitTestRectangle(cur_robot, robots[f]) ) {
+					cur_robot.was_hit = true;
+					robots[f].was_hit = true;
+				}
+			}
+		}
+
+		// robot bullets
+		for (var g = 0, g_len = robot_bullets.length; g < g_len; g++) {
+			if (robot_bullets[g].robot !== cur_robot) {
+				if (hitTestRectangle(cur_robot, robot_bullets[g]) ) {
+					cur_robot.was_hit = true;
+					robot_bullets[g].was_hit = true;
+				}
+			}
+		}
+
+		// player bullets
+		for (var h = 0, h_len = bullets.length; h < h_len; h++) {
+			if (hitTestRectangle(cur_robot, bullets[h]) ) {
+				cur_robot.was_hit = true;
+				bullets[h].was_hit = true;
+			}
+		}
+	}
+
+	// robot bullets
+	for (var i = 0, i_len = robot_bullets.length; i < i_len; i++) {
+		var cur_robot_bullet = robot_bullets[i];
+		
+		// player
+		if (hitTestRectangle(player_sprite, cur_robot_bullet) ) {
+			player_sprite.was_hit = true;
+			cur_robot_bullet.was_hit = true;
+			break;
+		}
+
+		// other robot bullets
+		for (var j = 0, j_len = robot_bullets.length; j < j_len; j++) {
+			if (robot_bullets[j] !== cur_robot_bullet) {
+				if (hitTestRectangle(robot_bullets[j], cur_robot_bullet) ) {
+					cur_robot_bullet.was_hit = true;
+					robot_bullets[j].was_hit = true;
+				}
+			}
+		}
+
+		// player bullets
+		for (var k = 0, k_len = bullets.length; k < k_len; k++) {
+			if (hitTestRectangle(bullets[k], cur_robot_bullet) ) {
+				cur_robot_bullet.was_hit = true;
+				bullets[k].was_hit = true;
+			}
+		}
+	}
+
+	// player_sprite.was_hit = hitTestRectangle(player_sprite, evil_otto);
 }
 
 function updatePlayer () {
 
-	if (hitTestPlayer() === true) {
+	if (player_sprite.was_hit === true) {
 		death_start_timer = timer;
 		if (num_players_remaining > 0) {
 			  num_players_remaining -= 1;
@@ -129,9 +244,8 @@ function updateRobots () {
 	for (var i = 0, r_len = robots.length; i < r_len; i++) {
 		cur_robot = robots[i];
 		
-		if (hitTestRobot(cur_robot) === true) {
+		if (cur_robot.was_hit === true) {
 			// BOOM!
-			// cur_robot.death_start_timer = timer;
 			robotDead(cur_robot);
 		} else {
 			cur_robot.x += cur_robot.vx;
@@ -157,21 +271,28 @@ function updateRobots () {
 	}
 }
 
-function updateShots () {
+function updateBullets () {
 	var cur_shot;
-	for (var i = 0, s_len = shots.length; i < s_len; i++) {
-		cur_shot = shots[i];
-		cur_shot.x += cur_shot.vx;
-		cur_shot.y += cur_shot.vy;
-		if (cur_shot.x < 0 || cur_shot.x > 1024 || cur_shot.y < 0 || cur_shot.y > 768) {
+	for (var i = 0, s_len = bullets.length; i < s_len; i++) {
+		cur_shot = bullets[i];
+		if (cur_shot.was_hit === true) {
 			setTimeout(removeShot, 1, cur_shot);
+		} else {
+			cur_shot.x += cur_shot.vx;
+			cur_shot.y += cur_shot.vy;
+
+			// bounds
+			if (cur_shot.x < 0 || cur_shot.x > 1024 || 
+				cur_shot.y < 0 || cur_shot.y > 768) {
+				setTimeout(removeShot, 1, cur_shot);
+			}
 		}
 	}
 }
 
 function removeShot(shot) {
 	stage.removeChild(shot);
-	shots.splice(shots.indexOf(shot), 1);
+	bullets.splice(bullets.indexOf(shot), 1);
 	shot.destroy();
 }
 function gameOver () {
@@ -240,10 +361,22 @@ function keyboard (code) {
 		evt.preventDefault();
 	};
 
-	window.addEventListener("keydown", key.downHandler.bind(key), false);
-	window.addEventListener("keyup", key.upHandler.bind(key), false);
+	var dnFn = key.downHandler.bind(key);
+	window.addEventListener("keydown", dnFn, false);
+	var upFn = key.upHandler.bind(key);
+	window.addEventListener("keyup", upFn, false);
+	listeners.push(
+		{ type: 'keydown', fn: dnFn },
+		{ type: 'keyup', fn: upFn }
+	);
 	
 	return key;
+}
+
+function removeListeners () {
+	listeners.forEach( function (l) {
+		window.removeEventListener(l.type, l.fn, false);
+	});
 }
 
 function hitTestRectangle(r1, r2) {
@@ -331,7 +464,7 @@ function fire (sprite) {
 	stage.addChild(shot);
 
 	// for hit testing
-	shots.push(shot);
+	bullets.push(shot);
 }
 
 function setUpPlayerCtrlsFor (sprite) {
@@ -404,6 +537,8 @@ function setUpPlayerCtrlsFor (sprite) {
 			sprite.vy = 0;
 		}
 	};
+
+	// sprite.listeners = [moveUp, moveRight, moveDown, moveDown];
 }
 
 function getTexFrameFor (sprite) {
@@ -522,6 +657,7 @@ function addPlayer () {
 	player_sprite.rate = 2;
 	player_sprite.death_anim_duration = 80;
 	player_sprite.tint = 0x00FF00;
+	player_sprite.was_hit = false;
 	stage.addChild(player_sprite);
 
 	setUpPlayerCtrlsFor(player_sprite);
