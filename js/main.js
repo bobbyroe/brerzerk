@@ -18,8 +18,10 @@ var death_start_timer = -1;
 var colors8 = [0xFFFFFF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFF0000, 0x00FF00];
 var walls = [];
 var robots = [];
-var player_blinking_duration = 120;
+var player_blinking_duration = 30; // 120;
 var DEBUG = false;
+var shots = [];
+var bullet_velocity = 4;
 
 // https://github.com/kittykatattack/learningPixi#pixis-graphic-primitives
 var renderer = autoDetectRenderer(
@@ -97,6 +99,7 @@ function gamePlay () {
 
 	updatePlayer();
 	updateRobots();
+	updateShots();
 }
 
 function updatePlayer () {
@@ -154,6 +157,23 @@ function updateRobots () {
 	}
 }
 
+function updateShots () {
+	var cur_shot;
+	for (var i = 0, s_len = shots.length; i < s_len; i++) {
+		cur_shot = shots[i];
+		cur_shot.x += cur_shot.vx;
+		cur_shot.y += cur_shot.vy;
+		if (cur_shot.x < 0 || cur_shot.x > 1024 || cur_shot.y < 0 || cur_shot.y > 768) {
+			setTimeout(removeShot, 1, cur_shot);
+		}
+	}
+}
+
+function removeShot(shot) {
+	stage.removeChild(shot);
+	shots.splice(shots.indexOf(shot), 1);
+	shot.destroy();
+}
 function gameOver () {
 
 	stage.removeChildren();
@@ -195,12 +215,14 @@ function keyboard (code) {
 		isDown: false,
 		isUp: true,
 		press: null,
-		release: null
+		release: null,
+		shiftKey: false
 	};
 
 	key.downHandler = function (evt) {
 
 		if (evt.code === key.code) {
+			key.shiftKey = evt.shiftKey;
 			if (key.isUp && key.press) { key.press(); }
 			key.isDown = true;
 			key.isUp = false;
@@ -210,6 +232,7 @@ function keyboard (code) {
 
 	key.upHandler = function(evt) {
 		if (evt.code === key.code) {
+			key.shiftKey = evt.shiftKey;
 			if (key.isDown && key.release) { key.release(); }
 			key.isDown = false;
 			key.isUp = true;
@@ -276,6 +299,41 @@ function hitTestRectangle(r1, r2) {
 	return hit;
 };
 
+
+function fire (sprite) {
+
+	var dir = "" + Math.abs(sprite.ax / sprite.rate) + Math.abs(sprite.ay / sprite.rate);
+	var diagonal_rote = (sprite.ax + sprite.ay === 0) ? -45 : 45;
+	
+	var shot = new  Grfx();
+	shot.beginFill(0x00FF00);
+
+	switch (dir) {
+		case '01': 
+		shot.drawRect(0, 0, 1, 8);
+		break;
+		case '10': 
+		shot.drawRect(0, 0, 8, 1);
+		break;
+		case '11': 
+		shot.drawRect(0, 0, 8, 1);
+		shot.rotation = degToRad(diagonal_rote);
+		break;
+	}
+
+	shot.x = sprite.x + 8;
+	shot.y = sprite.y + 20;
+	shot.scale.set(4, 4);
+	shot.vx = sprite.ax * bullet_velocity;
+	shot.vy = sprite.ay * bullet_velocity;
+	shot.endFill();
+	shot.name = `shot ${timer}`; // debug
+	stage.addChild(shot);
+
+	// for hit testing
+	shots.push(shot);
+}
+
 function setUpPlayerCtrlsFor (sprite) {
 
 	var moveUp = keyboard(sprite.ctrl_keys[0]);
@@ -284,41 +342,65 @@ function setUpPlayerCtrlsFor (sprite) {
 	var moveLeft = keyboard(sprite.ctrl_keys[3]);
 
 	moveLeft.press = function () {
-		sprite.vx = sprite.rate * -1;
+		if (moveLeft.shiftKey === true) {
+			sprite.ax = sprite.rate * -1;
+			fire(sprite);
+		} else {
+			sprite.vx = sprite.rate * -1;
+		}
 	};
 
 	moveLeft.release = function () {
 		if (moveRight.isDown === false) {
+			sprite.ax = 0;
 			sprite.vx = 0;
 		}
 	};
 
 	moveRight.press = function () {
-		sprite.vx = sprite.rate;
+		if (moveRight.shiftKey === true) {
+			sprite.ax = sprite.rate;
+			fire(sprite);
+		} else {
+			sprite.vx = sprite.rate;
+		}
 	};
 
 	moveRight.release = function () {
 		if (moveLeft.isDown === false) {
+			sprite.ax = 0;
 			sprite.vx = 0;
 		}
 	};
 
 	moveUp.press = function () {
-		sprite.vy = sprite.rate * -1;
+		if (moveUp.shiftKey === true) {
+			sprite.ay = sprite.rate * -1;
+			fire(sprite);
+		} else {
+			sprite.vy = sprite.rate * -1;
+		}
 	};
 
 	moveUp.release = function () {
 		if (moveDown.isDown === false) {
+			sprite.ay = 0;
 			sprite.vy = 0;
 		}
 	};
 
 	moveDown.press = function () {
-		sprite.vy = sprite.rate;
+		if (moveDown.shiftKey === true) {
+			sprite.ay = sprite.rate;
+			fire(sprite);
+		} else {
+			sprite.vy = sprite.rate;
+		}
 	};
 
 	moveDown.release = function () {
 		if (moveUp.isDown === false) {
+			sprite.ay = 0;
 			sprite.vy = 0;
 		}
 	};
@@ -433,6 +515,8 @@ function addPlayer () {
 	player_sprite.y = 90;
 	player_sprite.vx = 0;
 	player_sprite.vy = 0;
+	player_sprite.ax = 0; // aim.x
+	player_sprite.ay = 0; // aim.y
 	player_sprite.scale.set(4, 4);
 	player_sprite.ctrl_keys = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft'];
 	player_sprite.rate = 2;
@@ -537,4 +621,10 @@ function robotDead (sprite) {
 		// robots.splice(robots.indexOf(sprite), 1);
 		// robot_sprite.destroy();
 	}
+}
+
+// helper fn
+function degToRad (deg) {
+
+	return deg * Math.PI / 180;
 }
