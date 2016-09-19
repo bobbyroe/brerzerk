@@ -49,8 +49,8 @@ function setup() {
 
 	timer = 0;
 
-	addPlayer();
-
+	player_sprite = getPlayer();
+	stage.addChild(player_sprite);
 	drawWalls();
 
 	// Start the game loop
@@ -74,7 +74,10 @@ function gameStart () {
 		player_sprite.visible = (timer % 40 > 20);
 	} else {
 		player_sprite.visible = true;
-		addRobots();
+		robots = getRobots();
+		for (var r = 0, r_len = robots.length; r < r_len; r++) {
+			stage.addChild(robots[r]);
+		}
 		gameState = gamePlay;
 	}
 }
@@ -277,7 +280,7 @@ function updateBullets () {
 	for (var i = 0, s_len = bullets.length; i < s_len; i++) {
 		cur_shot = bullets[i];
 		if (cur_shot.was_hit === true) {
-			setTimeout(removeShot, 1, cur_shot);
+			setTimeout(removeBullet, 1, cur_shot);
 		} else {
 			cur_shot.x += cur_shot.vx;
 			cur_shot.y += cur_shot.vy;
@@ -285,49 +288,23 @@ function updateBullets () {
 			// bounds
 			if (cur_shot.x < 0 || cur_shot.x > 1024 || 
 				cur_shot.y < 0 || cur_shot.y > 768) {
-				setTimeout(removeShot, 1, cur_shot);
+				setTimeout(removeBullet, 1, cur_shot);
 			}
 		}
 	}
 }
 
-function removeShot(shot) {
+function removeBullet(shot) {
+
 	stage.removeChild(shot);
 	bullets.splice(bullets.indexOf(shot), 1);
 	shot.destroy();
 }
+
 function gameOver () {
 
 	stage.removeChildren();
 	console.log("GAME OVER");
-}
-
-function hitTestPlayer () {
-
-	var was_hit = false;
-	var robot_hit = false;
-
-	for (var h = 0, h_len = robots.length; h < h_len; h++) {
-		robot_hit = hitTestRectangle(player_sprite, robots[h]);
-		was_hit = was_hit || robot_hit;
-	}
-
-	for (var i = 0, len = walls.length; i < len; i++) {
-		was_hit = was_hit || hitTestRectangle(player_sprite, walls[i]);
-	}
-
-	return was_hit;
-}
-
-function hitTestRobot (sprite) {
-
-	var was_hit = hitTestRectangle(player_sprite, sprite);
-
-	for (var i = 0, len = walls.length; i < len; i++) {
-		was_hit = was_hit || hitTestRectangle(sprite, walls[i]);
-	}
-
-	return was_hit;
 }
 
 function keyboard (code) {
@@ -435,111 +412,10 @@ function hitTestRectangle(r1, r2) {
 
 
 function fire (sprite) {
-
-	var dir = "" + Math.abs(sprite.ax / sprite.rate) + Math.abs(sprite.ay / sprite.rate);
-	var diagonal_rote = (sprite.ax + sprite.ay === 0) ? -45 : 45;
 	
-	var shot = new  Grfx();
-	shot.beginFill(0x00FF00);
-
-	switch (dir) {
-		case '01': 
-		shot.drawRect(0, 0, 1, 8);
-		break;
-		case '10': 
-		shot.drawRect(0, 0, 8, 1);
-		break;
-		case '11': 
-		shot.drawRect(0, 0, 8, 1);
-		shot.rotation = degToRad(diagonal_rote);
-		break;
-	}
-
-	shot.x = sprite.x + 8;
-	shot.y = sprite.y + 20;
-	shot.scale.set(4, 4);
-	shot.vx = sprite.ax * bullet_velocity;
-	shot.vy = sprite.ay * bullet_velocity;
-	shot.endFill();
-	shot.name = `shot ${timer}`; // debug
+	var shot = getBullet(sprite);
 	stage.addChild(shot);
-
-	// for hit testing
 	bullets.push(shot);
-}
-
-function setUpPlayerCtrlsFor (sprite) {
-
-	var moveUp = keyboard(sprite.ctrl_keys[0]);
-	var moveRight = keyboard(sprite.ctrl_keys[1]);
-	var moveDown = keyboard(sprite.ctrl_keys[2]);
-	var moveLeft = keyboard(sprite.ctrl_keys[3]);
-
-	moveLeft.press = function () {
-		if (moveLeft.shiftKey === true) {
-			sprite.ax = sprite.rate * -1;
-			fire(sprite);
-		} else {
-			sprite.vx = sprite.rate * -1;
-		}
-	};
-
-	moveLeft.release = function () {
-		if (moveRight.isDown === false) {
-			sprite.ax = 0;
-			sprite.vx = 0;
-		}
-	};
-
-	moveRight.press = function () {
-		if (moveRight.shiftKey === true) {
-			sprite.ax = sprite.rate;
-			fire(sprite);
-		} else {
-			sprite.vx = sprite.rate;
-		}
-	};
-
-	moveRight.release = function () {
-		if (moveLeft.isDown === false) {
-			sprite.ax = 0;
-			sprite.vx = 0;
-		}
-	};
-
-	moveUp.press = function () {
-		if (moveUp.shiftKey === true) {
-			sprite.ay = sprite.rate * -1;
-			fire(sprite);
-		} else {
-			sprite.vy = sprite.rate * -1;
-		}
-	};
-
-	moveUp.release = function () {
-		if (moveDown.isDown === false) {
-			sprite.ay = 0;
-			sprite.vy = 0;
-		}
-	};
-
-	moveDown.press = function () {
-		if (moveDown.shiftKey === true) {
-			sprite.ay = sprite.rate;
-			fire(sprite);
-		} else {
-			sprite.vy = sprite.rate;
-		}
-	};
-
-	moveDown.release = function () {
-		if (moveUp.isDown === false) {
-			sprite.ay = 0;
-			sprite.vy = 0;
-		}
-	};
-
-	// sprite.listeners = [moveUp, moveRight, moveDown, moveDown];
 }
 
 function getTexFrameFor (sprite) {
@@ -647,94 +523,6 @@ function drawWalls () {
 	}
 }
 
-function addPlayer () {
-
-	var player_tex = loader.resources["images/player.png"].texture;
-	player_sprite = new Sprite(player_tex);
-	var rect = new Rectangle(0, 0, 8, 17);
-	player_tex.frame = rect;
-	player_sprite.x = 150;
-	player_sprite.y = 90;
-	player_sprite.vx = 0;
-	player_sprite.vy = 0;
-	player_sprite.ax = 0; // aim.x
-	player_sprite.ay = 0; // aim.y
-	player_sprite.scale.set(4, 4);
-	player_sprite.ctrl_keys = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft'];
-	player_sprite.rate = 2;
-	player_sprite.death_anim_duration = 80;
-	player_sprite.tint = 0x00FF00;
-	player_sprite.was_hit = false;
-	stage.addChild(player_sprite);
-
-	setUpPlayerCtrlsFor(player_sprite);
-}
-
-function addRobots () {
-
-	var max_num_robots = 9, min_num_robots = 3;
-	var num_robots = Math.floor(Math.random() * max_num_robots) + min_num_robots;
-	var robot_tex = loader.resources["images/robot.png"].texture;
-	var robot_explode_tex = loader.resources["images/robot-explode.png"].texture;
-	var rect, robot_sprite, random_index, robot_pos;
-	var possible_positions = getPossiblePositions();
-
-	for (var r = 0; r < num_robots; r++) {
-		robot_sprite = new Sprite(robot_tex);
-		rect = new Rectangle(0, 0, 8, 11);
-		robot_tex.frame = rect;
-
-		random_index = Math.floor(Math.random() * possible_positions.length);
-		robot_pos = possible_positions.splice(random_index, 1)[0];
-		robot_sprite.x = robot_pos.x;
-		robot_sprite.y = robot_pos.y;
-		robot_sprite.vx = 0;
-		robot_sprite.vy = 0;
-		robot_sprite.scale.set(4, 4);
-		robot_sprite.ctrl_keys = ['KeyW', 'KeyD', 'KeyS', 'KeyA'];
-		robot_sprite.rate = 1;
-		robot_sprite.explode_tex = robot_explode_tex;
-		robot_sprite.explode_tex.num_frames = 3;
-		robot_sprite.tint = 0xFF0000;
-		robot_sprite.death_start_timer = -1;
-		robot_sprite.timer_offset = Math.floor(Math.random() * 20);
-		stage.addChild(robot_sprite);
-		// for hit testing 
-		robots.push(robot_sprite);
-	}
-
-	// setUpPlayerCtrlsFor(robot_sprite);	
-}
-
-function getPossiblePositions () {
-
-	var num_cols = 5;
-	var num_rows = 3;
-	var box_width = 200;
-	var box_height = 235;
-	var x_pos = box_width * 0.5;
-	var y_pos = box_height * 0.5;
-	var positions = [];
-	var pos = {};
-
-	for (var w = 0; w < num_rows; w++) {
-
-		x_pos = box_width * 0.5;
-		for (var h = 0; h < num_cols; h++) {
-			
-			pos = {
-				x: x_pos,
-				y: y_pos
-			};
-			positions.push(pos);
-			x_pos += box_width;
-		}
-
-		y_pos += box_height;
-	}
-	return positions;
-}
-
 function playerDead () {
 
 	if (timer - death_start_timer < player_sprite.death_anim_duration) {
@@ -770,9 +558,4 @@ function removeRobot (sprite) {
 	stage.removeChild(sprite);
 	robots.splice(robots.indexOf(sprite), 1);
 	sprite.destroy();
-}
-// helper fn
-function degToRad (deg) {
-
-	return deg * Math.PI / 180;
 }
