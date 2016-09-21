@@ -1,6 +1,6 @@
  /**
   *
-  * GLOBALS: loader, timer, 
+  * GLOBALS: loader, timer, sound
   * PIXI globals: Sprite, Rectangle
   * fns: removeRobot
   *
@@ -48,6 +48,7 @@ return function (pos) {
 		if (robot_sprite.was_hit === true) {
 
 			robot_sprite.death_start_timer = timer;
+			sound.play('robot_dead');
 			robot_sprite.tick = robotDead;
 		} else {
 
