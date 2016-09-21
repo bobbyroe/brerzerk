@@ -45,6 +45,20 @@ loader
 	.add("images/player.png")
 	.load(setup);
 
+// audio
+var sound = new Howl({
+	src: ['audio/sound_sprite.mp3'],
+	sprite: {
+		humanoid: [0, 650],
+		player_bullet: [700, 1000],
+		player_dead: [1750, 2500],
+		robot_bullet: [4330, 750],
+		robot_dead: [5130, 800],
+		robot: [6010, 580]
+	}
+});
+
+
 function setup() {
 
 	timer = 0;
@@ -92,7 +106,8 @@ function gameRestarting () {
 
 	timer = 0;
 	death_start_timer = -1;
-	addPlayer();
+	player_sprite = getPlayer();
+	stage.addChild(player_sprite);
 	drawWalls();
 	gameState = gameStart;
 
@@ -228,6 +243,7 @@ function updatePlayer () {
 		if (num_players_remaining > 0) {
 			  num_players_remaining -= 1;
 			  gameState = playerDead;
+			  sound.play('player_dead');
 
 		} else {
 			  gameState = gameOver;
@@ -416,6 +432,8 @@ function fire (sprite) {
 	var shot = getBullet(sprite);
 	stage.addChild(shot);
 	bullets.push(shot);
+
+	sound.play('player_bullet');
 }
 
 function getTexFrameFor (sprite) {
