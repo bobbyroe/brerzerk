@@ -110,7 +110,9 @@ function getPossiblePositions () {
 
 		x_pos = box_width * 0.5;
 		for (var h = 0; h < num_cols; h++) {
-			
+
+			// skip the first box, since the player is there already
+			if (w === 0 && h === 0) { continue; }
 			pos = {
 				x: x_pos,
 				y: y_pos

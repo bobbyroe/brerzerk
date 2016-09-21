@@ -139,13 +139,13 @@ return function () {
 
 	function playerDead () {
 
-		if (timeplayer_sprite.death_start_timer < player_sprite.death_anim_duration) {
+		if (timer - player_sprite.death_start_timer < player_sprite.death_anim_duration) {
 			// player death
 			player_sprite.texture.frame = new Rectangle((Math.round(timer * 0.4) % 4) * 8 + 80, 0, 8, 17);
 			player_sprite.tint = colors8[Math.floor(Math.random() * colors8.length)];
 		} else {
 			stage.removeChild(player_sprite);
-			if (timeplayer_sprite.death_start_timer - player_sprite.death_anim_duration > player_sprite.blinking_duration) {
+			if (timer - player_sprite.death_start_timer - player_sprite.death_anim_duration > player_sprite.blinking_duration) {
 				gameState = gameRestarting;
 			}
 		}

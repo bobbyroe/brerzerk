@@ -168,6 +168,8 @@ function getRobots () {
 
 		random_index = Math.floor(Math.random() * possible_positions.length);
 		robot_pos = possible_positions.splice(random_index, 1)[0];
+		robot_pos.x += Math.floor(Math.random() * 50) - 25;
+		robot_pos.y += Math.floor(Math.random() * 50) - 25;
 		robots.push(getRobot(robot_pos));
 	}
 	return robots;
