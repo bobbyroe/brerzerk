@@ -1,10 +1,10 @@
- /**
-  *
-  * GLOBALS: loader, timer, sound
-  * PIXI globals: Sprite, Rectangle
-  * fns: removeRobot
-  *
-  **/
+/**
+ *
+ * GLOBALS: loader, timer, sound
+ * PIXI globals: Sprite, Rectangle
+ * fns: removeRobot
+ *
+ **/
 var getRobot = (function () {
 return function (pos) {
 	var robot_tex = loader.resources["images/robot.png"].texture;
@@ -30,9 +30,7 @@ return function (pos) {
 	// ROBOT STATES
 	function robotDead () {
 
-		// robot death
-		var frame_num = (Math.floor((timer - death_start_timer) * 0.1) % 4);
-		
+		var frame_num = (Math.floor((timer - robot_sprite.death_start_timer) * 0.1) % 4);		
 		if (frame_num < robot_sprite.explode_tex.num_frames) {
 			robot_sprite.texture = robot_sprite.explode_tex;
 			robot_sprite.anchor.x = 0.28;

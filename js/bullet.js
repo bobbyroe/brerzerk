@@ -1,7 +1,22 @@
-// 
-function getBullet (sprite) {
+/**
+ *
+ * GLOBALS: *timer
+ * PIXI globals: Grfx
+ * fns: removeBullet, isOutOfBounds
+ *
+ **/
+var getBullet = (function () {
 
-	var direction = "" + Math.abs(sprite.ax / sprite.rate) + Math.abs(sprite.ay / sprite.rate);
+// helper fn
+function degToRad (deg) {
+
+	return deg * Math.PI / 180;
+}
+
+return function (sprite) {
+
+	var bullet_velocity = 4;
+	var direction = `${Math.abs(sprite.ax / sprite.rate)}${Math.abs(sprite.ay / sprite.rate)}`;
 	var rotation = (sprite.ax + sprite.ay === 0) ? -45 : 45;
 
 	var shot = new Grfx();
@@ -26,13 +41,25 @@ function getBullet (sprite) {
 	shot.vx = sprite.ax * bullet_velocity;
 	shot.vy = sprite.ay * bullet_velocity;
 	shot.endFill();
-	shot.name = `shot ${timer}`; // debug
+	shot.name = `bullet ${timer}`; // debug
+	shot.tick = updateBullet;
+
+
+	function updateBullet () {
+		if (shot.was_hit === true) {
+			setTimeout(removeBullet, 1, shot);
+		} else {
+			shot.x += shot.vx;
+			shot.y += shot.vy;
+			// bounds
+			if (isOutOfBounds(shot) === true) {
+				setTimeout(removeBullet, 1, shot);
+			}
+		}
+	}
 	return shot;
 }
 
+})();
 
-// helper fn
-function degToRad (deg) {
 
-	return deg * Math.PI / 180;
-}
