@@ -1,3 +1,11 @@
+/**
+ *
+ * GLOBALS: loader, 
+ * PIXI globals: Sprite, Rectangle
+ * fns: keyboard, fire
+ *
+ **/
+
 function getPlayer () {
 
 	var player_tex = loader.resources["images/player.png"].texture;

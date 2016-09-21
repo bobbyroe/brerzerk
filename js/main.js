@@ -259,35 +259,8 @@ function updatePlayer () {
 
 function updateRobots () {
 
-	var cur_robot;
-
 	for (var i = 0, r_len = robots.length; i < r_len; i++) {
-		cur_robot = robots[i];
-		
-		if (cur_robot.was_hit === true) {
-			// BOOM!
-			robotDead(cur_robot);
-		} else {
-			cur_robot.x += cur_robot.vx;
-			cur_robot.y += cur_robot.vy;
-
-			// animate him
-			if (cur_robot.vy > 0) {
-				cur_robot.texture.frame = new Rectangle( (Math.round(timer * 0.2) % 2) * 8 + 64, 0, 8, 11);
-			} else if (cur_robot.vy < 0) {
-				cur_robot.texture.frame = new Rectangle( (Math.round(timer * 0.2) % 2) * 8 + 96, 0, 8, 11);
-			}
-
-			if (cur_robot.vx > 0) {
-				cur_robot.texture.frame = new Rectangle( (Math.round(timer * 0.2) % 2) * 8 + 48, 0, 8, 11);
-			} else if (cur_robot.vx < 0) {
-				cur_robot.texture.frame = new Rectangle( (Math.round(timer * 0.2) % 2) * 8 + 80, 0, 8, 11);
-			}
-
-			if (cur_robot.vx === 0 && cur_robot.vy === 0) {
-				cur_robot.texture.frame = new Rectangle( (Math.round( (timer + cur_robot.timer_offset) * 0.2) % 6) * 8, 0, 8, 11);
-			}
-		}
+		robots[i].tick();
 	}
 }
 
@@ -317,6 +290,54 @@ function removeBullet(shot) {
 	shot.destroy();
 }
 
+//
+function getRobots () {
+
+	var robots = [];
+	var max_num_robots = 9, min_num_robots = 3;
+	var num_robots = Math.floor(Math.random() * max_num_robots) + min_num_robots;
+	var possible_positions = getPossiblePositions();
+	var robot_pos;
+
+	for (var r = 0; r < num_robots; r++) {
+
+		random_index = Math.floor(Math.random() * possible_positions.length);
+		robot_pos = possible_positions.splice(random_index, 1)[0];
+		robots.push(getRobot(robot_pos));
+	}
+	return robots;
+}
+
+function getPossiblePositions () {
+
+	var num_cols = 5;
+	var num_rows = 3;
+	var box_width = 200;
+	var box_height = 235;
+	var x_pos = box_width * 0.5;
+	var y_pos = box_height * 0.5;
+	var positions = [];
+	var pos = {};
+
+	for (var w = 0; w < num_rows; w++) {
+
+		x_pos = box_width * 0.5;
+		for (var h = 0; h < num_cols; h++) {
+			
+			pos = {
+				x: x_pos,
+				y: y_pos
+			};
+			positions.push(pos);
+			x_pos += box_width;
+		}
+
+		y_pos += box_height;
+	}
+	return positions;
+}
+
+// GAME STATE
 function gameOver () {
 
 	stage.removeChildren();
@@ -554,22 +575,6 @@ function playerDead () {
 		}
 	}
 	updateRobots();
-}
-
-function robotDead (sprite) {
-
-	// robot death
-	if (sprite.death_start_timer === -1) { sprite.death_start_timer = timer; }
-	var frame_num = (Math.floor((timer - death_start_timer) * 0.1) % 4);
-	
-	if (frame_num < sprite.explode_tex.num_frames) {
-		sprite.texture = sprite.explode_tex;
-		sprite.anchor.x = 0.28;
-		sprite.anchor.y = 0.28;
-		sprite.texture.frame = new Rectangle( frame_num * 18, 0, 18, 18);
-	} else {
-		setTimeout(removeRobot, 1, sprite);
-	}
 }
 
 function removeRobot (sprite) {
