@@ -6,7 +6,8 @@
  *
  **/
 var getRobot = (function () {
-return function (pos) {
+
+return function () {
 	var robot_tex = loader.resources["images/robot.png"].texture;
 	var robot_sprite = new Sprite(robot_tex);
 
@@ -22,10 +23,20 @@ return function (pos) {
 	robot_sprite.tint = 0xFF0000;
 	robot_sprite.death_start_timer = -1;
 	robot_sprite.timer_offset = Math.floor(Math.random() * 100);
+	robot_sprite.index = -1;
+
+	// public methods
 	robot_sprite.tick = robotPlay;
-	robot_sprite.x = pos.x;
-	robot_sprite.y = pos.y;
+	robot_sprite.aim = targetHumanoid;
+	robot_sprite.setPosition = setPosition;
+
+	function setPosition (pos) {
+		robot_sprite.x = pos.x;
+		robot_sprite.y = pos.y;
+	}
 	
+	// animation vars
+	var frame_delay = 0.15; // smaller == slower
 
 	// ROBOT STATES
 	function robotDead () {
@@ -43,6 +54,9 @@ return function (pos) {
 
 	function robotPlay () {
 
+		var anim_frame_index = (Math.round(timer * frame_delay) % 2) * 8;
+		var standing_frame_index = (Math.round( (timer + robot_sprite.timer_offset) * frame_delay) % 6) * 8;
+
 		if (robot_sprite.was_hit === true) {
 
 			robot_sprite.death_start_timer = timer;
@@ -53,25 +67,41 @@ return function (pos) {
 			robot_sprite.x += robot_sprite.vx;
 			robot_sprite.y += robot_sprite.vy;
 
+			robot_sprite.aim();
 			// animate him
 			if (robot_sprite.vy > 0) {
-				robot_sprite.texture.frame = new Rectangle( (Math.round(timer * 0.2) % 2) * 8 + 64, 0, 8, 11);
+				robot_sprite.texture.frame = new Rectangle(anim_frame_index + 64, 0, 8, 11);
 			} else if (robot_sprite.vy < 0) {
-				robot_sprite.texture.frame = new Rectangle( (Math.round(timer * 0.2) % 2) * 8 + 96, 0, 8, 11);
+				robot_sprite.texture.frame = new Rectangle(anim_frame_index + 96, 0, 8, 11);
 			}
 
 			if (robot_sprite.vx > 0) {
-				robot_sprite.texture.frame = new Rectangle( (Math.round(timer * 0.2) % 2) * 8 + 48, 0, 8, 11);
+				robot_sprite.texture.frame = new Rectangle(anim_frame_index + 48, 0, 8, 11);
 			} else if (robot_sprite.vx < 0) {
-				robot_sprite.texture.frame = new Rectangle( (Math.round(timer * 0.2) % 2) * 8 + 80, 0, 8, 11);
+				robot_sprite.texture.frame = new Rectangle(anim_frame_index + 80, 0, 8, 11);
 			}
 
 			if (robot_sprite.vx === 0 && robot_sprite.vy === 0) {
-				robot_sprite.texture.frame = new Rectangle( (Math.round( (timer + robot_sprite.timer_offset) * 0.2) % 6) * 8, 0, 8, 11);
+				robot_sprite.texture.frame = new Rectangle(standing_frame_index, 0, 8, 11);
 			}
 		}
 	}
 
+	function targetHumanoid () {
+		if (robot_sprite.index === 0) {
+			if (Math.abs(robot_sprite.x - player_sprite.x) < 20 ||
+				Math.abs(robot_sprite.y - player_sprite.y) < 20 ||
+				Math.abs((robot_sprite.x - robot_sprite.y) - (player_sprite.x - player_sprite.y)) < 20) {
+				
+				robot_sprite.tint = 0x00FFFF;
+			} else { robot_sprite.tint = 0xFF0000; }
+			console.log(Math.abs((robot_sprite.x - robot_sprite.y) - (player_sprite.x - player_sprite.y)));
+		}
+	}
+
+	function robotCanFire () {
+		return false;
+	}
 	return robot_sprite;
 }
 })();

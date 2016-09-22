@@ -22,6 +22,8 @@ var walls = [];
 var robots = [];
 var DEBUG = false;
 var bullets = [];
+var max_bullets = 2;
+var max_robot_bullets = 1;
 var robot_bullets = [];
 var listeners = [];
 
@@ -162,15 +164,20 @@ function getRobots () {
 	var max_num_robots = 9, min_num_robots = 3;
 	var num_robots = Math.floor(Math.random() * max_num_robots) + min_num_robots;
 	var possible_positions = getPossiblePositions();
-	var robot_pos;
+	var robot, robot_pos;
 
 	for (var r = 0; r < num_robots; r++) {
+
+		robot = getRobot();
 
 		random_index = Math.floor(Math.random() * possible_positions.length);
 		robot_pos = possible_positions.splice(random_index, 1)[0];
 		robot_pos.x += Math.floor(Math.random() * 50) - 25;
 		robot_pos.y += Math.floor(Math.random() * 50) - 25;
-		robots.push(getRobot(robot_pos));
+		robot.setPosition(robot_pos);
+		robot.index = r;
+
+		robots.push(robot);
 	}
 	return robots;
 }
