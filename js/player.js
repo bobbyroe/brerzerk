@@ -28,6 +28,7 @@ return function () {
 	player_sprite.tick = playerPlay;
 	player_sprite.x = 150;
 	player_sprite.y = 90;
+	player_sprite.name = 'humanoid';
 
 	setUpCtrlsFor(player_sprite);
 

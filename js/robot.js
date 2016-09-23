@@ -24,6 +24,7 @@ return function () {
 	robot_sprite.death_start_timer = -1;
 	robot_sprite.timer_offset = Math.floor(Math.random() * 100);
 	robot_sprite.index = -1;
+	robot_sprite.name = `robot${timer}`;
 
 	// public methods
 	robot_sprite.tick = robotPlay;
@@ -88,14 +89,17 @@ return function () {
 	}
 
 	function targetHumanoid () {
-		if (robot_sprite.index === 0) {
-			if (Math.abs(robot_sprite.x - player_sprite.x) < 20 ||
-				Math.abs(robot_sprite.y - player_sprite.y) < 20 ||
-				Math.abs((robot_sprite.x - robot_sprite.y) - (player_sprite.x - player_sprite.y)) < 20) {
-				
-				robot_sprite.tint = 0x00FFFF;
-			} else { robot_sprite.tint = 0xFF0000; }
-			console.log(Math.abs((robot_sprite.x - robot_sprite.y) - (player_sprite.x - player_sprite.y)));
+
+		if (timer < next_bullet_time === false && robot_bullets.length < max_robot_bullets) {
+
+			robot_sprite.ax = 1;
+			robot_sprite.ay = 0;
+			fire(robot_sprite);
+			// Math.abs(robot_sprite.x - player_sprite.x) < 20 ||
+			// Math.abs(robot_sprite.y - player_sprite.y) < 20 ||
+			// Math.abs((robot_sprite.x - robot_sprite.y) - (player_sprite.x - player_sprite.y)) < 20 ||
+			// Math.abs((robot_sprite.x - player_sprite.y) - (player_sprite.x - robot_sprite.y)) < 20) {
+					
 		}
 	}
 

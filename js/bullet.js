@@ -40,8 +40,9 @@ return function (sprite) {
 	shot.scale.set(4, 4);
 	shot.vx = sprite.ax * bullet_velocity;
 	shot.vy = sprite.ay * bullet_velocity;
+	shot.sprite = sprite;
 	shot.endFill();
-	shot.name = `${sprite.name} bullet ${timer}`; // debug
+	shot.name = `${sprite.name} bullet${timer}`; // debug
 	shot.tick = updateBullet;
 
 

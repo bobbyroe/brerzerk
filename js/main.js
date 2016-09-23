@@ -20,10 +20,11 @@ var num_players_remaining = 2;
 var colors8 = [0xFFFFFF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFF0000, 0x00FF00];
 var walls = [];
 var robots = [];
-var DEBUG = false;
+var DEBUG = true;
 var bullets = [];
 var max_bullets = 2;
 var max_robot_bullets = 1;
+var next_bullet_time = 150;
 var robot_bullets = [];
 var listeners = [];
 
@@ -62,7 +63,6 @@ var sound = new Howl({
 function setup() {
 
 	timer = 0;
-
 	player_sprite = getPlayer();
 	stage.addChild(player_sprite);
 	drawWalls();
@@ -78,6 +78,9 @@ function gameLoop() {
 
 	requestAnimationFrame(gameLoop);
 	timer += 1;
+	if (timer > next_bullet_time) {
+		next_bullet_time += 30;
+	}
 	if (DEBUG === true) { debug_timer.textContent = timer; }
 	gameState();
 
@@ -106,6 +109,7 @@ function gameRestarting () {
 	removeListeners();
 
 	timer = 0;
+	next_bullet_time = 150;
 	player_sprite = getPlayer();
 	stage.addChild(player_sprite);
 	drawWalls();
@@ -136,9 +140,16 @@ function fire (sprite) {
 	
 	var shot = getBullet(sprite);
 	stage.addChild(shot);
-	bullets.push(shot);
 
-	sound.play('player_bullet');
+	if (sprite === player_sprite) {
+		bullets.push(shot);
+		sound.play('player_bullet');
+	} else {
+		robot_bullets.push(shot);
+		sound.play('robot_bullet');
+	}
+
+	
 }
 
 function updateBullets () {
@@ -146,12 +157,16 @@ function updateBullets () {
 	for (var i = 0, s_len = bullets.length; i < s_len; i++) {
 		bullets[i].tick();
 	}
+	for (var i = 0, s_len = robot_bullets.length; i < s_len; i++) {
+		robot_bullets[i].tick();
+	}
 }
 
 function removeBullet(shot) {
 
+	var arr = (shot.sprite.name === player_sprite.name) ? bullets : robot_bullets;
 	stage.removeChild(shot);
-	bullets.splice(bullets.indexOf(shot), 1);
+	arr.splice(arr.indexOf(shot), 1);
 	shot.destroy();
 }
 

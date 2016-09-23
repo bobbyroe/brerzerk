@@ -121,7 +121,7 @@ function hitTestAll () {
 
 		// robot bullets
 		for (var g = 0, g_len = robot_bullets.length; g < g_len; g++) {
-			if (robot_bullets[g].robot !== cur_robot) {
+			if (robot_bullets[g].sprite !== cur_robot) {
 				if (hitTestRectangle(cur_robot, robot_bullets[g]) ) {
 					cur_robot.was_hit = true;
 					robot_bullets[g].was_hit = true;
