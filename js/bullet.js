@@ -19,7 +19,7 @@ return function (sprite) {
 	var rotation = (sprite.ax + sprite.ay === 0) ? -45 : 45;
 	var len = sprite.bullet_length;
 	var shot = new Grfx();
-	shot.beginFill(0xFF0000);
+	shot.beginFill(sprite.bullet_color);
 
 	switch (direction) {
 		case '01': 

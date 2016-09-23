@@ -20,7 +20,7 @@ var num_players_remaining = 2;
 var colors8 = [0xFFFFFF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFF0000, 0x00FF00];
 var walls = [];
 var robots = [];
-var DEBUG = true;
+var DEBUG = false;
 var bullets = [];
 var max_bullets = 2;
 var max_robot_bullets = 1;
@@ -48,16 +48,20 @@ loader
 	.load(setup);
 
 // audio
-var sound = new Howl({
-	src: ['audio/sound_sprite.mp3'],
-	sprite: {
+var talking_audio = {
 		humanoid: [0, 650],
+		robot: [6010, 580]
+	};
+var sfx_audio = {
 		player_bullet: [700, 1000],
 		player_dead: [1750, 2500],
 		robot_bullet: [4330, 750],
-		robot_dead: [5130, 800],
-		robot: [6010, 580]
-	}
+		robot_dead: [5130, 800]
+	};
+Object.assign(sfx_audio, talking_audio);
+var sound = new Howl({
+	src: ['audio/sound_sprite.mp3'],
+	sprite: sfx_audio
 });
 
 function setup() {
@@ -97,6 +101,18 @@ function gameStart () {
 		for (var r = 0, r_len = robots.length; r < r_len; r++) {
 			stage.addChild(robots[r]);
 		}
+
+		//
+		var SPACE = keyboard('Space');
+		SPACE.press = function () { 
+			var snds = Object.keys(talking_audio);
+			var id = sound.play(snds[Math.floor(Math.random() * snds.length)]); 
+			var random_rate = Math.random() + 0.5;
+			sound.rate(random_rate, id);
+		};
+		SPACE.release = function () { /* no op */ };
+		//
+
 		gameState = gamePlay;
 	}
 }
@@ -148,8 +164,6 @@ function fire (sprite) {
 		robot_bullets.push(shot);
 		sound.play('robot_bullet');
 	}
-
-	
 }
 
 function updateBullets () {
