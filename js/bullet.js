@@ -15,22 +15,21 @@ function degToRad (deg) {
 
 return function (sprite) {
 
-	var bullet_velocity = 4;
-	var direction = `${Math.abs(sprite.ax / sprite.rate)}${Math.abs(sprite.ay / sprite.rate)}`;
+	var direction = `${Math.abs(sprite.ax)}${Math.abs(sprite.ay)}`;
 	var rotation = (sprite.ax + sprite.ay === 0) ? -45 : 45;
-
+	var len = sprite.bullet_length;
 	var shot = new Grfx();
-	shot.beginFill(0x00FF00);
+	shot.beginFill(0xFF0000);
 
 	switch (direction) {
 		case '01': 
-		shot.drawRect(0, 0, 1, 8);
+		shot.drawRect(0, 0, 1, len);
 		break;
 		case '10': 
-		shot.drawRect(0, 0, 8, 1);
+		shot.drawRect(0, 0, len, 1);
 		break;
 		case '11': 
-		shot.drawRect(0, 0, 8, 1);
+		shot.drawRect(0, 0, len, 1);
 		shot.rotation = degToRad(rotation);
 		break;
 	}
@@ -38,8 +37,8 @@ return function (sprite) {
 	shot.x = sprite.x + 8;
 	shot.y = sprite.y + 20;
 	shot.scale.set(4, 4);
-	shot.vx = sprite.ax * bullet_velocity;
-	shot.vy = sprite.ay * bullet_velocity;
+	shot.vx = sprite.ax * sprite.bullet_velocity;
+	shot.vy = sprite.ay * sprite.bullet_velocity;
 	shot.sprite = sprite;
 	shot.endFill();
 	shot.name = `${sprite.name} bullet${timer}`; // debug

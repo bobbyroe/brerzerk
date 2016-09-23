@@ -25,6 +25,9 @@ return function () {
 	robot_sprite.timer_offset = Math.floor(Math.random() * 100);
 	robot_sprite.index = -1;
 	robot_sprite.name = `robot${timer}`;
+	robot_sprite.bullet_velocity = 4;
+	robot_sprite.bullet_length = 6;
+	robot_sprite.bullet_color = 0xFF0000;
 
 	// public methods
 	robot_sprite.tick = robotPlay;
@@ -92,13 +95,18 @@ return function () {
 
 		if (timer < next_bullet_time === false && robot_bullets.length < max_robot_bullets) {
 
-			robot_sprite.ax = 1;
-			robot_sprite.ay = 0;
-			fire(robot_sprite);
-			// Math.abs(robot_sprite.x - player_sprite.x) < 20 ||
-			// Math.abs(robot_sprite.y - player_sprite.y) < 20 ||
-			// Math.abs((robot_sprite.x - robot_sprite.y) - (player_sprite.x - player_sprite.y)) < 20 ||
-			// Math.abs((robot_sprite.x - player_sprite.y) - (player_sprite.x - robot_sprite.y)) < 20) {
+			robot_sprite.ax = (robot_sprite.x - player_sprite.x > 1) ? -1 : 1;
+			robot_sprite.ay = (robot_sprite.y - player_sprite.y > 1) ? -1 : 1;
+
+			if (Math.abs(robot_sprite.x - player_sprite.x) < 20) { robot_sprite.ax = 0; }
+			if (Math.abs(robot_sprite.y - player_sprite.y) < 20) { robot_sprite.ay = 0; }
+			
+			if (Math.abs(robot_sprite.x - player_sprite.x) < 20 ||
+				Math.abs(robot_sprite.y - player_sprite.y) < 20 ||
+				Math.abs((robot_sprite.x - robot_sprite.y) - (player_sprite.x - player_sprite.y)) < 20 ||
+				Math.abs((robot_sprite.x - player_sprite.y) - (player_sprite.x - robot_sprite.y)) < 20) {
+					fire(robot_sprite);
+			}
 					
 		}
 	}

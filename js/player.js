@@ -25,10 +25,15 @@ return function () {
 	player_sprite.blinking_duration = 30; // 120;
 	player_sprite.tint = 0x00FF00;
 	player_sprite.was_hit = false;
-	player_sprite.tick = playerPlay;
 	player_sprite.x = 150;
 	player_sprite.y = 90;
 	player_sprite.name = 'humanoid';
+	player_sprite.bullet_velocity = 8;
+	player_sprite.bullet_length = 8;
+	player_sprite.bullet_color = 0x00FF00;
+	
+	// public methods
+	player_sprite.tick = playerPlay;
 
 	setUpCtrlsFor(player_sprite);
 
@@ -41,7 +46,7 @@ return function () {
 
 		moveLeft.press = function () {
 			if (moveLeft.shiftKey === true) {
-				sprite.ax = sprite.rate * -1;
+				sprite.ax = -1;
 				fire(sprite);
 			} else {
 				sprite.vx = sprite.rate * -1;
@@ -57,7 +62,7 @@ return function () {
 
 		moveRight.press = function () {
 			if (moveRight.shiftKey === true) {
-				sprite.ax = sprite.rate;
+				sprite.ax = 1;
 				fire(sprite);
 			} else {
 				sprite.vx = sprite.rate;
@@ -73,7 +78,7 @@ return function () {
 
 		moveUp.press = function () {
 			if (moveUp.shiftKey === true) {
-				sprite.ay = sprite.rate * -1;
+				sprite.ay = -1;
 				fire(sprite);
 			} else {
 				sprite.vy = sprite.rate * -1;
@@ -89,7 +94,7 @@ return function () {
 
 		moveDown.press = function () {
 			if (moveDown.shiftKey === true) {
-				sprite.ay = sprite.rate;
+				sprite.ay = 1;
 				fire(sprite);
 			} else {
 				sprite.vy = sprite.rate;
