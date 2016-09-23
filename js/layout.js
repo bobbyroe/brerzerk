@@ -1,11 +1,13 @@
 /**
  *
- * GLOBALS: stage, walls
+ * GLOBALS: stage, walls, start_pos
  * PIXI globals: Grfx
  *
  **/
 var quad_width = 200;
-var quad_height = 235;
+var quad_height = 225;
+var maze_width = 10 + quad_width * 5;
+var maze_height = 10 + quad_height * 3;
 
 function drawWalls () {
 	
@@ -117,7 +119,11 @@ function getPossiblePositions () {
 		for (var h = 0; h < num_cols; h++) {
 
 			// skip the first box, since the player is there already
-			if (w === 0 && h === 0) { continue; }
+			// TODO fix this to look for the players pos (start_pos)
+			if (w === 0 && h === 0) { 
+				x_pos += quad_width;
+				continue; 
+			}
 			pos = {
 				x: x_pos,
 				y: y_pos

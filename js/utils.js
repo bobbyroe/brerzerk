@@ -1,6 +1,7 @@
  /**
  * 
  * Globals: walls, robots, player_sprite, robot_bullets, bullets, evil_otto,
+ * 			maze_width, maze_height
  *          listeners
  **/
 
@@ -210,7 +211,12 @@ function hitTestRectangle(r1, r2) {
 	return hit;
 }
 
-function isOutOfBounds (obj) {
-	return obj.x < 0 || obj.x > 1024 || obj.y < 0 || obj.y > 768;
+function getOutOfBoundsSide (obj) {
+	var side = (obj.x < 0) ? 'left' :
+		(obj.x + obj.width > maze_width) ? 'right' :
+		(obj.y < 0) ? 'top' :
+		(obj.y + obj.height > maze_height) ? 'bottom' : 
+		'none';
+	return side;
 }
 

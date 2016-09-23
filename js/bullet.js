@@ -52,7 +52,7 @@ return function (sprite) {
 			shot.x += shot.vx;
 			shot.y += shot.vy;
 			// bounds
-			if (isOutOfBounds(shot) === true) {
+			if (getOutOfBoundsSide(shot) !== 'none') {
 				setTimeout(removeBullet, 1, shot);
 			}
 		}

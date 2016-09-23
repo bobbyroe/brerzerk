@@ -3,12 +3,13 @@
  * GLOBALS: loader, num_players_remaining, sound
  * PIXI globals: Sprite, Rectangle
  * fns: keyboard, fire
+ * fns: gameRestarting, exitingLevel, prepareToExitLevel
  *
  **/
 
 var getPlayer = (function () {
 
-return function () {
+return function (pos) {
 	var player_tex = loader.resources["images/player.png"].texture;
 	player_sprite = new Sprite(player_tex);
 	var rect = new Rectangle(0, 0, 8, 17);
@@ -25,8 +26,8 @@ return function () {
 	player_sprite.blinking_duration = 120;
 	player_sprite.tint = 0x00FF00;
 	player_sprite.was_hit = false;
-	player_sprite.x = 150;
-	player_sprite.y = 90;
+	player_sprite.x = pos.x; // 150;
+	player_sprite.y = pos.y; // 90;
 	player_sprite.name = 'humanoid';
 	player_sprite.bullet_velocity = 8;
 	player_sprite.bullet_length = 8;
@@ -126,15 +127,17 @@ return function () {
 	// PLAYER STATES
 	function playerPlay () {
 
-		if (player_sprite.was_hit === true) {player_sprite.death_start_timer = timer;
-			if (num_players_remaining > 0) {
-				  num_players_remaining -= 1;
-				  player_sprite.tick = playerDead;
-				  sound.play('player_dead');
+		var exit_side = getOutOfBoundsSide(player_sprite);
+		if (exit_side !== 'none') {
+			prepareToExitLevel(exit_side);
+			gameState = exitingLevel;
+		}
 
-			} else {
-				  gameState = gameOver;
-			}
+		if (player_sprite.was_hit === true) {
+
+			player_sprite.death_start_timer = timer;
+			player_sprite.tick = playerDead;
+			sound.play('player_dead');		
 		} else {
 			player_sprite.x += player_sprite.vx;
 			player_sprite.y += player_sprite.vy;
@@ -152,6 +155,7 @@ return function () {
 		} else {
 			stage.removeChild(player_sprite);
 			if (timer - player_sprite.death_start_timer - player_sprite.death_anim_duration > player_sprite.blinking_duration) {
+				num_players_remaining -= 1;
 				gameState = gameRestarting;
 			}
 		}

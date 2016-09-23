@@ -29,6 +29,11 @@ var robot_bullets = [];
 var listeners = [];
 var robots_awake_time = 150;
 
+// exit level velocity
+var x_vel = 0;
+var y_vel = 0;
+var start_pos = {x: 90, y: 300};
+
 var renderer = autoDetectRenderer(
 	1024, 768, 
 	{antialias: false, transparent: false, resolution: 1}
@@ -68,7 +73,7 @@ var sound = new Howl({
 function setup() {
 
 	timer = 0;
-	player_sprite = getPlayer();
+	player_sprite = getPlayer(start_pos);
 	stage.addChild(player_sprite);
 	drawWalls();
 	// Start the game loop
@@ -120,6 +125,8 @@ function gameStart () {
 
 function gameRestarting () {
 	// clean up
+	stage.x = 0;
+	stage.y = 0;
 	stage.removeChildren();
 	walls = [];
 	robots = [];
@@ -127,10 +134,16 @@ function gameRestarting () {
 
 	timer = 0;
 	next_bullet_time = 150;
-	player_sprite = getPlayer();
-	stage.addChild(player_sprite);
-	drawWalls();
-	gameState = gameStart;
+
+	if (num_players_remaining > 0) {
+		player_sprite = getPlayer(start_pos);
+		stage.addChild(player_sprite);
+		drawWalls();
+		gameState = gameStart;  
+
+	} else {
+		gameState = gameOver;
+	}
 }
 
 
@@ -140,6 +153,55 @@ function gamePlay () {
 	player_sprite.tick();
 	updateRobots();
 	updateBullets();
+}
+
+
+function prepareToExitLevel (side) {
+
+	stage.children.forEach( function (child) {
+		child.tint = 0x0000FF;
+	});
+
+
+	x_vel = 0;
+	y_vel = 0;
+	var rate = 5;
+	switch (side) {
+		case 'top': 
+		x_vel = 0;
+		y_vel = rate * 1;
+		start_pos = {x: stage.width * 0.5, y: stage.height - player_sprite.height};
+		break;
+		case 'right': 
+		x_vel = rate * -1;
+		y_vel = 0;
+		start_pos = {x: 90, y: stage.height * 0.5};
+		break;
+		case 'bottom': 
+		x_vel = 0;
+		y_vel = rate * -1;
+		start_pos = {x: stage.width * 0.5, y: 90};
+		break;
+		case 'left': 
+		x_vel = rate;
+		y_vel = 0;
+		start_pos = {x: stage.width - player_sprite.width - 100, y: stage.height * 0.5};
+		break;
+	}
+}
+
+function exitingLevel () {
+
+	if (stage.x + stage.width < -50 || 
+		stage.x > stage.width + 50 ||
+		stage.y + stage.height < -50 ||
+		stage.y > stage.height + 50) {
+			gameState = gameRestarting;
+	} else { 
+		stage.x += x_vel;
+		stage.y += y_vel;
+	}
+	console.log(x_vel, y_vel);
 }
 
 function gameOver () {
