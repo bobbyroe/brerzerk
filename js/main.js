@@ -27,6 +27,7 @@ var max_robot_bullets = 1;
 var next_bullet_time = 150;
 var robot_bullets = [];
 var listeners = [];
+var robots_awake_time = 150;
 
 var renderer = autoDetectRenderer(
 	1024, 768, 
@@ -130,8 +131,6 @@ function gameRestarting () {
 	stage.addChild(player_sprite);
 	drawWalls();
 	gameState = gameStart;
-
-	console.log(num_players_remaining);
 }
 
 

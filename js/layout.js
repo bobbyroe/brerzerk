@@ -4,12 +4,13 @@
  * PIXI globals: Grfx
  *
  **/
+var quad_width = 200;
+var quad_height = 235;
+
 function drawWalls () {
 	
 	var num_cols = 5;
 	var num_rows = 3;
-	var box_width = 200;
-	var box_height = 235;
 	var x_pos = 10;
 	var y_pos = 10;
 	var rect = null;
@@ -53,44 +54,50 @@ function drawWalls () {
 			}
 
 			random_sides.forEach( function (s) {
+
+				var i = -1; // clockwise position index: 0,1,2,3 = top,right,bottom,left
 				rect = new Grfx();
 				rect.beginFill(color);
 
 				switch (s) {
 					case 'top': 
-					rect.drawRect(0, 0, box_width + 10, 10);
+					rect.drawRect(0, 0, quad_width + 10, 10);
 					rect.x = x_pos;
 					rect.y = y_pos;
+					i = 0;
 					break;
 					case 'right': 
-					rect.drawRect(0, 0, 10, box_height + 5);
-					rect.x = x_pos + box_width;
+					rect.drawRect(0, 0, 10, quad_height + 5);
+					rect.x = x_pos + quad_width;
 					rect.y = y_pos;
+					i = 1;
 					break;
 					case 'bottom': 
-					rect.drawRect(0, 0, box_width + 5, 10);
+					rect.drawRect(0, 0, quad_width + 5, 10);
 					rect.x = x_pos;
-					rect.y = y_pos + box_height;
+					rect.y = y_pos + quad_height;
+					i = 2;
 					break;
 					case 'left': 
-					rect.drawRect(0, 0, 10, box_height + 5);
+					rect.drawRect(0, 0, 10, quad_height + 5);
 					rect.x = x_pos;
 					rect.y = y_pos;
+					i = 3;
 					break;
 				}
 
 				rect.endFill();
-				rect.name = `Rectangle ${h}, ${w}, ${s}`; // debug
+				rect.name = `${h}${w}${i}` // `Rectangle${h}${w}, ${s}`; // debug
 				stage.addChild(rect);
 
 				// for hit testing
 				walls.push(rect);
 			});
 
-			x_pos += box_width;
+			x_pos += quad_width;
 		}
 
-		y_pos += box_height;
+		y_pos += quad_height;
 	}
 }
 
@@ -99,16 +106,14 @@ function getPossiblePositions () {
 
 	var num_cols = 5;
 	var num_rows = 3;
-	var box_width = 200;
-	var box_height = 235;
-	var x_pos = box_width * 0.5;
-	var y_pos = box_height * 0.5;
+	var x_pos = quad_width * 0.5;
+	var y_pos = quad_height * 0.5;
 	var positions = [];
 	var pos = {};
 
 	for (var w = 0; w < num_rows; w++) {
 
-		x_pos = box_width * 0.5;
+		x_pos = quad_width * 0.5;
 		for (var h = 0; h < num_cols; h++) {
 
 			// skip the first box, since the player is there already
@@ -118,10 +123,48 @@ function getPossiblePositions () {
 				y: y_pos
 			};
 			positions.push(pos);
-			x_pos += box_width;
+			x_pos += quad_width;
 		}
 
-		y_pos += box_height;
+		y_pos += quad_height;
 	}
 	return positions;
 }
+
+function getNearbyWalls (sprite) {
+
+	var top = false;
+	var right = false;
+	var bottom = false;
+	var left = false;
+	sprite.qx = Math.floor(sprite.x / quad_width);
+	sprite.qy = Math.floor(sprite.y / quad_height);
+
+	var re = new RegExp(`${sprite.qx}${sprite.qy}\\d`);
+	
+	walls.forEach( function (w) {
+		top = top 		 || w.name === `${sprite.qx}${sprite.qy - 1}2`;
+		right = right 	 || w.name === `${sprite.qx + 1}${sprite.qy}3`;
+		bottom 	= bottom || w.name === `${sprite.qx}${sprite.qy + 1}0`;
+		left = left 	 || w.name === `${sprite.qx - 1}${sprite.qy}1`;
+	});
+
+	var quad_walls = walls.filter( function (w) { return re.test(w.name); });
+	
+	quad_walls.forEach( function (w) {
+		top = top 		 || w.name[2] === '0';
+		right = right 	 || w.name[2] === '1';
+		bottom 	= bottom || w.name[2] === '2';
+		left = left  	 || w.name[2] === '3';
+	});
+
+	return {
+		top: top,
+		right: right,
+		bottom: bottom,
+		left: left,
+	};;
+}
+
+
+

@@ -22,7 +22,7 @@ return function () {
 	player_sprite.rate = 2;
 	player_sprite.death_anim_duration = 80;
 	player_sprite.death_start_timer = -1;
-	player_sprite.blinking_duration = 30; // 120;
+	player_sprite.blinking_duration = 120;
 	player_sprite.tint = 0x00FF00;
 	player_sprite.was_hit = false;
 	player_sprite.x = 150;
