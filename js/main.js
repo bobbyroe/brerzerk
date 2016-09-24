@@ -51,6 +51,7 @@ loader
 	.add("images/robot.png")
 	.add("images/robot-explode.png")
 	.add("images/player.png")
+	.add("images/evil-otto.png")
 	.load(setup);
 
 // audio
@@ -74,6 +75,12 @@ function setup() {
 
 	timer = 0;
 	player_sprite = getPlayer(start_pos);
+
+	//
+	evil_otto = getEvilOtto(start_pos);
+	stage.addChild(evil_otto);
+	//
+
 	stage.addChild(player_sprite);
 	drawWalls();
 	// Start the game loop
@@ -151,6 +158,7 @@ function gamePlay () {
 
 	hitTestAll();
 	player_sprite.tick();
+	evil_otto.tick();
 	updateRobots();
 	updateBullets();
 }
@@ -284,3 +292,39 @@ function removeRobot (sprite) {
 	robots.splice(robots.indexOf(sprite), 1);
 	sprite.destroy();
 }
+
+
+
+function getEvilOtto (pos) {
+	var otto_tex = loader.resources["images/evil-otto.png"].texture;
+	otto_sprite = new Sprite(otto_tex);
+	var rect = new Rectangle(44, 0, 11, 43);
+	otto_tex.frame = rect;
+	otto_sprite.vx = 0;
+	otto_sprite.vy = 0;
+	otto_sprite.ax = 0; // aim.x
+	otto_sprite.ay = 0; // aim.y
+	otto_sprite.scale.set(4, 4);
+	otto_sprite.rate = 2;
+	otto_sprite.blinking_duration = 120;
+	otto_sprite.tint = 0x00FF00;
+	otto_sprite.x = pos.x; // 150;
+	otto_sprite.y = pos.y; // 90;
+	otto_sprite.name = 'EVIL OTTO';
+	
+	// public methods
+	otto_sprite.tick = ottoPlay;
+
+	return otto_sprite
+}
+
+function ottoPlay () {
+
+	otto_sprite.x += otto_sprite.vx;
+	otto_sprite.y += otto_sprite.vy;
+
+	// animate him
+	otto_sprite.texture.frame = new Rectangle( (Math.round(timer * 0.2) % 7) * 11 + 55, 0, 11, 43);
+	
+}
+
