@@ -108,9 +108,9 @@ function hitTestAll () {
 		}
 
 		// evil otto
-		// if (hitTestRectangle(evil_otto, cur_robot) ) {
-		// 	cur_robot.was_hit = true;
-		// }
+		if (hitTestRectangle(evil_otto, cur_robot) ) {
+			cur_robot.was_hit = true;
+		}
 
 		// all robots
 		for (var f = 0, f_len = robots.length; f < f_len; f++) {
@@ -170,7 +170,7 @@ function hitTestAll () {
 			}
 		}
 	}
-	// player_sprite.was_hit = hitTestRectangle(player_sprite, evil_otto);
+	player_sprite.was_hit = hitTestRectangle(player_sprite, evil_otto);
 }
 
 function hitTestRectangle(r1, r2) {

@@ -20,7 +20,7 @@ var num_players_remaining = 2;
 var colors8 = [0xFFFFFF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFF0000, 0x00FF00];
 var walls = [];
 var robots = [];
-var DEBUG = false;
+var DEBUG = true;
 var bullets = [];
 var max_bullets = 2;
 var max_robot_bullets = 1;
@@ -28,6 +28,7 @@ var next_bullet_time = 150;
 var robot_bullets = [];
 var listeners = [];
 var robots_awake_time = 150;
+var otto_delay = 400;
 
 // exit level velocity
 var x_vel = 0;
@@ -75,13 +76,12 @@ function setup() {
 
 	timer = 0;
 	player_sprite = getPlayer(start_pos);
-
-	//
-	evil_otto = getEvilOtto(start_pos);
-	stage.addChild(evil_otto);
-	//
-
 	stage.addChild(player_sprite);
+	
+	//
+	evil_otto = getEvilOtto({x: 300, y: 300});
+	//
+
 	drawWalls();
 	// Start the game loop
 	gameState = gameStart;
@@ -98,7 +98,9 @@ function gameLoop() {
 	if (timer > next_bullet_time) {
 		next_bullet_time += 30;
 	}
-	if (DEBUG === true) { debug_timer.textContent = timer; }
+	if (DEBUG === true) { 
+		debug_timer.textContent = timer; 
+	}
 	gameState();
 
 	renderer.render(stage);
@@ -151,6 +153,10 @@ function gameRestarting () {
 	} else {
 		gameState = gameOver;
 	}
+
+	//
+	evil_otto = getEvilOtto({x: 300, y: 300});
+	//
 }
 
 
@@ -161,6 +167,7 @@ function gamePlay () {
 	evil_otto.tick();
 	updateRobots();
 	updateBullets();
+
 }
 
 
@@ -306,25 +313,48 @@ function getEvilOtto (pos) {
 	otto_sprite.ay = 0; // aim.y
 	otto_sprite.scale.set(4, 4);
 	otto_sprite.rate = 2;
-	otto_sprite.blinking_duration = 120;
 	otto_sprite.tint = 0x00FF00;
 	otto_sprite.x = pos.x; // 150;
 	otto_sprite.y = pos.y; // 90;
 	otto_sprite.name = 'EVIL OTTO';
 	
 	// public methods
-	otto_sprite.tick = ottoPlay;
+	otto_sprite.tick = ottoDormant;
 
 	return otto_sprite
 }
 
+var otto_frame_indeces = [6,7,8,9,10,11,12,11,10,9,8,7];
+var o_len = otto_frame_indeces.length - 1;
 function ottoPlay () {
 
+	var x_pos = otto_frame_indeces[(Math.round(timer * 0.2) % o_len)] * 11; 
 	otto_sprite.x += otto_sprite.vx;
 	otto_sprite.y += otto_sprite.vy;
 
 	// animate him
-	otto_sprite.texture.frame = new Rectangle( (Math.round(timer * 0.2) % 7) * 11 + 55, 0, 11, 43);
+	otto_sprite.texture.frame = new Rectangle( x_pos, 0, 11, 43);
 	
 }
 
+function ottoDormant () {
+
+	if (timer > otto_delay) {
+		sound.play('humanoid');
+		stage.addChild(evil_otto);
+		otto_sprite.tick = ottoStart;
+	}
+}
+
+function ottoStart () {
+
+	var x_pos = (Math.round((timer - otto_delay) * 0.1) % 8) * 11; 
+
+	if (x_pos > 66) {
+		otto_sprite.tick = ottoPlay;
+	} else {
+		// animate him
+		otto_sprite.texture.frame = new Rectangle(x_pos, 0, 11, 43);
+	}
+	
+}

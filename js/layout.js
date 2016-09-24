@@ -120,7 +120,7 @@ function getPossiblePositions () {
 
 			// skip the first box, since the player is there already
 			// TODO fix this to look for the players pos (start_pos)
-			if (w === 0 && h === 0) { 
+			if (w === 1 && h === 0) { 
 				x_pos += quad_width;
 				continue; 
 			}
