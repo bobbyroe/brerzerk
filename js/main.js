@@ -29,8 +29,8 @@ var robot_bullets = [];
 var listeners = [];
 var robots_awake_time = 150;
 var otto_delay = 400;
-var robot_score = 50;
 var score = 0;
+var level_bonus = 0;
 
 // exit level velocity
 var x_vel = 0;
@@ -43,13 +43,20 @@ var renderer = autoDetectRenderer(
 );
 document.body.appendChild(renderer.view);
 
+// show timer 
 var debug_timer = document.createElement('div');
 debug_timer.style = "position:absolute; top:30px;left:50px;color:#FFFFFF";
 document.body.appendChild(debug_timer);
 
+// score 
 var score_div = document.createElement('div');
 score_div.style = "position:absolute; bottom:110px;left:50px;color:#FFFFFF;font-size:36px;font-family:sans-serif";
 document.body.appendChild(score_div);
+
+// bonus 
+var bonus_div = document.createElement('div');
+bonus_div.style = "position:absolute; bottom:110px;left:350px;color:#FFFFFF;font-size:36px;font-family:sans-serif";
+document.body.appendChild(bonus_div);
 
 var stage = new Container();
 renderer.render(stage);
@@ -63,36 +70,36 @@ loader
 
 // audio
 var talking_audio = {
-		a: [0, 280],
-		ALERT: [340, 360],
-		attack: [770, 380],
-		charge: [1220, 410],
-		chicken: [1700, 450],
-		coins: [2200, 450],
-		destroy: [2730, 600],
-		detected: [3380, 600],
-		escape: [4010, 470],
-		fight: [4560, 300],
-		get: [4870, 290],
-		got: [5230, 320],
-		humanoid: [5700, 660],
-		in: [6430, 390],
-		INTRUDER: [6860, 600],
-		it: [7500, 200],
-		kill: [7790, 340],
-		like: [8200, 320],
-		must: [8570, 320],
-		not: [8940, 250],
-		pocket: [12880, 400],
-		robot: [15000, 550],
-		shoot: [15620, 260],
-		the: [15940, 334]
+		a: 			[0, 280],
+		ALERT: 		[340, 360],
+		attack: 	[770, 380],
+		charge: 	[1220, 410],
+		chicken: 	[1700, 450],
+		coins: 		[2200, 450],
+		destroy: 	[2730, 600],
+		detected: 	[3380, 600],
+		escape: 	[4010, 470],
+		fight: 		[4560, 300],
+		get: 		[4870, 290],
+		got: 		[5230, 320],
+		humanoid: 	[5700, 660],
+		in: 		[6430, 390],
+		INTRUDER: 	[6860, 600],
+		it: 		[7500, 200],
+		kill: 		[7790, 340],
+		like: 		[8200, 320],
+		must: 		[8570, 320],
+		not: 		[8940, 250],
+		pocket: 	[12880, 400],
+		robot: 		[15000, 550],
+		shoot: 		[15620, 260],
+		the: 		[15940, 334]
 	};
 var sfx_audio = {
-		player_bullet: [9250, 1000],
-		player_dead: [10275, 2500],
-		robot_bullet: [13310, 750],
-		robot_dead: [14100, 800]
+		player_bullet: 	[9250, 1000],
+		player_dead: 	[10275, 2500],
+		robot_bullet: 	[13310, 750],
+		robot_dead: 	[14100, 800]
 	};
 Object.assign(sfx_audio, talking_audio);
 var sound = new Howl({
@@ -145,6 +152,7 @@ function gameStart () {
 		for (var r = 0, r_len = robots.length; r < r_len; r++) {
 			stage.addChild(robots[r]);
 		}
+		level_bonus = robots.length * 10;
 
 		//
 		var SPACE = keyboard('Space');
@@ -177,6 +185,7 @@ function gameRestarting () {
 		player_sprite = getPlayer(start_pos);
 		stage.addChild(player_sprite);
 		drawWalls();
+		bonus_div.textContent = '';
 		gameState = gameStart;  
 
 	} else {
@@ -198,7 +207,6 @@ function gamePlay () {
 	updateBullets();
 
 }
-
 
 function prepareToExitLevel (side) {
 
@@ -235,10 +243,9 @@ function prepareToExitLevel (side) {
 	// robot talk to player
 	if (robots.length !== 0) {
 		sound.play('chicken');
-		console.log('chicken, fight like a robot');
+		soundsInSequence('chicken fight like a robot'.split(' '));
 	} else {
-		sound.play('humanoid');
-		console.log('the humanoid must not escape');
+		soundsInSequence('the humanoid must not escape'.split(' '));
 	}
 }
 
@@ -349,7 +356,7 @@ function getEvilOtto (pos) {
 	otto_sprite.ay = 0; // aim.y
 	otto_sprite.scale.set(4, 4);
 	otto_sprite.rate = 2;
-	otto_sprite.tint = 0x00FF00;
+	otto_sprite.tint = 0xFF0000;
 	otto_sprite.x = pos.x; // 150;
 	otto_sprite.y = pos.y; // 90;
 	otto_sprite.name = 'EVIL OTTO';
@@ -362,6 +369,7 @@ function getEvilOtto (pos) {
 
 var otto_frame_indeces = [6,7,8,9,10,11,12,11,10,9,8,7];
 var o_len = otto_frame_indeces.length - 1;
+
 function ottoPlay () {
 
 	var x_pos = otto_frame_indeces[(Math.round(timer * 0.2) % o_len)] * 11; 
@@ -376,10 +384,7 @@ function ottoPlay () {
 function ottoDormant () {
 
 	if (timer > otto_delay) {
-		sound.play('INTRUDER');
-		sound.once('end', function () { 
-			sound.play('ALERT'); 
-		});
+		soundsInSequence('INTRUDER ALERT INTRUDER ALERT'.split(' '));
 		stage.addChild(evil_otto);
 		otto_sprite.tick = ottoStart;
 	}
@@ -397,3 +402,18 @@ function ottoStart () {
 	}
 	
 }
+
+
+function soundsInSequence (arr) {
+
+	var snd = arr.shift();
+	var id = sound.play(snd);
+	if (arr.length > 0) {
+		sound.once('end', function () { 
+			soundsInSequence(arr);
+		}, id);
+	}
+	
+}
+
+

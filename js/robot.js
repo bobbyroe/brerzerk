@@ -1,12 +1,13 @@
 /**
  *
- * GLOBALS: loader, timer, sound, score, robot_score
+ * GLOBALS: loader, timer, sound, score, robots;
  * PIXI globals: Sprite, Rectangle
  * fns: removeRobot, getNearbyWalls
  *
  **/
 var getRobot = (function () {
 
+var robot_score = 50;
 return function () {
 	var robot_tex = loader.resources["images/robot.png"].texture;
 	var robot_sprite = new Sprite(robot_tex);
@@ -63,8 +64,6 @@ return function () {
 
 		var anim_frame_index = (Math.round(timer * frame_delay) % 2) * 8;
 		var standing_frame_index = (Math.round( (timer + robot_sprite.timer_offset) * frame_delay) % 6) * 8;
-
-
 		var arr = [];
 
 		if (robot_sprite.was_hit === true) {
@@ -72,6 +71,13 @@ return function () {
 			robot_sprite.death_start_timer = timer;
 			sound.play('robot_dead');
 			score += robot_score;
+
+			// if all robots have been killed, award bonus
+			if (robots.length <= 1) {
+				score += level_bonus;
+				bonus_div.textContent = `BONUS   ${level_bonus}`;
+			}
+
 			robot_sprite.tick = robotDead;
 		} else {
 
