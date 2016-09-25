@@ -1,6 +1,6 @@
 /**
  *
- * GLOBALS: loader, timer, sound
+ * GLOBALS: loader, timer, sound, score, robot_score
  * PIXI globals: Sprite, Rectangle
  * fns: removeRobot, getNearbyWalls
  *
@@ -71,6 +71,7 @@ return function () {
 
 			robot_sprite.death_start_timer = timer;
 			sound.play('robot_dead');
+			score += robot_score;
 			robot_sprite.tick = robotDead;
 		} else {
 

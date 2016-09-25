@@ -17,5 +17,7 @@
   "author": {
     "name": "Bobby Roe"
   },
-  "licenses": "none"
+  "license": "none",
+  "description": "STERN'S 1980 arcade classic remade with Pixi.js",
+  "repository": "https://github.com/bobbyroe/brerzerk"
 }

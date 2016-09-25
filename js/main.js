@@ -29,6 +29,8 @@ var robot_bullets = [];
 var listeners = [];
 var robots_awake_time = 150;
 var otto_delay = 400;
+var robot_score = 50;
+var score = 0;
 
 // exit level velocity
 var x_vel = 0;
@@ -44,6 +46,10 @@ document.body.appendChild(renderer.view);
 var debug_timer = document.createElement('div');
 debug_timer.style = "position:absolute; top:30px;left:50px;color:#FFFFFF";
 document.body.appendChild(debug_timer);
+
+var score_div = document.createElement('div');
+score_div.style = "position:absolute; bottom:110px;left:50px;color:#FFFFFF;font-size:36px;font-family:sans-serif";
+document.body.appendChild(score_div);
 
 var stage = new Container();
 renderer.render(stage);
@@ -123,6 +129,7 @@ function gameLoop() {
 	if (DEBUG === true) { 
 		debug_timer.textContent = timer; 
 	}
+	score_div.textContent = score;
 	gameState();
 
 	renderer.render(stage);
@@ -199,7 +206,6 @@ function prepareToExitLevel (side) {
 		child.tint = 0x0000FF;
 	});
 
-
 	x_vel = 0;
 	y_vel = 0;
 	var rate = 5;
@@ -207,7 +213,7 @@ function prepareToExitLevel (side) {
 		case 'top': 
 		x_vel = 0;
 		y_vel = rate * 1;
-		start_pos = {x: stage.width * 0.5, y: stage.height - player_sprite.height};
+		start_pos = {x: stage.width * 0.5, y: stage.height - player_sprite.height - 100};
 		break;
 		case 'right': 
 		x_vel = rate * -1;
@@ -225,6 +231,15 @@ function prepareToExitLevel (side) {
 		start_pos = {x: stage.width - player_sprite.width - 100, y: stage.height * 0.5};
 		break;
 	}
+
+	// robot talk to player
+	if (robots.length !== 0) {
+		sound.play('chicken');
+		console.log('chicken, fight like a robot');
+	} else {
+		sound.play('humanoid');
+		console.log('the humanoid must not escape');
+	}
 }
 
 function exitingLevel () {
@@ -238,7 +253,6 @@ function exitingLevel () {
 		stage.x += x_vel;
 		stage.y += y_vel;
 	}
-	console.log(x_vel, y_vel);
 }
 
 function gameOver () {
