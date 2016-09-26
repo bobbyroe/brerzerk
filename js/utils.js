@@ -220,3 +220,17 @@ function getOutOfBoundsSide (obj) {
 	return side;
 }
 
+/*******************************************************************************
+ * sound sequences
+ *******************************************************************************/
+function soundsInSequence (arr) {
+
+	var snd = arr.shift();
+	var id = sound.play(snd);
+	if (arr.length > 0) {
+		sound.once('end', function () { 
+			soundsInSequence(arr);
+		}, id);
+	}
+	
+}

@@ -14,9 +14,10 @@ PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
  * Setup
  *******************************************************************************/
 var player_sprite;
+var evil_otto;
 var gameState;
 var timer = 0;
-var num_players_remaining = 2;
+var num_players_remaining = 3;
 var colors8 = [0xFFFFFF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFF0000, 0x00FF00];
 var walls = [];
 var robots = [];
@@ -31,6 +32,7 @@ var robots_awake_time = 150;
 var otto_delay = 400;
 var score = 0;
 var level_bonus = 0;
+var game_over_timer = -1;
 
 // exit level velocity
 var x_vel = 0;
@@ -58,9 +60,19 @@ var bonus_div = document.createElement('div');
 bonus_div.style = "position:absolute; bottom:110px;left:350px;color:#FFFFFF;font-size:36px;font-family:sans-serif";
 document.body.appendChild(bonus_div);
 
+// SPLASH SCREEN
+var splash_header = document.createElement('h1');
+splash_header.style = "margin-top:200px;color:#FF0000;font-size:96px;font-family:sans-serif;font-weight:bold;text-align:center";
+var anykey_subhead = document.createElement('h2');
+anykey_subhead.style = "margin-top:50px;color:#FFFF00;font-family:sans-serif;font-size:48px;text-align:center";
+document.body.appendChild(splash_header);
+document.body.appendChild(anykey_subhead);
+
 var stage = new Container();
 renderer.render(stage);
 
+
+// APP STARTS-UP HERE ...
 loader
 	.add("images/robot.png")
 	.add("images/robot-explode.png")
@@ -109,18 +121,23 @@ var sound = new Howl({
 
 function setup() {
 
-	timer = 0;
-	player_sprite = getPlayer(start_pos);
-	stage.addChild(player_sprite);
-	
-	//
-	evil_otto = getEvilOtto({x: 300, y: 300});
-	//
+	resetGameState();
 
-	drawWalls();
-	// Start the game loop
-	gameState = gameStart;
-	gameLoop();
+	gameLoop();	
+}
+
+function resetGameState () {
+
+	// listen for any key
+	function fn (evt) { 
+		window.removeEventListener("keydown", fn); 
+		gameState = gameRestarting;
+		renderer.view.hidden = false;
+	}
+	window.addEventListener("keydown", fn, false);
+
+	gameState = gameDormant;
+	
 }
 
 /*******************************************************************************
@@ -170,6 +187,7 @@ function gameStart () {
 }
 
 function gameRestarting () {
+	
 	// clean up
 	stage.x = 0;
 	stage.y = 0;
@@ -177,6 +195,9 @@ function gameRestarting () {
 	walls = [];
 	robots = [];
 	removeListeners();
+	splash_header.textContent = "";
+	anykey_subhead.textContent = "";
+	num_players_remaining -= 1;
 
 	timer = 0;
 	next_bullet_time = 150;
@@ -189,6 +210,8 @@ function gameRestarting () {
 		gameState = gameStart;  
 
 	} else {
+		num_players_remaining = 2;
+		game_over_timer = timer + 150;
 		gameState = gameOver;
 	}
 
@@ -197,6 +220,11 @@ function gameRestarting () {
 	//
 }
 
+function gameDormant () {
+	renderer.view.hidden = true;
+	splash_header.textContent = "BRERZERK";
+	anykey_subhead.textContent = "HIT ANY KEY";
+}
 
 function gamePlay () {
 
@@ -264,8 +292,12 @@ function exitingLevel () {
 
 function gameOver () {
 
-	stage.removeChildren();
-	console.log("GAME OVER");
+	if (timer > game_over_timer) {
+		gameState = resetGameState;
+	} else {
+		renderer.view.hidden = true;
+		splash_header.textContent = "GAME OVER";
+	}
 }
 
 /*******************************************************************************
@@ -344,8 +376,13 @@ function removeRobot (sprite) {
 }
 
 
-
+/*******************************************************************************
+ * EVIL OTTO
+ *******************************************************************************/
 function getEvilOtto (pos) {
+
+	if (evil_otto != null) { evil_otto.destroy(); } // clean up
+	
 	var otto_tex = loader.resources["images/evil-otto.png"].texture;
 	otto_sprite = new Sprite(otto_tex);
 	var rect = new Rectangle(44, 0, 11, 43);
@@ -399,19 +436,6 @@ function ottoStart () {
 	} else {
 		// animate him
 		otto_sprite.texture.frame = new Rectangle(x_pos, 0, 11, 43);
-	}
-	
-}
-
-
-function soundsInSequence (arr) {
-
-	var snd = arr.shift();
-	var id = sound.play(snd);
-	if (arr.length > 0) {
-		sound.once('end', function () { 
-			soundsInSequence(arr);
-		}, id);
 	}
 	
 }
