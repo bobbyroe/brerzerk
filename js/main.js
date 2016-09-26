@@ -45,28 +45,8 @@ var renderer = autoDetectRenderer(
 );
 document.body.appendChild(renderer.view);
 
-// show timer 
-var debug_timer = document.createElement('div');
-debug_timer.style = "position:absolute; top:30px;left:50px;color:#FFFFFF";
-document.body.appendChild(debug_timer);
-
-// score 
-var score_div = document.createElement('div');
-score_div.style = "position:absolute; bottom:110px;left:50px;color:#FFFFFF;font-size:36px;font-family:sans-serif";
-document.body.appendChild(score_div);
-
-// bonus 
-var bonus_div = document.createElement('div');
-bonus_div.style = "position:absolute; bottom:110px;left:350px;color:#FFFFFF;font-size:36px;font-family:sans-serif";
-document.body.appendChild(bonus_div);
-
-// SPLASH SCREEN
-var splash_header = document.createElement('h1');
-splash_header.style = "margin-top:200px;color:#FF0000;font-size:96px;font-family:sans-serif;font-weight:bold;text-align:center";
-var anykey_subhead = document.createElement('h2');
-anykey_subhead.style = "margin-top:50px;color:#FFFF00;font-family:sans-serif;font-size:48px;text-align:center";
-document.body.appendChild(splash_header);
-document.body.appendChild(anykey_subhead);
+// debug_timer, score, game over screen ...
+createGameUIBits();
 
 var stage = new Container();
 renderer.render(stage);
@@ -80,54 +60,15 @@ loader
 	.add("images/evil-otto.png")
 	.load(setup);
 
-// audio
-var talking_audio = {
-		a: 			[0, 280],
-		ALERT: 		[340, 360],
-		attack: 	[770, 380],
-		charge: 	[1220, 410],
-		chicken: 	[1700, 450],
-		coins: 		[2200, 450],
-		destroy: 	[2730, 600],
-		detected: 	[3380, 600],
-		escape: 	[4010, 470],
-		fight: 		[4560, 300],
-		get: 		[4870, 290],
-		got: 		[5230, 320],
-		humanoid: 	[5700, 660],
-		in: 		[6430, 390],
-		INTRUDER: 	[6860, 600],
-		it: 		[7500, 200],
-		kill: 		[7790, 340],
-		like: 		[8200, 320],
-		must: 		[8570, 320],
-		not: 		[8940, 250],
-		pocket: 	[12880, 400],
-		robot: 		[15000, 550],
-		shoot: 		[15620, 260],
-		the: 		[15940, 334]
-	};
-var sfx_audio = {
-		player_bullet: 	[9250, 1000],
-		player_dead: 	[10275, 2500],
-		robot_bullet: 	[13310, 750],
-		robot_dead: 	[14100, 800]
-	};
-Object.assign(sfx_audio, talking_audio);
-var sound = new Howl({
-	src: ['audio/sound_sprite.mp3'],
-	sprite: sfx_audio
-});
+var sound = getHowlerAudio();
 
 function setup() {
 
 	resetGameState();
-
 	gameLoop();	
 }
 
 function resetGameState () {
-
 	// listen for any key
 	function fn (evt) { 
 		window.removeEventListener("keydown", fn); 
@@ -135,9 +76,7 @@ function resetGameState () {
 		renderer.view.hidden = false;
 	}
 	window.addEventListener("keydown", fn, false);
-
 	gameState = gameDormant;
-	
 }
 
 /*******************************************************************************
@@ -197,7 +136,6 @@ function gameRestarting () {
 	removeListeners();
 	splash_header.textContent = "";
 	anykey_subhead.textContent = "";
-	num_players_remaining -= 1;
 
 	timer = 0;
 	next_bullet_time = 150;
@@ -214,10 +152,7 @@ function gameRestarting () {
 		game_over_timer = timer + 150;
 		gameState = gameOver;
 	}
-
-	//
-	evil_otto = getEvilOtto({x: 300, y: 300});
-	//
+	evil_otto = getEvilOtto({x: 0, y: 0}); // keep him offscreen for now
 }
 
 function gameDormant () {
@@ -354,7 +289,7 @@ function getRobots () {
 		robot_pos = possible_positions.splice(random_index, 1)[0];
 		robot_pos.x += Math.floor(Math.random() * 50) - 25;
 		robot_pos.y += Math.floor(Math.random() * 50) - 25;
-		robot.setPosition(robot_pos);
+		robot.position.set(robot_pos.x, robot_pos.y);
 		robot.index = r;
 
 		robots.push(robot);
@@ -375,69 +310,5 @@ function removeRobot (sprite) {
 	sprite.destroy();
 }
 
-
-/*******************************************************************************
- * EVIL OTTO
- *******************************************************************************/
-function getEvilOtto (pos) {
-
-	if (evil_otto != null) { evil_otto.destroy(); } // clean up
-	
-	var otto_tex = loader.resources["images/evil-otto.png"].texture;
-	otto_sprite = new Sprite(otto_tex);
-	var rect = new Rectangle(44, 0, 11, 43);
-	otto_tex.frame = rect;
-	otto_sprite.vx = 0;
-	otto_sprite.vy = 0;
-	otto_sprite.ax = 0; // aim.x
-	otto_sprite.ay = 0; // aim.y
-	otto_sprite.scale.set(4, 4);
-	otto_sprite.rate = 2;
-	otto_sprite.tint = 0xFF0000;
-	otto_sprite.x = pos.x; // 150;
-	otto_sprite.y = pos.y; // 90;
-	otto_sprite.name = 'EVIL OTTO';
-	
-	// public methods
-	otto_sprite.tick = ottoDormant;
-
-	return otto_sprite
-}
-
-var otto_frame_indeces = [6,7,8,9,10,11,12,11,10,9,8,7];
-var o_len = otto_frame_indeces.length - 1;
-
-function ottoPlay () {
-
-	var x_pos = otto_frame_indeces[(Math.round(timer * 0.2) % o_len)] * 11; 
-	otto_sprite.x += otto_sprite.vx;
-	otto_sprite.y += otto_sprite.vy;
-
-	// animate him
-	otto_sprite.texture.frame = new Rectangle( x_pos, 0, 11, 43);
-	
-}
-
-function ottoDormant () {
-
-	if (timer > otto_delay) {
-		soundsInSequence('INTRUDER ALERT INTRUDER ALERT'.split(' '));
-		stage.addChild(evil_otto);
-		otto_sprite.tick = ottoStart;
-	}
-}
-
-function ottoStart () {
-
-	var x_pos = (Math.round((timer - otto_delay) * 0.1) % 8) * 11; 
-
-	if (x_pos > 66) {
-		otto_sprite.tick = ottoPlay;
-	} else {
-		// animate him
-		otto_sprite.texture.frame = new Rectangle(x_pos, 0, 11, 43);
-	}
-	
-}
 
 

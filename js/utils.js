@@ -170,7 +170,9 @@ function hitTestAll () {
 			}
 		}
 	}
-	player_sprite.was_hit = hitTestRectangle(player_sprite, evil_otto);
+	if (hitTestRectangle(player_sprite, evil_otto) ) {
+		player_sprite.was_hit = true;
+	}
 }
 
 function hitTestRectangle(r1, r2) {
@@ -220,17 +222,31 @@ function getOutOfBoundsSide (obj) {
 	return side;
 }
 
-/*******************************************************************************
- * sound sequences
- *******************************************************************************/
-function soundsInSequence (arr) {
 
-	var snd = arr.shift();
-	var id = sound.play(snd);
-	if (arr.length > 0) {
-		sound.once('end', function () { 
-			soundsInSequence(arr);
-		}, id);
-	}
-	
+var debug_timer, score_div, bonus_div, splash_header, anykey_subhead;
+function createGameUIBits () {
+	// show timer 
+	debug_timer = document.createElement('div');
+	debug_timer.style = "position:absolute; top:30px;left:50px;color:#FFFFFF";
+	document.body.appendChild(debug_timer);
+
+	// score 
+	score_div = document.createElement('div');
+	score_div.style = "position:absolute; bottom:110px;left:50px;color:#FFFFFF;font-size:36px;font-family:sans-serif";
+	document.body.appendChild(score_div);
+
+	// bonus 
+	bonus_div = document.createElement('div');
+	bonus_div.style = "position:absolute; bottom:110px;left:350px;color:#FFFFFF;font-size:36px;font-family:sans-serif";
+	document.body.appendChild(bonus_div);
+
+	// SPLASH SCREEN
+	splash_header = document.createElement('h1');
+	splash_header.style = "margin-top:200px;color:#FF0000;font-size:96px;font-family:sans-serif;font-weight:bold;text-align:center";
+	anykey_subhead = document.createElement('h2');
+	anykey_subhead.style = "margin-top:50px;color:#FFFF00;font-family:sans-serif;font-size:48px;text-align:center";
+	document.body.appendChild(splash_header);
+	document.body.appendChild(anykey_subhead);
 }
+
+

@@ -63,25 +63,25 @@ function drawWalls () {
 
 				switch (s) {
 					case 'top': 
-					rect.drawRect(0, 0, quad_width + 10, 10);
+					rect.drawRect(0, 0, quad_width + 10, 15);
 					rect.x = x_pos;
 					rect.y = y_pos;
 					i = 0;
 					break;
 					case 'right': 
-					rect.drawRect(0, 0, 10, quad_height + 5);
+					rect.drawRect(0, 0, 15, quad_height + 5);
 					rect.x = x_pos + quad_width;
 					rect.y = y_pos;
 					i = 1;
 					break;
 					case 'bottom': 
-					rect.drawRect(0, 0, quad_width + 5, 10);
+					rect.drawRect(0, 0, quad_width + 5, 15);
 					rect.x = x_pos;
 					rect.y = y_pos + quad_height;
 					i = 2;
 					break;
 					case 'left': 
-					rect.drawRect(0, 0, 10, quad_height + 5);
+					rect.drawRect(0, 0, 15, quad_height + 5);
 					rect.x = x_pos;
 					rect.y = y_pos;
 					i = 3;

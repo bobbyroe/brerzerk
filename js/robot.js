@@ -35,12 +35,6 @@ return function () {
 	// public methods
 	robot_sprite.tick = robotPlay;
 	robot_sprite.aim = targetHumanoid;
-	robot_sprite.setPosition = setPosition;
-
-	function setPosition (pos) {
-		robot_sprite.x = pos.x;
-		robot_sprite.y = pos.y;
-	}
 	
 	// animation vars
 	var frame_delay = 0.15; // smaller == slower
