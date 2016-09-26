@@ -58,6 +58,7 @@ loader
 	.add("images/robot-explode.png")
 	.add("images/player.png")
 	.add("images/evil-otto.png")
+	.add("images/charset.png")
 	.load(setup);
 
 var sound = getHowlerAudio();

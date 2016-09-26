@@ -29,6 +29,9 @@ return function (pos) {
 	player_sprite.x = pos.x; // 150;
 	player_sprite.y = pos.y; // 90;
 	player_sprite.name = 'humanoid';
+	player_sprite.bullet_delay = 30;
+	player_sprite.next_bullet_time = 0;
+	player_sprite.max_bullets = 2;
 	player_sprite.bullet_velocity = 8;
 	player_sprite.bullet_length = 8;
 	player_sprite.bullet_color = 0x00FF00;
@@ -48,7 +51,7 @@ return function (pos) {
 		moveLeft.press = function () {
 			if (moveLeft.shiftKey === true) {
 				sprite.ax = -1;
-				fire(sprite);
+				tryToShoot(sprite);
 			} else {
 				sprite.vx = sprite.rate * -1;
 			}
@@ -64,7 +67,7 @@ return function (pos) {
 		moveRight.press = function () {
 			if (moveRight.shiftKey === true) {
 				sprite.ax = 1;
-				fire(sprite);
+				tryToShoot(sprite);
 			} else {
 				sprite.vx = sprite.rate;
 			}
@@ -80,7 +83,7 @@ return function (pos) {
 		moveUp.press = function () {
 			if (moveUp.shiftKey === true) {
 				sprite.ay = -1;
-				fire(sprite);
+				tryToShoot(sprite);
 			} else {
 				sprite.vy = sprite.rate * -1;
 			}
@@ -96,7 +99,7 @@ return function (pos) {
 		moveDown.press = function () {
 			if (moveDown.shiftKey === true) {
 				sprite.ay = 1;
-				fire(sprite);
+				tryToShoot(sprite);
 			} else {
 				sprite.vy = sprite.rate;
 			}
@@ -108,6 +111,13 @@ return function (pos) {
 				sprite.vy = 0;
 			}
 		};
+	}
+
+	function tryToShoot (sprite) {
+		if (timer < sprite.bullet_delay === false && bullets.length < sprite.max_bullets) {
+			sprite.next_bullet_time += sprite.bullet_delay;
+			fire(sprite);
+		}
 	}
 
 	function getTexFrameFor (sprite) {
