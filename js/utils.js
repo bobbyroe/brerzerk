@@ -250,3 +250,15 @@ function createGameUIBits () {
 }
 
 
+/*******************************************************************************
+ * UTILS!
+ *******************************************************************************/
+function degToRad (deg) {
+
+	return deg * Math.PI / 180;
+}
+
+function radToDeg (rad) {
+
+	return rad / Math.PI * 180;
+}

@@ -7,12 +7,6 @@
  **/
 var getBullet = (function () {
 
-// helper fn
-function degToRad (deg) {
-
-	return deg * Math.PI / 180;
-}
-
 return function (sprite) {
 
 	var direction = `${Math.abs(sprite.ax)}${Math.abs(sprite.ay)}`;
