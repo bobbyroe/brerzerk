@@ -90,8 +90,8 @@ function gameLoop() {
 	if (timer > next_bullet_time) {
 		next_bullet_time += 30;
 	}
-	if (DEBUG === true) { 
-		debug_timer.textContent = timer; 
+	if (DEBUG === true && evil_otto) { 
+		debug_timer.textContent = `${evil_otto.vx}, ${evil_otto.vy}`; 
 	}
 	score_div.textContent = score;
 	gameState();

@@ -166,6 +166,7 @@ return function (pos) {
 			stage.removeChild(player_sprite);
 			if (timer - player_sprite.death_start_timer - player_sprite.death_anim_duration > player_sprite.blinking_duration) {
 				num_players_remaining -= 1;
+				start_pos = {x: 90, y: 300};
 				gameState = gameRestarting;
 			}
 		}

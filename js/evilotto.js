@@ -34,12 +34,23 @@ var o_len = otto_frame_indices.length - 1;
 
 function ottoPlay () {
 
-	var x_pos = otto_frame_indices[(Math.round(timer * 0.2) % o_len)] * 11; 
+	
+	
+    var dx = otto_sprite.position.x - player_sprite.x;
+    var dy = otto_sprite.position.y - player_sprite.y;
+    // var dist = Math.sqrt(Math.abs(dx * dx - dy * dy));
+    var angle = Math.atan2(dy, dx);
+    // @goal_rote = Math.round(goal_rote * 2) * 0.5 // 'angularize' the rotation
+
+    otto_sprite.vx = Math.sin(angle) * -1;
+    otto_sprite.vy = Math.cos(angle) * 1;
+    
 	otto_sprite.x += otto_sprite.vx;
 	otto_sprite.y += otto_sprite.vy;
 
 	// animate him
-	otto_sprite.texture.frame = new Rectangle( x_pos, 0, 11, 43);
+	var x_frame = otto_frame_indices[(Math.round(timer * 0.2) % o_len)] * 11; 
+	otto_sprite.texture.frame = new Rectangle( x_frame, 0, 11, 43);
 	
 }
 
