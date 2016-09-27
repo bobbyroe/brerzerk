@@ -171,7 +171,7 @@ function hitTestAll () {
 		}
 	}
 	if (hitTestRectangle(player_sprite, evil_otto) ) {
-		player_sprite.was_hit = true;
+		// player_sprite.was_hit = true;
 	}
 }
 
