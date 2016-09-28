@@ -34,6 +34,8 @@ var score = 0;
 var level_bonus = 0;
 var game_over_timer = -1;
 
+var score_container;
+
 // exit level velocity
 var x_vel = 0;
 var y_vel = 0;
@@ -93,7 +95,7 @@ function gameLoop() {
 	if (DEBUG === true && evil_otto) { 
 		debug_timer.textContent = `${evil_otto.vx}, ${evil_otto.vy}`; 
 	}
-	score_div.textContent = score;
+	// score_div.textContent = score;
 	gameState();
 
 	renderer.render(stage);
@@ -135,8 +137,48 @@ function gameRestarting () {
 	walls = [];
 	robots = [];
 	removeListeners();
-	splash_header.textContent = "";
 	anykey_subhead.textContent = "";
+	logo_img.style.display = 'none';
+
+	score_container = new Container();
+
+	var score = new Container();
+	score.x = 30;
+	score.y = 0;
+	var digit_tex = loader.resources["images/charset.png"].texture;
+	var digit_sprite = new Sprite(digit_tex);
+	var rect_d = new Rectangle(137, 0, 8, 9); // (width = 8)
+	digit_tex.frame = rect_d;
+	digit_sprite.scale.set(4, 4);
+	digit_sprite.tint = 0xFFFFFF;
+	digit_sprite.x = 0;
+	digit_sprite.y = 0;
+	digit_sprite.name = 'digit0';
+	score.addChild(digit_sprite);
+	score_container.addChild(score);
+
+
+	var players_remaining = new Container();
+	players_remaining.x = 300;
+	players_remaining.y = 0;
+	var man_tex = loader.resources["images/charset.png"].texture;
+	var icon_sprite = new Sprite(man_tex);
+	var rect_i = new Rectangle(778, 0, 8, 9); // (width = 8)
+	man_tex.frame = rect_i;
+	icon_sprite.scale.set(4, 4);
+	icon_sprite.tint = 0xFF00FF;
+	icon_sprite.x = 0;
+	icon_sprite.y = 0;
+	icon_sprite.name = 'man0'
+	players_remaining.addChild(icon_sprite);
+	score_container.addChild(players_remaining);
+
+	score_container.x = 10;
+	score_container.y = 705;
+	// 5 digit score sprites
+	// 5 player icon sprites
+	// BONUS text + 3 digit sprites
+	stage.addChild(score_container);
 
 	timer = 0;
 	next_bullet_time = 150;
@@ -158,7 +200,7 @@ function gameRestarting () {
 
 function gameDormant () {
 	renderer.view.hidden = true;
-	splash_header.textContent = "BRERZERK";
+	// splash_header.textContent = "BRERZERK";
 	anykey_subhead.textContent = "HIT ANY KEY";
 }
 

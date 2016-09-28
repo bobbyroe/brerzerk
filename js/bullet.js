@@ -27,6 +27,7 @@ return function (sprite) {
 		shot.rotation = degToRad(rotation);
 		break;
 	}
+	shot.endFill();
 
 	shot.x = sprite.x + 8;
 	shot.y = sprite.y + 20;
@@ -34,7 +35,6 @@ return function (sprite) {
 	shot.vx = sprite.ax * sprite.bullet_velocity;
 	shot.vy = sprite.ay * sprite.bullet_velocity;
 	shot.sprite = sprite;
-	shot.endFill();
 	shot.name = `${sprite.name} bullet${timer}`; // debug
 	shot.tick = updateBullet;
 

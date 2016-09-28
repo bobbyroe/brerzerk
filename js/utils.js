@@ -223,7 +223,7 @@ function getOutOfBoundsSide (obj) {
 }
 
 
-var debug_timer, score_div, bonus_div, splash_header, anykey_subhead;
+var debug_timer, score_div, bonus_div, splash_header, anykey_subhead, logo_img;
 function createGameUIBits () {
 	// show timer 
 	debug_timer = document.createElement('div');
@@ -231,9 +231,9 @@ function createGameUIBits () {
 	document.body.appendChild(debug_timer);
 
 	// score 
-	score_div = document.createElement('div');
-	score_div.style = "position:absolute; bottom:110px;left:50px;color:#FFFFFF;font-size:36px;font-family:sans-serif";
-	document.body.appendChild(score_div);
+	// score_div = document.createElement('div');
+	// score_div.style = "position:absolute; bottom:110px;left:50px;color:#FFFFFF;font-size:36px;font-family:sans-serif";
+	// document.body.appendChild(score_div);
 
 	// bonus 
 	bonus_div = document.createElement('div');
@@ -241,11 +241,15 @@ function createGameUIBits () {
 	document.body.appendChild(bonus_div);
 
 	// SPLASH SCREEN
-	splash_header = document.createElement('h1');
-	splash_header.style = "margin-top:200px;color:#FF0000;font-size:96px;font-family:sans-serif;font-weight:bold;text-align:center";
+	splash_header = document.createElement('div');
+	splash_header.style = "margin:0 auto;color:#FF0000;font-size:96px;font-family:sans-serif;font-weight:bold;text-align:center";
+	logo_img = document.createElement('img');
+	logo_img.src = 'images/BERZERK_LOGO_low.png';
+	logo_img.style = "width:1024px;margin:0 auto"
 	anykey_subhead = document.createElement('h2');
-	anykey_subhead.style = "margin-top:50px;color:#FFFF00;font-family:sans-serif;font-size:48px;text-align:center";
+	anykey_subhead.style = "margin-top:50px;color:#FFFF00;font-family:sans-serif;font-size:32px;text-align:center;font-weight:normal";
 	document.body.appendChild(splash_header);
+	splash_header.appendChild(logo_img);
 	document.body.appendChild(anykey_subhead);
 }
 

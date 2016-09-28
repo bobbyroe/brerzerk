@@ -14,21 +14,22 @@ return function (pos) {
 	player_sprite = new Sprite(player_tex);
 	var rect = new Rectangle(0, 0, 8, 17);
 	player_tex.frame = rect;
+	player_sprite.scale.set(4, 4);
+	player_sprite.tint = 0x00FF00;
+	player_sprite.x = pos.x; // 150;
+	player_sprite.y = pos.y; // 90;
+	player_sprite.name = 'humanoid';
+	
 	player_sprite.vx = 0;
 	player_sprite.vy = 0;
 	player_sprite.ax = 0; // aim.x
 	player_sprite.ay = 0; // aim.y
-	player_sprite.scale.set(4, 4);
+	player_sprite.was_hit = false;
 	player_sprite.ctrl_keys = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft'];
 	player_sprite.rate = 2;
 	player_sprite.death_anim_duration = 80;
 	player_sprite.death_start_timer = -1;
 	player_sprite.blinking_duration = 120;
-	player_sprite.tint = 0x00FF00;
-	player_sprite.was_hit = false;
-	player_sprite.x = pos.x; // 150;
-	player_sprite.y = pos.y; // 90;
-	player_sprite.name = 'humanoid';
 	player_sprite.bullet_delay = 30;
 	player_sprite.next_bullet_time = 0;
 	player_sprite.max_bullets = 2;
