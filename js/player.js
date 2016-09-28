@@ -10,8 +10,8 @@
 var getPlayer = (function () {
 
 return function (pos) {
-	var player_tex = loader.resources["images/player.png"].texture;
-	player_sprite = new Sprite(player_tex);
+	var player_tex = loader.resources["images/player.png"].texture.clone();
+	var player_sprite = new Sprite(player_tex);
 	var rect = new Rectangle(0, 0, 8, 17);
 	player_tex.frame = rect;
 	player_sprite.scale.set(4, 4);
@@ -41,7 +41,7 @@ return function (pos) {
 	player_sprite.tick = playerPlay;
 
 	setUpCtrlsFor(player_sprite);
-
+	
 	function setUpCtrlsFor (sprite) {
 
 		var moveUp = keyboard(sprite.ctrl_keys[0]);

@@ -1,6 +1,6 @@
 /**
  *
- * GLOBALS: loader, timer, sound, score, robots;
+ * GLOBALS: loader, timer, sound, score, robots, player;
  * PIXI globals: Sprite, Rectangle
  * fns: removeRobot, getNearbyWalls
  *
@@ -9,10 +9,10 @@ var getRobot = (function () {
 
 var robot_score = 50;
 return function () {
-	var robot_tex = loader.resources["images/robot.png"].texture;
+	var robot_tex = loader.resources["images/robot.png"].texture.clone();
 	var robot_sprite = new Sprite(robot_tex);
 
-	var robot_explode_tex = loader.resources["images/robot-explode.png"].texture;
+	var robot_explode_tex = loader.resources["images/robot-explode.png"].texture.clone();
 	var rect = rect = new Rectangle(0, 0, 8, 11);
 	robot_tex.frame = rect;
 	robot_sprite.vx = 0;
@@ -103,11 +103,11 @@ return function () {
 
 	function targetHumanoid () {
 
-		robot_sprite.ax = (robot_sprite.x - player_sprite.x > 1) ? -1 : 1;
-		robot_sprite.ay = (robot_sprite.y - player_sprite.y > 1) ? -1 : 1;
+		robot_sprite.ax = (robot_sprite.x - player.x > 1) ? -1 : 1;
+		robot_sprite.ay = (robot_sprite.y - player.y > 1) ? -1 : 1;
 
-		if (Math.abs(robot_sprite.x - player_sprite.x) < 20) { robot_sprite.ax = 0; }
-		if (Math.abs(robot_sprite.y - player_sprite.y) < 20) { robot_sprite.ay = 0; }
+		if (Math.abs(robot_sprite.x - player.x) < 20) { robot_sprite.ax = 0; }
+		if (Math.abs(robot_sprite.y - player.y) < 20) { robot_sprite.ay = 0; }
 
 		// update robot velocity
 		robot_sprite.vx = robot_sprite.ax;
@@ -130,10 +130,10 @@ return function () {
 
 		if (timer < next_bullet_time === false && robot_bullets.length < max_robot_bullets) {
 
-			if (Math.abs(robot_sprite.x - player_sprite.x) < 20 ||
-				Math.abs(robot_sprite.y - player_sprite.y) < 20 ||
-				Math.abs((robot_sprite.x - robot_sprite.y) - (player_sprite.x - player_sprite.y)) < 20 ||
-				Math.abs((robot_sprite.x - player_sprite.y) - (player_sprite.x - robot_sprite.y)) < 20) {
+			if (Math.abs(robot_sprite.x - player.x) < 20 ||
+				Math.abs(robot_sprite.y - player.y) < 20 ||
+				Math.abs((robot_sprite.x - robot_sprite.y) - (player.x - player.y)) < 20 ||
+				Math.abs((robot_sprite.x - player.y) - (player.x - robot_sprite.y)) < 20) {
 					fire(robot_sprite);
 			}
 					

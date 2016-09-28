@@ -1,6 +1,6 @@
  /**
  * 
- * Globals: walls, robots, player_sprite, robot_bullets, bullets, evil_otto,
+ * Globals: walls, robots, player, robot_bullets, bullets, evil_otto,
  * 			maze_width, maze_height
  *          listeners
  **/
@@ -70,8 +70,8 @@ function hitTestAll () {
 		var cur_wall = walls[a];
 
 		// player
-		if (hitTestRectangle(player_sprite, cur_wall) ) {
-			player_sprite.was_hit = true;
+		if (hitTestRectangle(player, cur_wall) ) {
+			player.was_hit = true;
 		}
 		
 		// all robots
@@ -101,8 +101,8 @@ function hitTestAll () {
 
 		var cur_robot = robots[e];
 		// player
-		if (hitTestRectangle(player_sprite, cur_robot) ) {
-			player_sprite.was_hit = true;
+		if (hitTestRectangle(player, cur_robot) ) {
+			player.was_hit = true;
 			cur_robot.was_hit = true;
 			break;
 		}
@@ -146,8 +146,8 @@ function hitTestAll () {
 		var cur_robot_bullet = robot_bullets[i];
 		
 		// player
-		if (hitTestRectangle(player_sprite, cur_robot_bullet) ) {
-			player_sprite.was_hit = true;
+		if (hitTestRectangle(player, cur_robot_bullet) ) {
+			player.was_hit = true;
 			cur_robot_bullet.was_hit = true;
 			break;
 		}
@@ -170,8 +170,8 @@ function hitTestAll () {
 			}
 		}
 	}
-	if (hitTestRectangle(player_sprite, evil_otto) ) {
-		// player_sprite.was_hit = true;
+	if (hitTestRectangle(player, evil_otto) ) {
+		// player.was_hit = true;
 	}
 }
 

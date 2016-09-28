@@ -4,7 +4,7 @@ var Rectangle = PIXI.Rectangle;
 var Container = PIXI.Container;
 var autoDetectRenderer = PIXI.autoDetectRenderer;
 var loader = PIXI.loader;
-var resources = PIXI.loader.resources;
+var TextureCache = PIXI.utils.TextureCache;
 var Sprite = PIXI.Sprite;
 var Grfx = PIXI.Graphics;
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
@@ -13,7 +13,7 @@ PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 /*******************************************************************************
  * Setup
  *******************************************************************************/
-var player_sprite;
+var player;
 var evil_otto;
 var gameState;
 var timer = 0;
@@ -35,6 +35,8 @@ var level_bonus = 0;
 var game_over_timer = -1;
 
 var score_container;
+var players_remaining;
+var score_cntr;
 
 // exit level velocity
 var x_vel = 0;
@@ -66,7 +68,6 @@ loader
 var sound = getHowlerAudio();
 
 function setup() {
-
 	resetGameState();
 	gameLoop();	
 }
@@ -103,10 +104,10 @@ function gameLoop() {
 
 function gameStart () {
 
-	if (timer < player_sprite.blinking_duration) {
-		player_sprite.visible = (timer % 40 > 20);
+	if (timer < player.blinking_duration) {
+		player.visible = (timer % 40 > 20);
 	} else {
-		player_sprite.visible = true;
+		player.visible = true;
 		robots = getRobots();
 		for (var r = 0, r_len = robots.length; r < r_len; r++) {
 			stage.addChild(robots[r]);
@@ -140,59 +141,21 @@ function gameRestarting () {
 	anykey_subhead.textContent = "";
 	logo_img.style.display = 'none';
 
-	score_container = new Container();
-
-	var score = new Container();
-	score.x = 30;
-	score.y = 0;
-	var digit_tex = loader.resources["images/charset.png"].texture;
-	var digit_sprite = new Sprite(digit_tex);
-	var rect_d = new Rectangle(137, 0, 8, 9); // (width = 8)
-	digit_tex.frame = rect_d;
-	digit_sprite.scale.set(4, 4);
-	digit_sprite.tint = 0xFFFFFF;
-	digit_sprite.x = 0;
-	digit_sprite.y = 0;
-	digit_sprite.name = 'digit0';
-	score.addChild(digit_sprite);
-	score_container.addChild(score);
-
-
-	var players_remaining = new Container();
-	players_remaining.x = 300;
-	players_remaining.y = 0;
-	var man_tex = loader.resources["images/charset.png"].texture;
-	var icon_sprite = new Sprite(man_tex);
-	var rect_i = new Rectangle(778, 0, 8, 9); // (width = 8)
-	man_tex.frame = rect_i;
-	icon_sprite.scale.set(4, 4);
-	icon_sprite.tint = 0xFF00FF;
-	icon_sprite.x = 0;
-	icon_sprite.y = 0;
-	icon_sprite.name = 'man0'
-	players_remaining.addChild(icon_sprite);
-	score_container.addChild(players_remaining);
-
-	score_container.x = 10;
-	score_container.y = 705;
-	// 5 digit score sprites
-	// 5 player icon sprites
-	// BONUS text + 3 digit sprites
-	stage.addChild(score_container);
+	resetScoreDisplay();
 
 	timer = 0;
 	next_bullet_time = 150;
 
 	if (num_players_remaining > 0) {
-		player_sprite = getPlayer(start_pos);
-		stage.addChild(player_sprite);
+		player = getPlayer(start_pos);
+		stage.addChild(player);
 		drawWalls();
 		bonus_div.textContent = '';
 		gameState = gameStart;  
 
 	} else {
 		num_players_remaining = 2;
-		game_over_timer = timer + 150;
+		game_over_timer = timer + 30;
 		gameState = gameOver;
 	}
 	evil_otto = getEvilOtto({x: 0, y: 0}); // keep him offscreen for now
@@ -200,14 +163,15 @@ function gameRestarting () {
 
 function gameDormant () {
 	renderer.view.hidden = true;
-	// splash_header.textContent = "BRERZERK";
+	// splash_header.textContent = "";
+	logo_img.style.display = 'block';
 	anykey_subhead.textContent = "HIT ANY KEY";
 }
 
 function gamePlay () {
 
 	hitTestAll();
-	player_sprite.tick();
+	player.tick();
 	evil_otto.tick();
 	updateRobots();
 	updateBullets();
@@ -227,7 +191,7 @@ function prepareToExitLevel (side) {
 		case 'top': 
 		x_vel = 0;
 		y_vel = rate * 1;
-		start_pos = {x: stage.width * 0.5, y: stage.height - player_sprite.height - 100};
+		start_pos = {x: stage.width * 0.5, y: stage.height - player.height - 100};
 		break;
 		case 'right': 
 		x_vel = rate * -1;
@@ -242,7 +206,7 @@ function prepareToExitLevel (side) {
 		case 'left': 
 		x_vel = rate;
 		y_vel = 0;
-		start_pos = {x: stage.width - player_sprite.width - 100, y: stage.height * 0.5};
+		start_pos = {x: stage.width - player.width - 100, y: stage.height * 0.5};
 		break;
 	}
 
@@ -274,7 +238,7 @@ function gameOver () {
 		gameState = resetGameState;
 	} else {
 		renderer.view.hidden = true;
-		splash_header.textContent = "GAME OVER";
+		// splash_header.textContent = "GAME OVER";
 	}
 }
 
@@ -286,7 +250,7 @@ function fire (sprite) {
 	var shot = getBullet(sprite);
 	stage.addChild(shot);
 
-	if (sprite === player_sprite) {
+	if (sprite === player) {
 		bullets.push(shot);
 		sound.play('player_bullet');
 	} else {
@@ -307,7 +271,7 @@ function updateBullets () {
 
 function removeBullet(shot) {
 
-	var arr = (shot.sprite.name === player_sprite.name) ? bullets : robot_bullets;
+	var arr = (shot.sprite.name === player.name) ? bullets : robot_bullets;
 	stage.removeChild(shot);
 	arr.splice(arr.indexOf(shot), 1);
 	shot.destroy();

@@ -35,8 +35,8 @@ var o_len = otto_frame_indices.length - 1;
 function ottoPlay () {
 
 	// direction = target position - object position
-    var dx = player_sprite.x - otto_sprite.x;
-    var dy = player_sprite.y - otto_sprite.y;
+    var dx = player.x - otto_sprite.x;
+    var dy = player.y - otto_sprite.y;
     var angle = Math.atan2(dy, dx);
 
     otto_sprite.vx = Math.cos(angle) * 1;

@@ -172,5 +172,62 @@ function getNearbyWalls (sprite) {
 	};;
 }
 
+function resetScoreDisplay () {
+
+	score_container = new Container();
+	score_container.x = 10;
+	score_container.y = 705;
+
+	score_cntr = new Container();
+	score_cntr.x = 30;
+	score_cntr.y = 0;
+	setupScore(score_cntr);
+	score_container.addChild(score_cntr);
+
+	players_remaining = new Container();
+	players_remaining.x = 300;
+	players_remaining.y = 0;
+	for (var i = 0; i < num_players_remaining - 1; i++) {
+		players_remaining.addChild(getPlayerIcon(i));
+	}
+	score_container.addChild(players_remaining);
+
+	
+	// 5 digit score sprites
+	// 5 player icon sprites
+	// BONUS text + 3 digit sprites
+	stage.addChild(score_container);
+}
+
+function getPlayerIcon (index) {
+
+	var man_tex = loader.resources["images/charset.png"].texture.clone();
+	var icon_sprite = new Sprite(man_tex);
+	var width = 8;
+	var padding = 4;
+	var rect_i = new Rectangle(778, 0, width, 9);
+	man_tex.frame = rect_i;
+	icon_sprite.scale.set(4, 4);
+	icon_sprite.tint = 0x00FF00;
+	icon_sprite.x = index * (width * 4) + (padding * index);
+	icon_sprite.y = 0;
+	icon_sprite.name = 'man0';
+
+	return icon_sprite;
+}
+
+function setupScore (ctnr) {
+
+	var digit_tex = loader.resources["images/charset.png"].texture.clone();
+	var digit_sprite = new Sprite(digit_tex);
+	var rect_d = new Rectangle(137, 0, 8, 9); // (width = 8)
+	digit_tex.frame = rect_d;
+	digit_sprite.scale.set(4, 4);
+	digit_sprite.tint = 0xFFFFFF;
+	digit_sprite.x = 0;
+	digit_sprite.y = 0;
+	digit_sprite.name = 'digit0';
+	ctnr.addChild(digit_sprite);
+}
 
 
