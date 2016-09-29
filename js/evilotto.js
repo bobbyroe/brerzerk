@@ -22,6 +22,7 @@ function getEvilOtto (pos) {
 	otto_sprite.x = pos.x; // 150;
 	otto_sprite.y = pos.y; // 90;
 	otto_sprite.name = 'EVIL OTTO';
+	otto_sprite.rate = 0.5;
 	
 	// public methods
 	otto_sprite.tick = ottoDormant;
@@ -38,15 +39,16 @@ function ottoPlay () {
     var dx = player.x - otto_sprite.x;
     var dy = player.y - otto_sprite.y;
     var angle = Math.atan2(dy, dx);
+    otto_sprite.rate = 2 - (robots.length * 0.22); // 2 / 9 (max speed / max num robots)
 
-    otto_sprite.vx = Math.cos(angle) * 1;
-    otto_sprite.vy = Math.sin(angle) * 1;
+    otto_sprite.vx = Math.cos(angle) * otto_sprite.rate;
+    otto_sprite.vy = Math.sin(angle) * otto_sprite.rate;
     
 	otto_sprite.x += otto_sprite.vx;
 	otto_sprite.y += otto_sprite.vy;
 
 	// animate him
-	var x_frame = otto_frame_indices[(Math.round(timer * 0.2) % o_len)] * 11; 
+	var x_frame = otto_frame_indices[(Math.round(timer * (otto_sprite.rate * 0.4)) % o_len)] * 11; 
 	otto_sprite.texture.frame = new Rectangle( x_frame, 0, 11, 43);
 	
 }

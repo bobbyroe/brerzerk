@@ -153,8 +153,8 @@ function gameRestarting () {
 		bonus_div.textContent = '';
 		gameState = gameStart;  
 
-	} else {
-		num_players_remaining = 2;
+	} else { // RESET
+		num_players_remaining = 3;
 		game_over_timer = timer + 30;
 		gameState = gameOver;
 	}
