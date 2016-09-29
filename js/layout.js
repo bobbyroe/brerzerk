@@ -181,7 +181,10 @@ function resetScoreDisplay () {
 	score_cntr = new Container();
 	score_cntr.x = 30;
 	score_cntr.y = 0;
-	setupScore(score_cntr);
+	var num_digits = 5;
+	for (var i = 0; i < num_digits; i++) {
+		score_cntr.addChild(getDigit(i));
+	}
 	score_container.addChild(score_cntr);
 
 	players_remaining = new Container();
@@ -216,18 +219,25 @@ function getPlayerIcon (index) {
 	return icon_sprite;
 }
 
-function setupScore (ctnr) {
+function getDigit (index) {
 
+	// 8 = SPACE, 137 = 0, 
 	var digit_tex = loader.resources["images/charset.png"].texture.clone();
 	var digit_sprite = new Sprite(digit_tex);
-	var rect_d = new Rectangle(137, 0, 8, 9); // (width = 8)
+	var width = 8;
+	var padding = 2;
+	var x_index = (index === 4) ? 137 : 8;
+	var rect_d = new Rectangle(x_index, 0, 8, 9); // (width = 8)
 	digit_tex.frame = rect_d;
 	digit_sprite.scale.set(4, 4);
 	digit_sprite.tint = 0xFFFFFF;
-	digit_sprite.x = 0;
+	digit_sprite.x = index * (width * 4) + (padding * index);
 	digit_sprite.y = 0;
-	digit_sprite.name = 'digit0';
-	ctnr.addChild(digit_sprite);
+	digit_sprite.name = `digit${index}`;
+
+	return digit_sprite;
 }
+
+
 
 
