@@ -41,6 +41,7 @@ function getHowlerAudio () {
 	Object.assign(sfx_audio, talking_audio);
 	return new Howl({
 	 	src: ['audio/sound_sprite.mp3'],
+	 	volume: 0.05,
 	 	sprite: sfx_audio
 	 });
 }

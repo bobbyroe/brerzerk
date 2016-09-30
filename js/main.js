@@ -34,10 +34,6 @@ var score = 0;
 var level_bonus = 0;
 var game_over_timer = -1;
 
-var score_container;
-var players_remaining;
-var score_cntr;
-
 // exit level velocity
 var x_vel = 0;
 var y_vel = 0;
@@ -90,15 +86,7 @@ function gameLoop() {
 
 	requestAnimationFrame(gameLoop);
 	timer += 1;
-	if (timer > next_bullet_time) {
-		next_bullet_time += 30;
-	}
-	if (DEBUG === true && evil_otto) { 
-		debug_timer.textContent = `${evil_otto.vx}, ${evil_otto.vy}`; 
-	}
-	// score_div.textContent = score;
 	gameState();
-
 	renderer.render(stage);
 }
 
@@ -175,7 +163,7 @@ function gamePlay () {
 	evil_otto.tick();
 	updateRobots();
 	updateBullets();
-
+	updateGameUI(); // score, etc ... including debug stuff – in layout.js
 }
 
 function prepareToExitLevel (side) {
@@ -246,7 +234,7 @@ function gameOver () {
  * bullets
  *******************************************************************************/
 function fire (sprite) {
-	
+
 	var shot = getBullet(sprite);
 	stage.addChild(shot);
 

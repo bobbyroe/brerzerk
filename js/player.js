@@ -1,6 +1,6 @@
 /**
  *
- * GLOBALS: loader, num_players_remaining, sound
+ * GLOBALS: loader, num_players_remaining, sound, timer, next_bullet_time
  * PIXI globals: Sprite, Rectangle
  * fns: keyboard, fire
  * fns: gameRestarting, exitingLevel, prepareToExitLevel
@@ -137,6 +137,10 @@ return function (pos) {
 
 	// PLAYER STATES
 	function playerPlay () {
+
+		if (timer > next_bullet_time) {
+			next_bullet_time += 30;
+		}
 
 		var exit_side = getOutOfBoundsSide(player_sprite);
 		if (exit_side !== 'none') {

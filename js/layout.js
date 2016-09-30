@@ -4,10 +4,19 @@
  * PIXI globals: Grfx
  *
  **/
+
+// more globals
 var quad_width = 200;
 var quad_height = 225;
 var maze_width = 10 + quad_width * 5;
 var maze_height = 10 + quad_height * 3;
+var digits_sprites = [];
+var num_digits = 5;
+
+var score_container;
+var players_remaining;
+var score_cntr;
+var bonus_text;
 
 function drawWalls () {
 	
@@ -169,21 +178,53 @@ function getNearbyWalls (sprite) {
 		right: right,
 		bottom: bottom,
 		left: left,
-	};;
+	};
+}
+
+/*******************************************************************************
+ * Game UI, score and num players icons
+ *******************************************************************************/
+function updateGameUI () {
+	// if (DEBUG === true && evil_otto) { 
+	// 	debug_timer.textContent = ``; 
+	// }
+
+	// score_div.textContent = score;
+	updateScore();
+}
+
+function updateScore () {
+
+	var score_str = getScoreString();
+	var x_index = -1;
+	for (var c = 0, len = score_str.length; c < len; c++) {
+		x_index = getXindexForChar(score_str[c]);
+		digits_sprites[c].texture.frame = new Rectangle(x_index, 0, 8, 9);
+	}
+}
+
+function showBonusMessage () {
+
+	resetBonusText();
+	bonus_text.visible = true;
 }
 
 function resetScoreDisplay () {
 
 	score_container = new Container();
 	score_container.x = 10;
-	score_container.y = 705;
+	score_container.y = 710;
 
 	score_cntr = new Container();
 	score_cntr.x = 30;
 	score_cntr.y = 0;
-	var num_digits = 5;
+	var cur_digit;
+	var score_str = getScoreString();
+	digits_sprites = []; // reset
 	for (var i = 0; i < num_digits; i++) {
-		score_cntr.addChild(getDigit(i));
+		cur_digit = getDigit(score_str, i);
+		score_cntr.addChild(cur_digit);
+		digits_sprites.push(cur_digit);
 	}
 	score_container.addChild(score_cntr);
 
@@ -195,11 +236,37 @@ function resetScoreDisplay () {
 	}
 	score_container.addChild(players_remaining);
 
-	
-	// 5 digit score sprites
-	// 5 player icon sprites
+	bonus_text = new Container();
+	bonus_text.x = 400;
+	bonus_text.y = 0;
+	resetBonusText();
+	bonus_text.visible = false;
+	score_container.addChild(bonus_text);
+
 	// BONUS text + 3 digit sprites
 	stage.addChild(score_container);
+}
+
+function resetBonusText () {
+
+	bonus_text.removeChildren();
+	var bonus_str = "BONUS " + level_bonus;
+	var char_tex, char_sprite, x_index, rect;
+	var padding = 2;
+	var width = 8;
+	for (var i = 0, num_chars = bonus_str.length; i < num_chars; i++) {
+		char_tex = loader.resources["images/charset.png"].texture.clone();
+		char_sprite = new Sprite(char_tex);
+		x_index = getXindexForChar(bonus_str[i]);
+		rect = new Rectangle(x_index, 0, 8, 9);
+		char_tex.frame = rect;
+		char_sprite.scale.set(4, 4);
+		char_sprite.tint = 0xFFFFFF;
+		char_sprite.x = i * (width * 4) + (padding * i);
+		char_sprite.y = 0;
+		char_sprite.name = `char${i}`;
+		bonus_text.addChild(char_sprite);
+	}
 }
 
 function getPlayerIcon (index) {
@@ -208,8 +275,8 @@ function getPlayerIcon (index) {
 	var icon_sprite = new Sprite(man_tex);
 	var width = 8;
 	var padding = 4;
-	var rect_i = new Rectangle(778, 0, width, 9);
-	man_tex.frame = rect_i;
+	var rect = new Rectangle(778, 0, width, 9);
+	man_tex.frame = rect;
 	icon_sprite.scale.set(4, 4);
 	icon_sprite.tint = 0x00FF00;
 	icon_sprite.x = index * (width * 4) + (padding * index);
@@ -219,15 +286,14 @@ function getPlayerIcon (index) {
 	return icon_sprite;
 }
 
-function getDigit (index) {
+function getDigit (score_str, index) {
 
-	// 8 = SPACE, 137 = 0, 
 	var digit_tex = loader.resources["images/charset.png"].texture.clone();
 	var digit_sprite = new Sprite(digit_tex);
 	var width = 8;
 	var padding = 2;
-	var x_index = (index === 4) ? 137 : 8;
-	var rect_d = new Rectangle(x_index, 0, 8, 9); // (width = 8)
+	var x_index = getXindexForChar(score_str[index]);
+	var rect_d = new Rectangle(x_index, 0, width, 9);
 	digit_tex.frame = rect_d;
 	digit_sprite.scale.set(4, 4);
 	digit_sprite.tint = 0xFFFFFF;
@@ -238,6 +304,26 @@ function getDigit (index) {
 	return digit_sprite;
 }
 
+function getScoreString () {
 
+	var score_str = "" + score;
+	// catch scores 100,00 and up ...
+	if (score_str.length > 5) {
+		throw new Error('score is greater then 99,999!!! fix me!');
+	}
 
+	// front-load zeros as needed
+	var num_paddings = num_digits - score_str.length;
+	for (var d = 0; d < num_paddings; d++) {
+		score_str = ' ' + score_str;
+	}
 
+	return score_str;
+}
+
+function getXindexForChar (c) {
+
+	// var char = "" + c;
+	var width = 8;
+	return (c.charCodeAt(0) - 31) * width;
+}

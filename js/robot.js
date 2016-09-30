@@ -68,8 +68,11 @@ return function () {
 
 			// if all robots have been killed, award bonus
 			if (robots.length <= 1) {
+
+				// this doesn't belong here ... publish a message instead
 				score += level_bonus;
-				bonus_div.textContent = `BONUS   ${level_bonus}`;
+				// bonus_div.textContent = `BONUS   ${level_bonus}`;
+				showBonusMessage();
 			}
 
 			robot_sprite.tick = robotDead;
