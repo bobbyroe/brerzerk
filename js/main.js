@@ -51,6 +51,8 @@ createGameUIBits();
 var stage = new Container();
 renderer.render(stage);
 
+var maze = new Container();
+stage.addChild(maze);
 
 // APP STARTS-UP HERE ...
 loader
@@ -98,7 +100,7 @@ function gameStart () {
 		player.visible = true;
 		robots = getRobots();
 		for (var r = 0, r_len = robots.length; r < r_len; r++) {
-			stage.addChild(robots[r]);
+			maze.addChild(robots[r]);
 		}
 		level_bonus = robots.length * 10;
 
@@ -120,9 +122,9 @@ function gameStart () {
 function gameRestarting () {
 	
 	// clean up
-	stage.x = 0;
-	stage.y = 0;
-	stage.removeChildren();
+	maze.x = 0;
+	maze.y = 0;
+	maze.removeChildren();
 	walls = [];
 	robots = [];
 	removeListeners();
@@ -136,7 +138,7 @@ function gameRestarting () {
 
 	if (num_players_remaining > 0) {
 		player = getPlayer(start_pos);
-		stage.addChild(player);
+		maze.addChild(player);
 		drawWalls();
 		bonus_div.textContent = '';
 		gameState = gameStart;  
@@ -168,7 +170,7 @@ function gamePlay () {
 
 function prepareToExitLevel (side) {
 
-	stage.children.forEach( function (child) {
+	maze.children.forEach( function (child) {
 		child.tint = 0x0000FF;
 	});
 
@@ -179,22 +181,22 @@ function prepareToExitLevel (side) {
 		case 'top': 
 		x_vel = 0;
 		y_vel = rate * 1;
-		start_pos = {x: stage.width * 0.5, y: stage.height - player.height - 100};
+		start_pos = {x: maze.width * 0.5, y: maze.height - player.height - 100};
 		break;
 		case 'right': 
 		x_vel = rate * -1;
 		y_vel = 0;
-		start_pos = {x: 90, y: stage.height * 0.5};
+		start_pos = {x: 90, y: maze.height * 0.5};
 		break;
 		case 'bottom': 
 		x_vel = 0;
 		y_vel = rate * -1;
-		start_pos = {x: stage.width * 0.5, y: 90};
+		start_pos = {x: maze.width * 0.5, y: 90};
 		break;
 		case 'left': 
 		x_vel = rate;
 		y_vel = 0;
-		start_pos = {x: stage.width - player.width - 100, y: stage.height * 0.5};
+		start_pos = {x: maze.width - player.width - 100, y: maze.height * 0.5};
 		break;
 	}
 
@@ -209,14 +211,14 @@ function prepareToExitLevel (side) {
 
 function exitingLevel () {
 
-	if (stage.x + stage.width < -50 || 
-		stage.x > stage.width + 50 ||
-		stage.y + stage.height < -50 ||
-		stage.y > stage.height + 50) {
+	if (maze.x + maze.width < -50 || 
+		maze.x > maze.width + 50 ||
+		maze.y + maze.height < -50 ||
+		maze.y > maze.height + 50) {
 			gameState = gameRestarting;
 	} else { 
-		stage.x += x_vel;
-		stage.y += y_vel;
+		maze.x += x_vel;
+		maze.y += y_vel;
 	}
 }
 
@@ -236,7 +238,7 @@ function gameOver () {
 function fire (sprite) {
 
 	var shot = getBullet(sprite);
-	stage.addChild(shot);
+	maze.addChild(shot);
 
 	if (sprite === player) {
 		bullets.push(shot);
@@ -260,7 +262,7 @@ function updateBullets () {
 function removeBullet(shot) {
 
 	var arr = (shot.sprite.name === player.name) ? bullets : robot_bullets;
-	stage.removeChild(shot);
+	maze.removeChild(shot);
 	arr.splice(arr.indexOf(shot), 1);
 	shot.destroy();
 }
@@ -300,7 +302,7 @@ function updateRobots () {
 }
 
 function removeRobot (sprite) {
-	stage.removeChild(sprite);
+	maze.removeChild(sprite);
 	robots.splice(robots.indexOf(sprite), 1);
 	sprite.destroy();
 }

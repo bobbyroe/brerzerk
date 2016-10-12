@@ -1,6 +1,6 @@
 /**
  *
- * GLOBALS: stage, timer
+ * GLOBALS: stage, timer, maze
  * PIXI globals: Sprite, Rectangle
  *
  **/
@@ -57,7 +57,7 @@ function ottoDormant () {
 
 	if (timer > otto_delay) {
 		soundsInSequence('INTRUDER ALERT INTRUDER ALERT'.split(' '));
-		stage.addChild(evil_otto);
+		maze.addChild(evil_otto);
 		otto_sprite.tick = ottoStart;
 		evil_otto.position.set(start_pos.x, start_pos.y);
 	}

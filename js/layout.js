@@ -1,6 +1,6 @@
 /**
  *
- * GLOBALS: stage, walls, start_pos
+ * GLOBALS: stage, walls, start_pos, maze
  * PIXI globals: Grfx
  *
  **/
@@ -99,7 +99,7 @@ function drawWalls () {
 
 				rect.endFill();
 				rect.name = `${h}${w}${i}` // `Rectangle${h}${w}, ${s}`; // debug
-				stage.addChild(rect);
+				maze.addChild(rect);
 
 				// for hit testing
 				walls.push(rect);
@@ -211,6 +211,9 @@ function showBonusMessage () {
 
 function resetScoreDisplay () {
 
+	if (score_container != null) {
+		stage.removeChild(score_container);
+	}
 	score_container = new Container();
 	score_container.x = 10;
 	score_container.y = 710;
