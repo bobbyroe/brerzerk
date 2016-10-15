@@ -171,7 +171,7 @@ function hitTestAll () {
 		}
 	}
 	if (hitTestRectangle(player, evil_otto) ) {
-		// player.was_hit = true;
+		player.was_hit = true;
 	}
 }
 
@@ -217,7 +217,7 @@ function getOutOfBoundsSide (obj) {
 	var side = (obj.x < 0) ? 'left' :
 		(obj.x + obj.width > maze_width) ? 'right' :
 		(obj.y < 0) ? 'top' :
-		(obj.y + obj.height > maze_height) ? 'bottom' : 
+		(obj.y + obj.height > maze_height + 50) ? 'bottom' : // add 50px fudge
 		'none';
 	return side;
 }

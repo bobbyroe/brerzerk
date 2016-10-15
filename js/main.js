@@ -28,7 +28,6 @@ var enemy_color = 0x000000;
 var robot_bullets = [];
 var listeners = [];
 var robots_awake_time = 150;
-var otto_delay = 400;
 var score = 0;
 var level_bonus = 0;
 var game_over_timer = -1;
@@ -91,33 +90,6 @@ function gameLoop() {
 	renderer.render(stage);
 }
 
-function gameStart () {
-
-	if (timer < player.blinking_duration) {
-		player.visible = (timer % 40 > 20);
-	} else {
-		player.visible = true;
-		robots = getRobots();
-		for (var r = 0, r_len = robots.length; r < r_len; r++) {
-			maze.addChild(robots[r]);
-		}
-		level_bonus = robots.length * 10;
-
-		//
-		var SPACE = keyboard('Space');
-		SPACE.press = function () { 
-			var snds = Object.keys(talking_audio);
-			var id = sound.play(snds[Math.floor(Math.random() * snds.length)]); 
-			var random_rate = Math.random() + 0.5;
-			sound.rate(random_rate, id);
-		};
-		SPACE.release = function () { /* no op */ };
-		//
-
-		gameState = gamePlay;
-	}
-}
-
 function gameRestarting () {
 	
 	// clean up
@@ -135,7 +107,8 @@ function gameRestarting () {
 	timer = 0;
 	next_bullet_time = 150;
 	enemy_color = getEnemyColor();
-	max_robot_bullets = Math.floor(Math.min(score * 0.001, 5));
+	max_robot_bullets = getMaxNumRobotBullets();
+	
 	if (num_players_remaining > 0) {
 		player = getPlayer(start_pos);
 		maze.addChild(player);
@@ -144,11 +117,43 @@ function gameRestarting () {
 		gameState = gameStart;  
 
 	} else { // RESET
+		score = 0;
 		num_players_remaining = 3;
 		game_over_timer = timer + 30;
 		gameState = gameOver;
 	}
 	evil_otto = getEvilOtto({x: 0, y: 0}); // keep him offscreen for now
+}
+
+function gameStart () {
+
+	// blink player location
+	if (timer < player.blinking_duration) {
+		player.visible = (timer % 40 > 20);
+
+	// start!
+	} else {
+		player.visible = true;
+		robots = getRobots();
+		for (var r = 0, r_len = robots.length; r < r_len; r++) {
+			maze.addChild(robots[r]);
+		}
+		evil_otto.delay_timer = robots.length * 125;
+		level_bonus = robots.length * 10;
+
+		//
+		var SPACE = keyboard('Space');
+		SPACE.press = function () { 
+			var snds = Object.keys(talking_audio);
+			var id = sound.play(snds[Math.floor(Math.random() * snds.length)]); 
+			var random_rate = Math.random() + 0.5;
+			sound.rate(random_rate, id);
+		};
+		SPACE.release = function () { /* no op */ };
+		//
+
+		gameState = gamePlay;
+	}
 }
 
 function gameDormant () {
@@ -302,55 +307,61 @@ function updateRobots () {
 }
 
 function removeRobot (sprite) {
+
 	maze.removeChild(sprite);
 	robots.splice(robots.indexOf(sprite), 1);
 	sprite.destroy();
 }
 
 // for robots and evil otto
+/*
+	Dark yellow robots that do not fire
+	Red robots that can fire 1 bullet (500 points)
+	Dark cyan robots that can fire 2 bullets (1,500 points)
+	Green robots that fire 3 bullets (3k)
+	Dark purple robots that fire 4 bullets (4.5k)
+	Light yellow robots that fire 5 bullets (6k)
+	White robots that fire 1 fast bullet (7.5k)
+	Dark cyan robots that fire 2 fast bullets (10k)
+	Light purple robots that fire 3 fast bullets (11k)
+	Gray robots that fire 4 fast bullets (13k)
+	Dark yellow robots that fire 5 fast bullets (15k)
+	Red robots that fire 5 fast bullets (17k)
+	Light cyan robots that fire 5 fast bullets (19k)
+*/
+var score_tiers = [500, 1500, 3000, 4500, 6000, 7500, 10000, 11000, 13000, 15000, 17000, 19000];
 function getEnemyColor () {
+
 	var colors = [0xFFFF00, 0xFF0000, 0x00FFFF, 0x00FF00, 0xFF00FF, 0xFFFF00, 0xFFFFFF, 0x00FFFF, 0xFF00FF];
-	var col = 0xFF0000;
+	var col = colors[0];
 
-	/*
-		Dark yellow robots that do not fire
-		Red robots that can fire 1 bullet (500 points)
-		Dark cyan robots that can fire 2 bullets (1,500 points)
-		Green robots that fire 3 bullets (3k)
-		Dark purple robots that fire 4 bullets (4.5k)
-		Light yellow robots that fire 5 bullets (6k)
-		White robots that fire 1 fast bullet (7.5k)
-		Dark cyan robots that fire 2 fast bullets (10k)
-		Light purple robots that fire 3 fast bullets (11k)
-		Gray robots that fire 4 fast bullets (13k)
-		Dark yellow robots that fire 5 fast bullets (15k)
-		Red robots that fire 5 fast bullets (17k)
-		Light cyan robots that fire 5 fast bullets (19k)
-	*/
-
-	if (score < 500) {
-		col = colors[0];
-	} else if (score >= 500 && score < 1500) {
-		col = colors[1];
-	} else if (score >= 1500 && score < 3000) {
-		col = colors[2];
-	} else if (score >= 3000 && score < 4500) {
-		col = colors[3];
-	} else if (score >= 4500 && score < 6000) {
-		col = colors[4];
-	} else if (score >= 6000 && score < 7500) {
-		col = colors[5];
-	} else if (score >= 7500 && score < 10000) {
-		col = colors[6];
-	} else if (score >= 10000 && score < 11000) {
-		col = colors[7];
-	} else if (score >= 11000 && score < 13000) {
-		col = colors[8];
-	} else {
-		col = 0xFFCC00;
-	}
+	if (score >= score_tiers[0]) { col = colors[1]; }
+	if (score >= score_tiers[1]) { col = colors[2]; }
+	if (score >= score_tiers[2]) { col = colors[3]; }
+	if (score >= score_tiers[3]) { col = colors[4]; }
+	if (score >= score_tiers[4]) { col = colors[5]; }
+	if (score >= score_tiers[5]) { col = colors[6]; }
+	if (score >= score_tiers[6]) { col = colors[7]; }
+	if (score >= score_tiers[7]) { col = colors[8]; }
+	if (score >= score_tiers[8]) { col = 0xFFCC00;  } // MAX
 	return col;
 }
 
+function getMaxNumRobotBullets () {
+
+	var num_bullets = [0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5];
+	var num = num_bullets[0];
+
+	if (score >= score_tiers[0]) { num = num_bullets[1]; }
+	if (score >= score_tiers[1]) { num = num_bullets[2]; }
+	if (score >= score_tiers[2]) { num = num_bullets[3]; }
+	if (score >= score_tiers[3]) { num = num_bullets[4]; }
+	if (score >= score_tiers[4]) { num = num_bullets[5]; }
+	if (score >= score_tiers[5]) { num = num_bullets[6]; }
+	if (score >= score_tiers[6]) { num = num_bullets[7]; }
+	if (score >= score_tiers[7]) { num = num_bullets[8]; }
+	if (score >= score_tiers[8]) { num = 5;  			 } // MAX
+	return num;
+}
 
 
