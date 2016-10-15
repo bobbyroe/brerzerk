@@ -1,14 +1,18 @@
 /**
  *
- * GLOBALS: loader, timer, sound, score, robots, player;
+ * GLOBALS: loader, timer, sound, score, robots, player, enemy_color
  * PIXI globals: Sprite, Rectangle
  * fns: removeRobot, getNearbyWalls
  *
  **/
+var max_robot_bullets = 1;
 var getRobot = (function () {
 
 var robot_score = 50;
+
+
 return function () {
+
 	var robot_tex = loader.resources["images/robot.png"].texture.clone();
 	var robot_sprite = new Sprite(robot_tex);
 
@@ -21,14 +25,14 @@ return function () {
 	robot_sprite.rate = 0.5;
 	robot_sprite.explode_tex = robot_explode_tex;
 	robot_sprite.explode_tex.num_frames = 3;
-	robot_sprite.tint = 0xFF0000;
+	robot_sprite.tint = enemy_color;
 	robot_sprite.death_start_timer = -1;
 	robot_sprite.timer_offset = Math.floor(Math.random() * 100);
 	robot_sprite.index = -1;
 	robot_sprite.name = `robot${timer}`;
 	robot_sprite.bullet_velocity = 4;
 	robot_sprite.bullet_length = 6;
-	robot_sprite.bullet_color = 0xFF0000;
+	robot_sprite.bullet_color = enemy_color;
 	robot_sprite.qx = -1;
 	robot_sprite.qy = -1;
 
@@ -138,8 +142,7 @@ return function () {
 				Math.abs((robot_sprite.x - robot_sprite.y) - (player.x - player.y)) < 20 ||
 				Math.abs((robot_sprite.x - player.y) - (player.x - robot_sprite.y)) < 20) {
 					fire(robot_sprite);
-			}
-					
+			}	
 		}
 	}
 

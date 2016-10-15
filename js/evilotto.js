@@ -1,6 +1,6 @@
 /**
  *
- * GLOBALS: stage, timer, maze
+ * GLOBALS: stage, timer, maze, enemy_color
  * PIXI globals: Sprite, Rectangle
  *
  **/
@@ -18,7 +18,7 @@ function getEvilOtto (pos) {
 	otto_sprite.ay = 0; // aim.y
 	otto_sprite.scale.set(4, 4);
 	otto_sprite.rate = 2;
-	otto_sprite.tint = 0xFF0000;
+	otto_sprite.tint = enemy_color;
 	otto_sprite.x = pos.x; // 150;
 	otto_sprite.y = pos.y; // 90;
 	otto_sprite.name = 'EVIL OTTO';

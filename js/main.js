@@ -18,14 +18,13 @@ var evil_otto;
 var gameState;
 var timer = 0;
 var num_players_remaining = 3;
-var colors8 = [0xFFFFFF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFF0000, 0x00FF00];
 var walls = [];
 var robots = [];
 var DEBUG = false;
 var bullets = [];
 var max_bullets = 2;
-var max_robot_bullets = 1;
 var next_bullet_time = 150;
+var enemy_color = 0x000000;
 var robot_bullets = [];
 var listeners = [];
 var robots_awake_time = 150;
@@ -135,7 +134,8 @@ function gameRestarting () {
 
 	timer = 0;
 	next_bullet_time = 150;
-
+	enemy_color = getEnemyColor();
+	max_robot_bullets = Math.floor(Math.min(score * 0.001, 5));
 	if (num_players_remaining > 0) {
 		player = getPlayer(start_pos);
 		maze.addChild(player);
@@ -305,6 +305,51 @@ function removeRobot (sprite) {
 	maze.removeChild(sprite);
 	robots.splice(robots.indexOf(sprite), 1);
 	sprite.destroy();
+}
+
+// for robots and evil otto
+function getEnemyColor () {
+	var colors = [0xFFFF00, 0xFF0000, 0x00FFFF, 0x00FF00, 0xFF00FF, 0xFFFF00, 0xFFFFFF, 0x00FFFF, 0xFF00FF];
+	var col = 0xFF0000;
+
+	/*
+		Dark yellow robots that do not fire
+		Red robots that can fire 1 bullet (500 points)
+		Dark cyan robots that can fire 2 bullets (1,500 points)
+		Green robots that fire 3 bullets (3k)
+		Dark purple robots that fire 4 bullets (4.5k)
+		Light yellow robots that fire 5 bullets (6k)
+		White robots that fire 1 fast bullet (7.5k)
+		Dark cyan robots that fire 2 fast bullets (10k)
+		Light purple robots that fire 3 fast bullets (11k)
+		Gray robots that fire 4 fast bullets (13k)
+		Dark yellow robots that fire 5 fast bullets (15k)
+		Red robots that fire 5 fast bullets (17k)
+		Light cyan robots that fire 5 fast bullets (19k)
+	*/
+
+	if (score < 500) {
+		col = colors[0];
+	} else if (score >= 500 && score < 1500) {
+		col = colors[1];
+	} else if (score >= 1500 && score < 3000) {
+		col = colors[2];
+	} else if (score >= 3000 && score < 4500) {
+		col = colors[3];
+	} else if (score >= 4500 && score < 6000) {
+		col = colors[4];
+	} else if (score >= 6000 && score < 7500) {
+		col = colors[5];
+	} else if (score >= 7500 && score < 10000) {
+		col = colors[6];
+	} else if (score >= 10000 && score < 11000) {
+		col = colors[7];
+	} else if (score >= 11000 && score < 13000) {
+		col = colors[8];
+	} else {
+		col = 0xFFCC00;
+	}
+	return col;
 }
 
 

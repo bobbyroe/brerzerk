@@ -9,7 +9,11 @@
 
 var getPlayer = (function () {
 
+var colors8 = [0xFFFFFF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFF0000, 0x00FF00];
+
 return function (pos) {
+
+
 	var player_tex = loader.resources["images/player.png"].texture.clone();
 	var player_sprite = new Sprite(player_tex);
 	var rect = new Rectangle(0, 0, 8, 17);
