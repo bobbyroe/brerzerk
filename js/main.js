@@ -113,7 +113,6 @@ function gameRestarting () {
 		player = getPlayer(start_pos);
 		maze.addChild(player);
 		drawWalls();
-		bonus_div.textContent = '';
 		gameState = gameStart;  
 
 	} else { // RESET
@@ -138,7 +137,7 @@ function gameStart () {
 		for (var r = 0, r_len = robots.length; r < r_len; r++) {
 			maze.addChild(robots[r]);
 		}
-		evil_otto.delay_timer = robots.length * 125;
+		evil_otto.delay_timer = robots.length * 110;
 		level_bonus = robots.length * 10;
 
 		//
@@ -343,7 +342,7 @@ function getEnemyColor () {
 	if (score >= score_tiers[5]) { col = colors[6]; }
 	if (score >= score_tiers[6]) { col = colors[7]; }
 	if (score >= score_tiers[7]) { col = colors[8]; }
-	if (score >= score_tiers[8]) { col = 0xFFCC00;  } // MAX
+	if (score >= score_tiers[8]) { col = Math.floor(Math.random() * 0xFFFFFF);  } // MAX
 	return col;
 }
 
@@ -357,7 +356,7 @@ function getMaxNumRobotBullets () {
 	if (score >= score_tiers[2]) { num = num_bullets[3]; }
 	if (score >= score_tiers[3]) { num = num_bullets[4]; }
 	if (score >= score_tiers[4]) { num = num_bullets[5]; }
-	if (score >= score_tiers[5]) { num = num_bullets[6]; }
+	if (score >= score_tiers[5]) { num = num_bullets[6]; } // fast bullets
 	if (score >= score_tiers[6]) { num = num_bullets[7]; }
 	if (score >= score_tiers[7]) { num = num_bullets[8]; }
 	if (score >= score_tiers[8]) { num = 5;  			 } // MAX

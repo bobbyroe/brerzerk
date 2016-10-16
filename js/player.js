@@ -40,7 +40,10 @@ return function (pos) {
 	player_sprite.bullet_velocity = 8;
 	player_sprite.bullet_length = 8;
 	player_sprite.bullet_color = 0x00FF00;
-	
+
+	// CHEAT
+	player_sprite.is_invincible = false;
+
 	// public methods
 	player_sprite.tick = playerPlay;
 
@@ -152,7 +155,7 @@ return function (pos) {
 			gameState = exitingLevel;
 		}
 
-		if (player_sprite.was_hit === true) {
+		if (player_sprite.was_hit === true && player_sprite.is_invincible === false) {
 
 			player_sprite.death_start_timer = timer;
 			player_sprite.tick = playerDead;

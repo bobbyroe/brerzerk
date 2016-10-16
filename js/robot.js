@@ -30,7 +30,7 @@ return function () {
 	robot_sprite.timer_offset = Math.floor(Math.random() * 100);
 	robot_sprite.index = -1;
 	robot_sprite.name = `robot${timer}`;
-	robot_sprite.bullet_velocity = 4;
+	robot_sprite.bullet_velocity = getRobotBulletVelocity();
 	robot_sprite.bullet_length = 6;
 	robot_sprite.bullet_color = enemy_color;
 	robot_sprite.qx = -1;
@@ -75,7 +75,6 @@ return function () {
 
 				// this doesn't belong here ... publish a message instead
 				score += level_bonus;
-				// bonus_div.textContent = `BONUS   ${level_bonus}`;
 				showBonusMessage();
 			}
 
@@ -149,6 +148,14 @@ return function () {
 	function robotCanFire () {
 		return false;
 	}
+
+	// 
+	function getRobotBulletVelocity () {
+
+		var vel = (score < 7500) ? 4 : 8;
+		return vel;
+	}
+
 	return robot_sprite;
 }
 })();

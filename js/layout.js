@@ -188,8 +188,6 @@ function updateGameUI () {
 	// if (DEBUG === true && evil_otto) { 
 	// 	debug_timer.textContent = ``; 
 	// }
-
-	// score_div.textContent = score;
 	updateScore();
 }
 

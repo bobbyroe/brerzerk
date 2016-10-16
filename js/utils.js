@@ -215,30 +215,20 @@ function hitTestRectangle(r1, r2) {
 
 function getOutOfBoundsSide (obj) {
 	var side = (obj.x < 0) ? 'left' :
-		(obj.x + obj.width > maze_width) ? 'right' :
+		(obj.x + obj.width > maze_width + 25) ? 'right' : // add 25px fudge
 		(obj.y < 0) ? 'top' :
-		(obj.y + obj.height > maze_height + 50) ? 'bottom' : // add 50px fudge
+		(obj.y + obj.height > maze_height + 25) ? 'bottom' : // add 25px fudge
 		'none';
 	return side;
 }
 
 
-var debug_timer, score_div, bonus_div, splash_header, anykey_subhead, logo_img;
+var debug_timer, splash_header, anykey_subhead, logo_img;
 function createGameUIBits () {
 	// show timer 
 	debug_timer = document.createElement('div');
 	debug_timer.style = "position:absolute; top:30px;left:50px;color:#FFFFFF";
 	document.body.appendChild(debug_timer);
-
-	// score 
-	// score_div = document.createElement('div');
-	// score_div.style = "position:absolute; bottom:110px;left:50px;color:#FFFFFF;font-size:36px;font-family:sans-serif";
-	// document.body.appendChild(score_div);
-
-	// bonus 
-	bonus_div = document.createElement('div');
-	bonus_div.style = "position:absolute; bottom:110px;left:350px;color:#FFFFFF;font-size:36px;font-family:sans-serif";
-	document.body.appendChild(bonus_div);
 
 	// SPLASH SCREEN
 	splash_header = document.createElement('div');
