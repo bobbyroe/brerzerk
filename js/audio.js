@@ -1,7 +1,7 @@
  /**
  * 
  * Globals: sound
- *          listeners
+ *   
  **/
 
 function getHowlerAudio () {

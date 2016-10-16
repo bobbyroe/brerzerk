@@ -9,7 +9,7 @@ var max_robot_bullets = 1;
 var getRobot = (function () {
 
 var robot_score = 50;
-
+var robots_awake_time = 150;
 
 return function () {
 
@@ -159,3 +159,10 @@ return function () {
 	return robot_sprite;
 }
 })();
+
+function removeRobot (sprite) {
+
+	maze.removeChild(sprite);
+	robots.splice(robots.indexOf(sprite), 1);
+	sprite.destroy();
+}

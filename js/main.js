@@ -22,12 +22,9 @@ var walls = [];
 var robots = [];
 var DEBUG = false;
 var bullets = [];
-var max_bullets = 2;
 var next_bullet_time = 150;
 var enemy_color = 0x000000;
 var robot_bullets = [];
-var listeners = [];
-var robots_awake_time = 150;
 var score = 0;
 var level_bonus = 0;
 var game_over_timer = -1;
@@ -70,7 +67,7 @@ function setup() {
 
 function resetGameState () {
 	// listen for any key
-	function fn (evt) { 
+	function fn () { 
 		window.removeEventListener("keydown", fn); 
 		gameState = gameRestarting;
 		renderer.view.hidden = false;
@@ -258,17 +255,9 @@ function updateBullets () {
 	for (var i = 0, s_len = bullets.length; i < s_len; i++) {
 		bullets[i].tick();
 	}
-	for (var i = 0, s_len = robot_bullets.length; i < s_len; i++) {
-		robot_bullets[i].tick();
+	for (var j = 0, rs_len = robot_bullets.length; j < rs_len; j++) {
+		robot_bullets[j].tick();
 	}
-}
-
-function removeBullet(shot) {
-
-	var arr = (shot.sprite.name === player.name) ? bullets : robot_bullets;
-	maze.removeChild(shot);
-	arr.splice(arr.indexOf(shot), 1);
-	shot.destroy();
 }
 
 /*******************************************************************************
@@ -286,7 +275,7 @@ function getRobots () {
 
 		robot = getRobot();
 
-		random_index = Math.floor(Math.random() * possible_positions.length);
+		var random_index = Math.floor(Math.random() * possible_positions.length);
 		robot_pos = possible_positions.splice(random_index, 1)[0];
 		robot_pos.x += Math.floor(Math.random() * 50) - 25;
 		robot_pos.y += Math.floor(Math.random() * 50) - 25;
@@ -303,13 +292,6 @@ function updateRobots () {
 	for (var i = 0, r_len = robots.length; i < r_len; i++) {
 		robots[i].tick();
 	}
-}
-
-function removeRobot (sprite) {
-
-	maze.removeChild(sprite);
-	robots.splice(robots.indexOf(sprite), 1);
-	sprite.destroy();
 }
 
 // for robots and evil otto
