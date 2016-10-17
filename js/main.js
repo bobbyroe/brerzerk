@@ -1,6 +1,6 @@
 
 
-
+// make stuff look pixelated
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 // https://github.com/kittykatattack/learningPixi#pixis-graphic-primitives
 
@@ -11,7 +11,8 @@ var player;
 var evil_otto;
 var gameState;
 var timer = 0;
-var num_players_remaining = 3;
+var max_players_remaining = 3;
+var num_players_remaining = max_players_remaining;
 var walls = [];
 var robots = [];
 var DEBUG = false;
@@ -117,33 +118,27 @@ function gameRestarting () {
 
 function gameStart () {
 
-	// blink player location
-	if (timer < player.blinking_duration) {
-		player.visible = (timer % 40 > 20);
-
-	// start!
-	} else {
-		player.visible = true;
-		robots = getRobots();
-		for (var r = 0, r_len = robots.length; r < r_len; r++) {
-			maze.addChild(robots[r]);
-		}
-		evil_otto.delay_timer = robots.length * 110;
-		level_bonus = robots.length * 10;
-
-		//
-		var SPACE = keyboard('Space');
-		SPACE.press = function () { 
-			var snds = Object.keys(talking_audio);
-			var id = sound.play(snds[Math.floor(Math.random() * snds.length)]); 
-			var random_rate = Math.random() + 0.5;
-			sound.rate(random_rate, id);
-		};
-		SPACE.release = function () { /* no op */ };
-		//
-
-		gameState = gamePlay;
+	player.visible = true;
+	robots = getRobots();
+	for (var r = 0, r_len = robots.length; r < r_len; r++) {
+		maze.addChild(robots[r]);
 	}
+	evil_otto.delay_timer = robots.length * 110;
+	level_bonus = robots.length * 10;
+
+	//
+	var SPACE = keyboard('Space');
+	SPACE.press = function () { 
+		var snds = Object.keys(talking_audio);
+		var id = sound.play(snds[Math.floor(Math.random() * snds.length)]); 
+		var random_rate = Math.random() + 0.5;
+		sound.rate(random_rate, id);
+	};
+	SPACE.release = function () { /* no op */ };
+	//
+
+	gameState = gamePlay;
+	
 }
 
 function gameDormant () {

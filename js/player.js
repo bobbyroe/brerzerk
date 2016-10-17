@@ -33,7 +33,7 @@ return function (pos) {
 	player_sprite.rate = 2;
 	player_sprite.death_anim_duration = 80;
 	player_sprite.death_start_timer = -1;
-	player_sprite.blinking_duration = 120;
+	player_sprite.blinking_duration = (num_players_remaining === max_players_remaining) ? 120 : 120;
 	player_sprite.bullet_delay = 30;
 	player_sprite.next_bullet_time = 0;
 	player_sprite.max_bullets = 2;
@@ -41,11 +41,13 @@ return function (pos) {
 	player_sprite.bullet_length = 8;
 	player_sprite.bullet_color = 0x00FF00;
 
+	console.log(num_players_remaining);
+
 	// CHEAT
 	player_sprite.is_invincible = false;
 
 	// public methods
-	player_sprite.tick = playerPlay;
+	player_sprite.tick = playerPending;
 
 	setUpCtrlsFor(player_sprite);
 	
@@ -122,7 +124,10 @@ return function (pos) {
 	}
 
 	function tryToShoot (sprite) {
-		if (timer < sprite.bullet_delay === false && bullets.length < sprite.max_bullets) {
+		if (player_sprite.tick === playerPlay &&
+			timer < sprite.bullet_delay === false &&
+			bullets.length < sprite.max_bullets) {
+
 			sprite.next_bullet_time += sprite.bullet_delay;
 			fire(sprite);
 		}
@@ -143,6 +148,16 @@ return function (pos) {
 	}
 
 	// PLAYER STATES
+	function playerPending () {
+
+		// blink player location
+		if (timer < player.blinking_duration) {
+			player.visible = (timer % 40 > 20);
+		} else {
+			player_sprite.tick = playerPlay;
+		}
+	}
+
 	function playerPlay () {
 
 		if (timer > next_bullet_time) {
