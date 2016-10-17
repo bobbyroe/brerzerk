@@ -33,7 +33,7 @@ return function (pos) {
 	player_sprite.rate = 2;
 	player_sprite.death_anim_duration = 80;
 	player_sprite.death_start_timer = -1;
-	player_sprite.blinking_duration = 120;
+	player_sprite.blinking_duration = 80;
 	player_sprite.bullet_delay = 30;
 	player_sprite.next_bullet_time = 0;
 	player_sprite.max_bullets = 2;
