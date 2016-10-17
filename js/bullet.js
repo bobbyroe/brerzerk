@@ -12,7 +12,7 @@ return function (sprite) {
 	var direction = `${Math.abs(sprite.ax)}${Math.abs(sprite.ay)}`;
 	var rotation = (sprite.ax + sprite.ay === 0) ? -45 : 45;
 	var len = sprite.bullet_length;
-	var shot = new Grfx();
+	var shot = new PIXI.Graphics();
 	shot.beginFill(sprite.bullet_color);
 
 	switch (direction) {

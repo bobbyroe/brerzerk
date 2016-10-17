@@ -1,7 +1,6 @@
 /**
  *
  * GLOBALS: loader, timer, sound, score, robots, player, enemy_color
- * PIXI globals: Sprite, Rectangle
  * fns: removeRobot, getNearbyWalls
  *
  **/
@@ -13,11 +12,11 @@ var robots_awake_time = 150;
 
 return function () {
 
-	var robot_tex = loader.resources["images/robot.png"].texture.clone();
-	var robot_sprite = new Sprite(robot_tex);
+	var robot_tex = PIXI.loader.resources["images/robot.png"].texture.clone();
+	var robot_sprite = new PIXI.Sprite(robot_tex);
 
-	var robot_explode_tex = loader.resources["images/robot-explode.png"].texture.clone();
-	var rect = rect = new Rectangle(0, 0, 8, 11);
+	var robot_explode_tex = PIXI.loader.resources["images/robot-explode.png"].texture.clone();
+	var rect = rect = new PIXI.Rectangle(0, 0, 8, 11);
 	robot_tex.frame = rect;
 	robot_sprite.vx = 0;
 	robot_sprite.vy = 0;
@@ -51,7 +50,7 @@ return function () {
 			robot_sprite.texture = robot_sprite.explode_tex;
 			robot_sprite.anchor.x = 0.28;
 			robot_sprite.anchor.y = 0.28;
-			robot_sprite.texture.frame = new Rectangle( frame_num * 18, 0, 18, 18);
+			robot_sprite.texture.frame = new PIXI.Rectangle( frame_num * 18, 0, 18, 18);
 		} else {
 			setTimeout(removeRobot, 1, robot_sprite);
 		}
@@ -90,19 +89,19 @@ return function () {
 
 			// animate him
 			if (robot_sprite.vy > 0) {
-				robot_sprite.texture.frame = new Rectangle(anim_frame_index + 64, 0, 8, 11);
+				robot_sprite.texture.frame = new PIXI.Rectangle(anim_frame_index + 64, 0, 8, 11);
 			} else if (robot_sprite.vy < 0) {
-				robot_sprite.texture.frame = new Rectangle(anim_frame_index + 96, 0, 8, 11);
+				robot_sprite.texture.frame = new PIXI.Rectangle(anim_frame_index + 96, 0, 8, 11);
 			}
 
 			if (robot_sprite.vx > 0) {
-				robot_sprite.texture.frame = new Rectangle(anim_frame_index + 48, 0, 8, 11);
+				robot_sprite.texture.frame = new PIXI.Rectangle(anim_frame_index + 48, 0, 8, 11);
 			} else if (robot_sprite.vx < 0) {
-				robot_sprite.texture.frame = new Rectangle(anim_frame_index + 80, 0, 8, 11);
+				robot_sprite.texture.frame = new PIXI.Rectangle(anim_frame_index + 80, 0, 8, 11);
 			}
 
 			if (robot_sprite.vx === 0 && robot_sprite.vy === 0) {
-				robot_sprite.texture.frame = new Rectangle(standing_frame_index, 0, 8, 11);
+				robot_sprite.texture.frame = new PIXI.Rectangle(standing_frame_index, 0, 8, 11);
 			}
 		}
 	}

@@ -1,16 +1,16 @@
 /**
  *
  * GLOBALS: stage, timer, maze, enemy_color
- * PIXI globals: Sprite, Rectangle
+ * PIXI globals: Sprite
  *
  **/
 function getEvilOtto (pos) {
 
 	if (evil_otto != null) { evil_otto.destroy(); } // clean up
 	
-	var otto_tex = loader.resources["images/evil-otto.png"].texture;
-	otto_sprite = new Sprite(otto_tex);
-	var rect = new Rectangle(44, 0, 11, 43);
+	var otto_tex = PIXI.loader.resources["images/evil-otto.png"].texture;
+	otto_sprite = new PIXI.Sprite(otto_tex);
+	var rect = new PIXI.Rectangle(44, 0, 11, 43);
 	otto_tex.frame = rect;
 	otto_sprite.vx = 0;
 	otto_sprite.vy = 0;
@@ -51,7 +51,7 @@ function ottoPlay () {
 
 	// animate him
 	var x_frame = otto_frame_indices[(Math.round(timer * (otto_sprite.rate * 0.4)) % o_len)] * 11; 
-	otto_sprite.texture.frame = new Rectangle( x_frame, 0, 11, 43);
+	otto_sprite.texture.frame = new PIXI.Rectangle( x_frame, 0, 11, 43);
 	
 }
 
@@ -73,7 +73,7 @@ function ottoStart () {
 		otto_sprite.tick = ottoPlay;
 	} else {
 		// animate him
-		otto_sprite.texture.frame = new Rectangle(x_pos, 0, 11, 43);
+		otto_sprite.texture.frame = new PIXI.Rectangle(x_pos, 0, 11, 43);
 	}
 	
 }

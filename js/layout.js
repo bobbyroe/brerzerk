@@ -67,7 +67,7 @@ function drawWalls () {
 			random_sides.forEach( function (s) {
 
 				var i = -1; // clockwise position index: 0,1,2,3 = top,right,bottom,left
-				rect = new Grfx();
+				rect = new PIXI.Graphics();
 				rect.beginFill(color);
 
 				switch (s) {
@@ -197,7 +197,7 @@ function updateScore () {
 	var x_index = -1;
 	for (var c = 0, len = score_str.length; c < len; c++) {
 		x_index = getXindexForChar(score_str[c]);
-		digits_sprites[c].texture.frame = new Rectangle(x_index, 0, 8, 9);
+		digits_sprites[c].texture.frame = new PIXI.Rectangle(x_index, 0, 8, 9);
 	}
 }
 
@@ -212,11 +212,11 @@ function resetScoreDisplay () {
 	if (score_container != null) {
 		stage.removeChild(score_container);
 	}
-	score_container = new Container();
+	score_container = new PIXI.Container();
 	score_container.x = 10;
 	score_container.y = 710;
 
-	score_cntr = new Container();
+	score_cntr = new PIXI.Container();
 	score_cntr.x = 30;
 	score_cntr.y = 0;
 	var cur_digit;
@@ -229,7 +229,7 @@ function resetScoreDisplay () {
 	}
 	score_container.addChild(score_cntr);
 
-	players_remaining = new Container();
+	players_remaining = new PIXI.Container();
 	players_remaining.x = 300;
 	players_remaining.y = 0;
 	for (var i = 0; i < num_players_remaining - 1; i++) {
@@ -237,7 +237,7 @@ function resetScoreDisplay () {
 	}
 	score_container.addChild(players_remaining);
 
-	bonus_text = new Container();
+	bonus_text = new PIXI.Container();
 	bonus_text.x = 400;
 	bonus_text.y = 0;
 	resetBonusText();
@@ -256,8 +256,8 @@ function resetBonusText () {
 	var padding = 2;
 	var width = 8;
 	for (var i = 0, num_chars = bonus_str.length; i < num_chars; i++) {
-		char_tex = loader.resources["images/charset.png"].texture.clone();
-		char_sprite = new Sprite(char_tex);
+		char_tex = PIXI.loader.resources["images/charset.png"].texture.clone();
+		char_sprite = new PIXI.Sprite(char_tex);
 		x_index = getXindexForChar(bonus_str[i]);
 		rect = new Rectangle(x_index, 0, 8, 9);
 		char_tex.frame = rect;
@@ -272,8 +272,8 @@ function resetBonusText () {
 
 function getPlayerIcon (index) {
 
-	var man_tex = loader.resources["images/charset.png"].texture.clone();
-	var icon_sprite = new Sprite(man_tex);
+	var man_tex = PIXI.loader.resources["images/charset.png"].texture.clone();
+	var icon_sprite = new PIXI.Sprite(man_tex);
 	var width = 8;
 	var padding = 4;
 	var rect = new Rectangle(778, 0, width, 9);
@@ -289,8 +289,8 @@ function getPlayerIcon (index) {
 
 function getDigit (score_str, index) {
 
-	var digit_tex = loader.resources["images/charset.png"].texture.clone();
-	var digit_sprite = new Sprite(digit_tex);
+	var digit_tex = PIXI.loader.resources["images/charset.png"].texture.clone();
+	var digit_sprite = new PIXI.Sprite(digit_tex);
 	var width = 8;
 	var padding = 2;
 	var x_index = getXindexForChar(score_str[index]);

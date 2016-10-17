@@ -1,12 +1,6 @@
 
-// Aliases
-var Rectangle = PIXI.Rectangle;
-var Container = PIXI.Container;
-var autoDetectRenderer = PIXI.autoDetectRenderer;
-var loader = PIXI.loader;
-var TextureCache = PIXI.utils.TextureCache;
-var Sprite = PIXI.Sprite;
-var Grfx = PIXI.Graphics;
+
+
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 // https://github.com/kittykatattack/learningPixi#pixis-graphic-primitives
 
@@ -34,7 +28,7 @@ var x_vel = 0;
 var y_vel = 0;
 var start_pos = {x: 90, y: 300};
 
-var renderer = autoDetectRenderer(
+var renderer = PIXI.autoDetectRenderer(
 	1024, 768, 
 	{antialias: false, transparent: false, resolution: 1}
 );
@@ -43,14 +37,14 @@ document.body.appendChild(renderer.view);
 // debug_timer, score, game over screen ...
 createGameUIBits();
 
-var stage = new Container();
+var stage = new PIXI.Container();
 renderer.render(stage);
 
-var maze = new Container();
+var maze = new PIXI.Container();
 stage.addChild(maze);
 
 // APP STARTS-UP HERE ...
-loader
+PIXI.loader
 	.add("images/robot.png")
 	.add("images/robot-explode.png")
 	.add("images/player.png")
