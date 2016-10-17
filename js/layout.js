@@ -259,7 +259,7 @@ function resetBonusText () {
 		char_tex = PIXI.loader.resources["images/charset.png"].texture.clone();
 		char_sprite = new PIXI.Sprite(char_tex);
 		x_index = getXindexForChar(bonus_str[i]);
-		rect = new Rectangle(x_index, 0, 8, 9);
+		rect = new PIXI.Rectangle(x_index, 0, 8, 9);
 		char_tex.frame = rect;
 		char_sprite.scale.set(4, 4);
 		char_sprite.tint = 0xFFFFFF;
@@ -276,7 +276,7 @@ function getPlayerIcon (index) {
 	var icon_sprite = new PIXI.Sprite(man_tex);
 	var width = 8;
 	var padding = 4;
-	var rect = new Rectangle(778, 0, width, 9);
+	var rect = new PIXI.Rectangle(778, 0, width, 9);
 	man_tex.frame = rect;
 	icon_sprite.scale.set(4, 4);
 	icon_sprite.tint = 0x00FF00;
@@ -294,7 +294,7 @@ function getDigit (score_str, index) {
 	var width = 8;
 	var padding = 2;
 	var x_index = getXindexForChar(score_str[index]);
-	var rect_d = new Rectangle(x_index, 0, width, 9);
+	var rect_d = new PIXI.Rectangle(x_index, 0, width, 9);
 	digit_tex.frame = rect_d;
 	digit_sprite.scale.set(4, 4);
 	digit_sprite.tint = 0xFFFFFF;

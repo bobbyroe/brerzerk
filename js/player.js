@@ -130,14 +130,14 @@ return function (pos) {
 
 	function getTexFrameFor (sprite) {
 
-		var rect = new Rectangle(0, 0, 8, 17);
+		var rect = new PIXI.Rectangle(0, 0, 8, 17);
 
 		if (sprite.vx > 0 || sprite.vy !== 0) {
-			rect = new Rectangle( (Math.round(timer * 0.4) % 3) * 8 + 8, 0, 8, 17);
+			rect = new PIXI.Rectangle( (Math.round(timer * 0.4) % 3) * 8 + 8, 0, 8, 17);
 		}
 
 		if (sprite.vx < 0) {
-			rect = new Rectangle( (Math.round(timer * 0.4) % 3) * 8 + 40, 0, 8, 17);
+			rect = new PIXI.Rectangle( (Math.round(timer * 0.4) % 3) * 8 + 40, 0, 8, 17);
 		}
 		return rect;
 	}
@@ -172,7 +172,7 @@ return function (pos) {
 
 		if (timer - player_sprite.death_start_timer < player_sprite.death_anim_duration) {
 			// player death
-			player_sprite.texture.frame = new Rectangle((Math.round(timer * 0.4) % 4) * 8 + 80, 0, 8, 17);
+			player_sprite.texture.frame = new PIXI.Rectangle((Math.round(timer * 0.4) % 4) * 8 + 80, 0, 8, 17);
 			player_sprite.tint = colors8[Math.floor(Math.random() * colors8.length)];
 		} else {
 			stage.removeChild(player_sprite);
