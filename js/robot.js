@@ -1,10 +1,12 @@
+
+var max_robot_bullets = 1;
 /**
  *
- * GLOBALS: loader, timer, sound, score, robots, player, enemy_color
+ * GLOBALS: loader, timer, sound, score, robots, player, enemy_color, start_pos
  * fns: removeRobot, getNearbyWalls
  *
  **/
-var max_robot_bullets = 1;
+
 var getRobot = (function () {
 
 var robot_score = 50;

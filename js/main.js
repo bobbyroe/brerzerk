@@ -23,6 +23,7 @@ var robot_bullets = [];
 var score = 0;
 var level_bonus = 0;
 var game_over_timer = -1;
+var is_game_restarting = true;
 
 // exit level velocity
 var x_vel = 0;
@@ -105,13 +106,15 @@ function gameRestarting () {
 		player = getPlayer(start_pos);
 		maze.addChild(player);
 		drawWalls();
-		gameState = gameStart;  
+		gameState = gameStart;
+		is_game_restarting = false; 
 
 	} else { // RESET
 		score = 0;
 		num_players_remaining = 3;
 		game_over_timer = timer + 30;
 		gameState = gameOver;
+		is_game_restarting = true;
 	}
 	evil_otto = getEvilOtto({x: 0, y: 0}); // keep him offscreen for now
 }
@@ -123,7 +126,7 @@ function gameStart () {
 	for (var r = 0, r_len = robots.length; r < r_len; r++) {
 		maze.addChild(robots[r]);
 	}
-	evil_otto.delay_timer = robots.length * 110;
+	evil_otto.delay_timer = robots.length * 115;
 	level_bonus = robots.length * 10;
 
 	//

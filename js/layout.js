@@ -121,15 +121,20 @@ function getPossiblePositions () {
 	var y_pos = quad_height * 0.5;
 	var positions = [];
 	var pos = {};
+	var player_start = {
+		col: Math.floor(start_pos.x / quad_width),
+		row: Math.floor(start_pos.y / quad_height)
+	};
+	// console.log(player_start);
 
-	for (var w = 0; w < num_rows; w++) {
+	for (var row = 0; row < num_rows; row++) {
 
 		x_pos = quad_width * 0.5;
-		for (var h = 0; h < num_cols; h++) {
+		for (var col = 0; col < num_cols; col++) {
 
 			// skip the first box, since the player is there already
 			// TODO fix this to look for the players pos (start_pos)
-			if (w === 1 && h === 0) { 
+			if (row === player_start.row && col === player_start.col) { 
 				x_pos += quad_width;
 				continue; 
 			}
@@ -155,6 +160,7 @@ function getNearbyWalls (sprite) {
 	sprite.qx = Math.floor(sprite.x / quad_width);
 	sprite.qy = Math.floor(sprite.y / quad_height);
 
+	// annotate this one please 
 	var re = new RegExp(`${sprite.qx}${sprite.qy}\\d`);
 	
 	walls.forEach( function (w) {

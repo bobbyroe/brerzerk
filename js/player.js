@@ -33,15 +33,13 @@ return function (pos) {
 	player_sprite.rate = 2;
 	player_sprite.death_anim_duration = 80;
 	player_sprite.death_start_timer = -1;
-	player_sprite.blinking_duration = (num_players_remaining === max_players_remaining) ? 120 : 120;
+	player_sprite.blinking_duration = (is_game_restarting === true) ? 120 : 10;
 	player_sprite.bullet_delay = 30;
 	player_sprite.next_bullet_time = 0;
 	player_sprite.max_bullets = 2;
 	player_sprite.bullet_velocity = 8;
 	player_sprite.bullet_length = 8;
 	player_sprite.bullet_color = 0x00FF00;
-
-	console.log(num_players_remaining);
 
 	// CHEAT
 	player_sprite.is_invincible = false;
@@ -154,6 +152,7 @@ return function (pos) {
 		if (timer < player.blinking_duration) {
 			player.visible = (timer % 40 > 20);
 		} else {
+			player.visible = true;
 			player_sprite.tick = playerPlay;
 		}
 	}
@@ -193,6 +192,7 @@ return function (pos) {
 			stage.removeChild(player_sprite);
 			if (timer - player_sprite.death_start_timer - player_sprite.death_anim_duration > player_sprite.blinking_duration) {
 				num_players_remaining -= 1;
+				is_game_restarting = true;
 				start_pos = {x: 90, y: 300};
 				gameState = gameRestarting;
 			}
