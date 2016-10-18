@@ -11,8 +11,7 @@ var player;
 var evil_otto;
 var gameState;
 var timer = 0;
-var max_players_remaining = 3;
-var num_players_remaining = max_players_remaining;
+var num_players_remaining = 3;
 var walls = [];
 var robots = [];
 var DEBUG = false;
@@ -169,7 +168,7 @@ function prepareToExitLevel (side) {
 
 	x_vel = 0;
 	y_vel = 0;
-	var rate = 5;
+	var rate = 7;
 	switch (side) {
 		case 'top': 
 		x_vel = 0;
@@ -258,8 +257,8 @@ function updateBullets () {
 function getRobots () {
 
 	var robots = [];
-	var max_num_robots = 9, min_num_robots = 3;
-	var num_robots = Math.floor(Math.random() * max_num_robots) + min_num_robots;
+	var max_num_robots = 12, min_num_robots = 3;
+	var num_robots = Math.floor(Math.random() * (max_num_robots - min_num_robots)) + min_num_robots;
 	var possible_positions = getPossiblePositions();
 	var robot, robot_pos;
 

@@ -23,7 +23,7 @@ return function () {
 	robot_sprite.vx = 0;
 	robot_sprite.vy = 0;
 	robot_sprite.scale.set(4, 4);
-	robot_sprite.rate = 0.5;
+	robot_sprite.rate = 0;
 	robot_sprite.explode_tex = robot_explode_tex;
 	robot_sprite.explode_tex.num_frames = 3;
 	robot_sprite.tint = enemy_color;
@@ -42,7 +42,7 @@ return function () {
 	robot_sprite.aim = targetHumanoid;
 	
 	// animation vars
-	var frame_delay = 0.15; // smaller == slower
+	robot_sprite.frame_delay = 0.25; // smaller == slower
 
 	// ROBOT STATES
 	function robotDead () {
@@ -61,8 +61,10 @@ return function () {
 	var qx, qy;
 	function robotPlay () {
 
-		var anim_frame_index = (Math.round(timer * frame_delay) % 2) * 8;
-		var standing_frame_index = (Math.round( (timer + robot_sprite.timer_offset) * frame_delay) % 6) * 8;
+		robot_sprite.frame_delay = 0.25 * (1 - robots.length * 0.11); // 2 / 12 (1 / max num robots)
+
+		var anim_frame_index = (Math.round(timer * robot_sprite.frame_delay) % 2) * 8;
+		var standing_frame_index = (Math.round( (timer + robot_sprite.timer_offset) * robot_sprite.frame_delay) % 6) * 8;
 		var arr = [];
 
 		if (robot_sprite.was_hit === true) {
@@ -110,6 +112,8 @@ return function () {
 
 	function targetHumanoid () {
 
+		robot_sprite.rate = 2 - (robots.length * 0.16); // 2 / 12 (max speed / max num robots)
+
 		robot_sprite.ax = (robot_sprite.x - player.x > 1) ? -1 : 1;
 		robot_sprite.ay = (robot_sprite.y - player.y > 1) ? -1 : 1;
 
@@ -117,8 +121,8 @@ return function () {
 		if (Math.abs(robot_sprite.y - player.y) < 20) { robot_sprite.ay = 0; }
 
 		// update robot velocity
-		robot_sprite.vx = robot_sprite.ax;
-		robot_sprite.vy = robot_sprite.ay;
+		robot_sprite.vx = robot_sprite.ax * robot_sprite.rate;
+		robot_sprite.vy = robot_sprite.ay * robot_sprite.rate;
 		
 		var nearby_walls = getNearbyWalls(robot_sprite);
 		if (nearby_walls.top === true) {
@@ -144,10 +148,6 @@ return function () {
 					fire(robot_sprite);
 			}	
 		}
-	}
-
-	function robotCanFire () {
-		return false;
 	}
 
 	// 

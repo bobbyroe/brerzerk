@@ -24,12 +24,18 @@ function drawWalls () {
 	var num_rows = 3;
 	var x_pos = 10;
 	var y_pos = 10;
+	var width = 15;
 	var rect = null;
 	var sides = "top,right,bottom,left".split(',');
 	var random_sides = [];
 	var color = 0x0000FF;
 	var random_prob = 0.2;
 	var a_random_side = '';
+	var player_start = {
+		col: Math.floor(start_pos.x / quad_width),
+		row: Math.floor(start_pos.y / quad_height)
+	};
+	var blocker_side = '';
 
 	for (var w = 0; w < num_rows; w++) {
 
@@ -51,17 +57,34 @@ function drawWalls () {
 			if (w === num_rows - 1 && h === num_cols - 1) { random_sides = 'right,bottom'.split(','); }
 			if (w === num_rows - 1 && h === 0) { random_sides = 'bottom,left'.split(','); }
 
+			if (Math.random() < random_prob) {
+				remaining_sides = sides.filter( function (s, i) {
+					return random_sides.indexOf(s) === -1;
+				});
+				random_sides.push(remaining_sides[Math.floor(Math.random() * remaining_sides.length)]);
+			}
+
 			// "doors"
 			if (w === 0 && h === 2) { random_sides = []; }
 			if (w === 1 && h === num_cols - 1) { random_sides = []; }
 			if (w === num_rows - 1 && h === 2) { random_sides = []; }
 			if (w === 1 && h === 0) { random_sides = []; }
 
-			if (Math.random() < random_prob) {
-				remaining_sides = sides.filter( function (s, i) {
-					return random_sides.indexOf(s) === -1;
-				});
-				random_sides.push(remaining_sides[Math.floor(Math.random() * remaining_sides.length)]);
+			if (is_game_restarting === false) {
+				// draw exit blocker
+				if (player_start.row === 0 && player_start.col === 2) { blocker_side = 'top'; }
+				if (player_start.row === 1 && player_start.col === num_cols - 1) { blocker_side = 'right'; }
+				if (player_start.row === num_rows - 1 && player_start.col === 2) { blocker_side = 'bottom'; }
+				if (player_start.row === 1 && player_start.col === 0) { blocker_side = 'left'; }
+
+				if (w === player_start.row && h === player_start.col) {
+					color = enemy_color;
+					width = 8;
+					random_sides = [ blocker_side ];
+				} else {
+					color = 0x0000FF;
+					width = 15;
+				}
 			}
 
 			random_sides.forEach( function (s) {
@@ -72,25 +95,25 @@ function drawWalls () {
 
 				switch (s) {
 					case 'top': 
-					rect.drawRect(0, 0, quad_width + 10, 15);
+					rect.drawRect(0, 0, quad_width + 10, width);
 					rect.x = x_pos;
 					rect.y = y_pos;
 					i = 0;
 					break;
 					case 'right': 
-					rect.drawRect(0, 0, 15, quad_height + 5);
+					rect.drawRect(0, 0, width, quad_height + 5);
 					rect.x = x_pos + quad_width;
 					rect.y = y_pos;
 					i = 1;
 					break;
 					case 'bottom': 
-					rect.drawRect(0, 0, quad_width + 5, 15);
+					rect.drawRect(0, 0, quad_width + 5, width);
 					rect.x = x_pos;
 					rect.y = y_pos + quad_height;
 					i = 2;
 					break;
 					case 'left': 
-					rect.drawRect(0, 0, 15, quad_height + 5);
+					rect.drawRect(0, 0, width, quad_height + 5);
 					rect.x = x_pos;
 					rect.y = y_pos;
 					i = 3;
@@ -191,9 +214,7 @@ function getNearbyWalls (sprite) {
  * Game UI, score and num players icons
  *******************************************************************************/
 function updateGameUI () {
-	// if (DEBUG === true && evil_otto) { 
-	// 	debug_timer.textContent = ``; 
-	// }
+
 	updateScore();
 }
 
@@ -303,7 +324,7 @@ function getDigit (score_str, index) {
 	var rect_d = new PIXI.Rectangle(x_index, 0, width, 9);
 	digit_tex.frame = rect_d;
 	digit_sprite.scale.set(4, 4);
-	digit_sprite.tint = 0xFFFFFF;
+	digit_sprite.tint = 0x00FF00;
 	digit_sprite.x = index * (width * 4) + (padding * index);
 	digit_sprite.y = 0;
 	digit_sprite.name = `digit${index}`;

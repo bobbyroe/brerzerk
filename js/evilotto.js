@@ -41,7 +41,7 @@ function ottoPlay () {
     var dx = player.x - otto_sprite.x;
     var dy = player.y - otto_sprite.y;
     var angle = Math.atan2(dy, dx);
-    otto_sprite.rate = 2 - (robots.length * 0.22); // 2 / 9 (max speed / max num robots)
+    otto_sprite.rate = 2 - (robots.length * 0.16); // 2 / 12 (max speed / max num robots)
 
     otto_sprite.vx = Math.cos(angle) * otto_sprite.rate;
     otto_sprite.vy = Math.sin(angle) * otto_sprite.rate;
