@@ -129,6 +129,7 @@ function gameStart () {
 	level_bonus = robots.length * 10;
 
 	//
+	// play a random robot speach bit
 	var SPACE = keyboard('Space');
 	SPACE.press = function () { 
 		var snds = Object.keys(talking_audio);
@@ -137,6 +138,13 @@ function gameStart () {
 		sound.rate(random_rate, id);
 	};
 	SPACE.release = function () { /* no op */ };
+
+	// toggle : pause the game
+	var ESC = keyboard('Escape');
+	ESC.press = function () { 
+			gameState = (gameState === gamePlay) ? gamePaused : gamePlay;
+	};
+	ESC.release = function () { /* no op */ };
 	//
 
 	gameState = gamePlay;
@@ -159,6 +167,8 @@ function gamePlay () {
 	updateBullets();
 	updateGameUI(); // score, etc ... including debug stuff – in layout.js
 }
+
+function gamePaused () { /* no op */ }
 
 function prepareToExitLevel (side) {
 
@@ -315,7 +325,7 @@ function getEnemyColor () {
 	if (score >= score_tiers[5]) { col = colors[6]; }
 	if (score >= score_tiers[6]) { col = colors[7]; }
 	if (score >= score_tiers[7]) { col = colors[8]; }
-	if (score >= score_tiers[8]) { col = Math.floor(Math.random() * 0xFFFFFF);  } // MAX
+	if (score >= score_tiers[8]) { col = Math.floor(Math.random() * 0xFFFFFF); } // MAX
 	return col;
 }
 

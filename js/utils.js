@@ -21,8 +21,6 @@ function keyboard (code) {
 	};
 
 	key.downHandler = function (evt) {
-		
-		// console.log(evt.code);
 
 		if (evt.code === key.code) {
 			key.shiftKey = evt.shiftKey;
