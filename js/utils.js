@@ -42,13 +42,11 @@ function keyboard (code) {
 	};
 
 	var dnFn = key.downHandler.bind(key);
-	window.addEventListener("keydown", dnFn, false);
 	var upFn = key.upHandler.bind(key);
-	window.addEventListener("keyup", upFn, false);
-	listeners.push(
-		{ type: 'keydown', fn: dnFn },
-		{ type: 'keyup', fn: upFn }
-	);
+	listeners.push({
+		down: { type: 'keydown', fn: dnFn },
+		up: { type: 'keyup', fn: upFn }
+	});
 	
 	return key;
 }
@@ -59,6 +57,23 @@ function removeListeners () {
 	});
 }
 
+// one set of listeners for all!
+function onKeyDown (evt) {
+
+	for (var l = 0, len = listeners.length; l < len; l++) {
+		listeners[l].down.fn(evt);
+	}
+}
+
+function onKeyUp (evt) {
+
+	for (var l = 0, len = listeners.length; l < len; l++) {
+		listeners[l].up.fn(evt);
+	}
+}
+
+window.addEventListener("keydown", onKeyDown, false);
+window.addEventListener("keyup", onKeyUp, false);
 /*******************************************************************************
  * HIT TESTING!
  *******************************************************************************/

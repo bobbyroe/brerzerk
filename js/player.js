@@ -47,8 +47,25 @@ return function (pos) {
 	// public methods
 	player_sprite.tick = playerPending;
 
+	// var moveUp = {
+	// 	key: 'ArrowUp',
+	// 	pressFn: function () {
+	// 		if (moveUp.shiftKey === true) {
+	// 			sprite.ay = -1;
+	// 			tryToShoot(sprite);
+	// 		} else {
+	// 			sprite.vy = sprite.rate * -1;
+	// 		}
+	// 	},
+	// 	releaseFn: function () {
+	// 		if (moveDown.isDown === false) {
+	// 			sprite.ay = 0;
+	// 			sprite.vy = 0;
+	// 		}
+	// 	}
+	// };
+	// registerKey(moveUp);
 	setUpCtrlsFor(player_sprite);
-	
 	function setUpCtrlsFor (sprite) {
 
 		var moveUp = keyboard(sprite.ctrl_keys[0]);
