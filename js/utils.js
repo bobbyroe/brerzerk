@@ -52,9 +52,7 @@ function keyboard (code) {
 }
 
 function removeListeners () {
-	listeners.forEach( function (l) {
-		window.removeEventListener(l.type, l.fn, false);
-	});
+	listeners = [];
 }
 
 // one set of listeners for all!

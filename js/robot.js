@@ -69,6 +69,8 @@ return function () {
 
 		if (robot_sprite.was_hit === true) {
 
+			console.log(robots.length);
+			
 			robot_sprite.death_start_timer = timer;
 			sound.play('robot_dead');
 			score += robot_score;

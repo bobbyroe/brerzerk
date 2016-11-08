@@ -7,6 +7,7 @@ PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 /*******************************************************************************
  * Setup
  *******************************************************************************/
+var BZRK = {}; // game object
 var player;
 var evil_otto;
 var gameState;
@@ -23,7 +24,7 @@ var score = 0;
 var level_bonus = 0;
 var game_over_timer = -1;
 var is_game_restarting = true;
-
+var pubSub = new Events();
 // exit level velocity
 var x_vel = 0;
 var y_vel = 0;
