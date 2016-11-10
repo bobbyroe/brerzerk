@@ -1,22 +1,17 @@
 /**
 // 
-//  USAGE, as a member of your application object:
-//  pass in this as the default context
-//  ex: this.events = new Events(this);
-// 
-//  or on it's own ... var Event_Manager = new Events();
-// 
 **/
 class Events {
 
-    constuctor (context) {
+    constructor (context) {
+        
         this.context = context;
         this.listeners = {};
     }
 
-    listenTo (target, evt_name, callback, context) {
+    listenTo (target, evt_name, callback, opt_context) {
 
-        var scope = context ? context : this.context;
+        var scope = opt_context ? opt_context : this.context;
         var new_listener = {
             target: target,
             callback: callback,
@@ -29,8 +24,8 @@ class Events {
             this.listeners[evt_name] = [new_listener];
         }
     }
-
     stopListening (target, evt_name, callback) {
+
         var listener;
         var listeners = this.listeners[evt_name];
         var leftovers = [];
@@ -45,8 +40,8 @@ class Events {
             this.listeners[evt_name] = leftovers;
         }
     }
-
     isListening (target, evt_name, callback) {
+
         var listeners = this.listeners[evt_name];
         var confirmed = [];
         if (listeners) {
@@ -56,8 +51,8 @@ class Events {
             return confirmed !== [];
         }
     }
-
     dispatch (evt_name, caller, params) {
+
         var listener;
         var args = Array.prototype.slice.call(arguments, 1);
         var listeners = this.listeners[evt_name];

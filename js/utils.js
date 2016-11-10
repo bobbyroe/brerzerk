@@ -246,10 +246,10 @@ function createGameUIBits () {
 	splash_header = document.createElement('div');
 	splash_header.style = "margin:0 auto;color:#FF0000;font-size:96px;font-family:sans-serif;font-weight:bold;text-align:center";
 	logo_img = document.createElement('img');
-	logo_img.src = 'images/BERZERK_LOGO_low.png';
-	logo_img.style = "width:1024px;margin:0 auto"
+	logo_img.src = 'images/berzerk_splash.png';
+	logo_img.style = "width:1024px;margin:0 auto";
 	anykey_subhead = document.createElement('h2');
-	anykey_subhead.style = "margin-top:50px;color:#FFFF00;font-family:sans-serif;font-size:32px;text-align:center;font-weight:normal";
+	anykey_subhead.style = "margin-top:-50px;color:#FFFF00;font-family:sans-serif;font-size:32px;text-align:center;font-weight:normal";
 	document.body.appendChild(splash_header);
 	splash_header.appendChild(logo_img);
 	document.body.appendChild(anykey_subhead);

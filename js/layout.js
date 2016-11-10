@@ -213,6 +213,14 @@ function getNearbyWalls (sprite) {
 /*******************************************************************************
  * Game UI, score and num players icons
  *******************************************************************************/
+
+function handleAllRobotsKilled () {
+
+	console.log('handleAllRobotsKilled');
+	score += level_bonus;
+	showBonusMessage();
+};
+
 function updateGameUI () {
 
 	updateScore();

@@ -34,6 +34,7 @@ return function () {
 	robot_sprite.bullet_velocity = getRobotBulletVelocity();
 	robot_sprite.bullet_length = 6;
 	robot_sprite.bullet_color = enemy_color;
+	robot_sprite.was_hit = false;
 	robot_sprite.qx = -1;
 	robot_sprite.qy = -1;
 
@@ -54,11 +55,11 @@ return function () {
 			robot_sprite.anchor.y = 0.28;
 			robot_sprite.texture.frame = new PIXI.Rectangle( frame_num * 18, 0, 18, 18);
 		} else {
+
 			setTimeout(removeRobot, 1, robot_sprite);
 		}
 	}
 
-	var qx, qy;
 	function robotPlay () {
 
 		robot_sprite.frame_delay = 0.25 * (1 - robots.length * 0.11); // 2 / 12 (1 / max num robots)
@@ -66,21 +67,17 @@ return function () {
 		var anim_frame_index = (Math.round(timer * robot_sprite.frame_delay) % 2) * 8;
 		var standing_frame_index = (Math.round( (timer + robot_sprite.timer_offset) * robot_sprite.frame_delay) % 6) * 8;
 		var arr = [];
-
+		var robots_left = -1;
 		if (robot_sprite.was_hit === true) {
-
-			console.log(robots.length);
 			
 			robot_sprite.death_start_timer = timer;
 			sound.play('robot_dead');
 			score += robot_score;
 
 			// if all robots have been killed, award bonus
-			if (robots.length <= 1) {
-
-				// this doesn't belong here ... publish a message instead
-				score += level_bonus;
-				showBonusMessage();
+			robots_left = robots.filter( r => (r.was_hit === false)).length;
+			if (robots_left === 0) {
+				pubSub.dispatch('all_robots_killed', window);
 			}
 
 			robot_sprite.tick = robotDead;

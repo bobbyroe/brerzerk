@@ -24,7 +24,8 @@ var score = 0;
 var level_bonus = 0;
 var game_over_timer = -1;
 var is_game_restarting = true;
-var pubSub = new Events();
+var pubSub = new Events(BZRK);
+
 // exit level velocity
 var x_vel = 0;
 var y_vel = 0;
@@ -57,6 +58,8 @@ PIXI.loader
 var sound = getHowlerAudio();
 
 function setup() {
+	
+	pubSub.listenTo(window, 'all_robots_killed', handleAllRobotsKilled);
 	resetGameState();
 	gameLoop();	
 }
