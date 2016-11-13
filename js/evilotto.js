@@ -1,9 +1,9 @@
-/**
- *
- * GLOBALS: stage, timer, maze, enemy_color
- * PIXI globals: Sprite
- *
- **/
+import { soundsInSequence } from "./audio.js";
+/*******************************************************************************
+ * evilotto.js
+ ******************************************************************************/
+
+var otto_sprite;
 function getEvilOtto (pos) {
 
 	if (evil_otto != null) { evil_otto.destroy(); } // clean up
@@ -28,9 +28,8 @@ function getEvilOtto (pos) {
 	// public methods
 	otto_sprite.tick = ottoDormant;
 
-	return otto_sprite
+	return otto_sprite;
 }
-
 
 var otto_frame_indices = [6,7,8,9,10,11,12,11,10,9,8,7];
 var o_len = otto_frame_indices.length - 1;
@@ -77,3 +76,5 @@ function ottoStart () {
 	}
 	
 }
+
+export { getEvilOtto };

@@ -1,4 +1,18 @@
-
+import { Events } from "./events.js";
+import { getHowlerAudio } from "./audio.js";
+import * as keyboard from "./keyboard.js";
+import { hitTestAll, createGameUIBits, showSplashScreen, hideSplashScreen } from "./utils.js";
+import { getBullet } from "./bullet.js";
+import { getPlayer } from "./player.js";
+import { getRobot } from "./robot.js";
+import { getEvilOtto } from "./evilotto.js";
+import { drawWalls, getPossiblePositions, resetScoreDisplay, handleAllRobotsKilled, updateGameUI } from "./layout.js";
+import { soundsInSequence } from "./audio.js";
+/*******************************************************************************
+ * main.js
+ ******************************************************************************/
+pubSub = new Events();
+sound = getHowlerAudio();
 
 // make stuff look pixelated
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
@@ -7,31 +21,8 @@ PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 /*******************************************************************************
  * Setup
  *******************************************************************************/
-var BZRK = {}; // game object
-var player;
-var evil_otto;
-var gameState;
-var timer = 0;
-var num_players_remaining = 3;
-var walls = [];
-var robots = [];
-var DEBUG = false;
-var bullets = [];
-var next_bullet_time = 150;
-var enemy_color = 0x000000;
-var robot_bullets = [];
-var score = 0;
-var level_bonus = 0;
-var game_over_timer = -1;
-var is_game_restarting = true;
-var pubSub = new Events(BZRK);
 
-// exit level velocity
-var x_vel = 0;
-var y_vel = 0;
-var start_pos = {x: 90, y: 300};
-
-var renderer = PIXI.autoDetectRenderer(
+let renderer = PIXI.autoDetectRenderer(
 	1024, 768, 
 	{antialias: false, transparent: false, resolution: 1}
 );
@@ -40,10 +31,7 @@ document.body.appendChild(renderer.view);
 // debug_timer, score, game over screen ...
 createGameUIBits();
 
-var stage = new PIXI.Container();
 renderer.render(stage);
-
-var maze = new PIXI.Container();
 stage.addChild(maze);
 
 // APP STARTS-UP HERE ...
@@ -55,11 +43,12 @@ PIXI.loader
 	.add("images/charset.png")
 	.load(setup);
 
-var sound = getHowlerAudio();
-
 function setup() {
 	
 	pubSub.listenTo(window, 'all_robots_killed', handleAllRobotsKilled);
+	pubSub.listenTo(window, 'player_is_exiting', handlePlayerExiting);
+
+	keyboard.init();
 	resetGameState();
 	gameLoop();	
 }
@@ -94,9 +83,8 @@ function gameRestarting () {
 	maze.removeChildren();
 	walls = [];
 	robots = [];
-	removeListeners();
-	anykey_subhead.textContent = "";
-	logo_img.style.display = 'none';
+	keyboard.removeListeners();
+	hideSplashScreen();
 
 	resetScoreDisplay();
 
@@ -134,17 +122,17 @@ function gameStart () {
 
 	//
 	// play a random robot speach bit
-	var SPACE = keyboard('Space');
-	SPACE.press = function () { 
-		var snds = Object.keys(talking_audio);
-		var id = sound.play(snds[Math.floor(Math.random() * snds.length)]); 
-		var random_rate = Math.random() + 0.5;
-		sound.rate(random_rate, id);
-	};
-	SPACE.release = function () { /* no op */ };
+	// var SPACE = keyboard.handle('Space');
+	// SPACE.press = function () { 
+	// 	var snds = Object.keys(talking_audio);
+	// 	var id = sound.play(snds[Math.floor(Math.random() * snds.length)]); 
+	// 	var random_rate = Math.random() + 0.5;
+	// 	sound.rate(random_rate, id);
+	// };
+	// SPACE.release = function () { /* no op */ };
 
 	// toggle : pause the game
-	var ESC = keyboard('Escape');
+	var ESC = keyboard.handle('Escape');
 	ESC.press = function () { 
 			gameState = (gameState === gamePlay) ? gamePaused : gamePlay;
 	};
@@ -157,23 +145,29 @@ function gameStart () {
 
 function gameDormant () {
 	renderer.view.hidden = true;
-	// splash_header.textContent = "";
-	logo_img.style.display = 'block';
-	anykey_subhead.textContent = "HIT ANY KEY";
+	showSplashScreen();
 }
 
 function gamePlay () {
 
-	hitTestAll();
+	hitTestAll({player, evil_otto, walls, robots, bullets, robot_bullets});
 	player.tick();
 	evil_otto.tick();
 	updateRobots();
 	updateBullets();
 	updateGameUI(); // score, etc ... including debug stuff – in layout.js
+	console.log('!!');
 }
 
 function gamePaused () { /* no op */ }
 
+function handlePlayerExiting (exit_side) {
+	prepareToExitLevel(exit_side);
+	gameState = exitingLevel;
+}
+
+var x_vel = 0;
+var y_vel = 0;
 function prepareToExitLevel (side) {
 
 	maze.children.forEach( function (child) {
@@ -238,23 +232,7 @@ function gameOver () {
 	}
 }
 
-/*******************************************************************************
- * bullets
- *******************************************************************************/
-function fire (sprite) {
-
-	var shot = getBullet(sprite);
-	maze.addChild(shot);
-
-	if (sprite === player) {
-		bullets.push(shot);
-		sound.play('player_bullet');
-	} else {
-		robot_bullets.push(shot);
-		sound.play('robot_bullet');
-	}
-}
-
+// BULLETS
 function updateBullets () {
 
 	for (var i = 0, s_len = bullets.length; i < s_len; i++) {

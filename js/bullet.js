@@ -1,10 +1,9 @@
-/**
- *
- * GLOBALS: *timer
- * PIXI globals: Grfx
- * fns: removeBullet, isOutOfBounds
- *
- **/
+import { degToRad } from "./utils.js";
+import { getOutOfBoundsSide } from "./layout.js";
+/*******************************************************************************
+ * bullet.js
+ ******************************************************************************/
+
 var getBullet = (function () {
 
 return function (sprite) {
@@ -52,7 +51,7 @@ return function (sprite) {
 		}
 	}
 	return shot;
-}
+};
 
 })();
 
@@ -64,3 +63,18 @@ function removeBullet (shot) {
 	arr.splice(arr.indexOf(shot), 1);
 	shot.destroy();
 }
+
+function fire (sprite) {
+
+	var shot = getBullet(sprite);
+	maze.addChild(shot);
+
+	if (sprite === player) {
+		bullets.push(shot);
+		sound.play('player_bullet');
+	} else {
+		robot_bullets.push(shot);
+		sound.play('robot_bullet');
+	}
+}
+export { getBullet, fire };

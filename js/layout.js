@@ -1,24 +1,21 @@
-/**
- *
- * GLOBALS: stage, walls, start_pos, maze
- * PIXI globals: Grfx
- *
- **/
+/*******************************************************************************
+ * layout.js
+ ******************************************************************************/
 
 // more globals
 var quad_width = 200;
 var quad_height = 225;
 var maze_width = 10 + quad_width * 5;
 var maze_height = 10 + quad_height * 3;
+
 var digits_sprites = [];
 var num_digits = 5;
-
 var score_container;
 var players_remaining;
 var score_cntr;
 var bonus_text;
 
-function drawWalls () {
+function drawWalls () { // main
 	
 	var num_cols = 5;
 	var num_rows = 3;
@@ -36,7 +33,8 @@ function drawWalls () {
 		row: Math.floor(start_pos.y / quad_height)
 	};
 	var blocker_side = '';
-
+	var remaining_sides = [];
+	
 	for (var w = 0; w < num_rows; w++) {
 
 		x_pos = 10;
@@ -136,7 +134,7 @@ function drawWalls () {
 }
 
 // used by 'getRobots'
-function getPossiblePositions () {
+function getPossiblePositions () { // main.js
 
 	var num_cols = 5;
 	var num_rows = 3;
@@ -174,7 +172,7 @@ function getPossiblePositions () {
 	return positions;
 }
 
-function getNearbyWalls (sprite) {
+function getNearbyWalls (sprite) { // robot.js
 
 	var top = false;
 	var right = false;
@@ -210,18 +208,26 @@ function getNearbyWalls (sprite) {
 	};
 }
 
+function getOutOfBoundsSide (obj) { // bullet.js && player.js
+	var side = (obj.x < 0) ? 'left' :
+		(obj.x + obj.width > maze_width + 25) ? 'right' : // add 25px fudge
+		(obj.y < 0) ? 'top' :
+		(obj.y + obj.height > maze_height + 25) ? 'bottom' : // add 25px fudge
+		'none';
+	return side;
+}
+
 /*******************************************************************************
  * Game UI, score and num players icons
  *******************************************************************************/
 
-function handleAllRobotsKilled () {
+function handleAllRobotsKilled () { // main.js
 
-	console.log('handleAllRobotsKilled');
 	score += level_bonus;
 	showBonusMessage();
 };
 
-function updateGameUI () {
+function updateGameUI () { // main.js
 
 	updateScore();
 }
@@ -242,7 +248,7 @@ function showBonusMessage () {
 	bonus_text.visible = true;
 }
 
-function resetScoreDisplay () {
+function resetScoreDisplay () { // main.js
 
 	if (score_container != null) {
 		stage.removeChild(score_container);
@@ -363,3 +369,10 @@ function getXindexForChar (c) {
 	var width = 8;
 	return (c.charCodeAt(0) - 31) * width;
 }
+
+export { 
+	drawWalls, getPossiblePositions, getNearbyWalls, handleAllRobotsKilled, 
+	resetScoreDisplay, updateGameUI, getOutOfBoundsSide 
+};
+
+

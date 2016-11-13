@@ -1,8 +1,6 @@
- /**
- * 
- * Globals: sound
- *   
- **/
+/*******************************************************************************
+ * audio.js
+ ******************************************************************************/
 
 function getHowlerAudio () {
 
@@ -60,3 +58,5 @@ function soundsInSequence (arr) {
 	}
 	
 }
+
+export { getHowlerAudio, soundsInSequence };

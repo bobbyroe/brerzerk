@@ -9,7 +9,9 @@
   "browser": true,
   "esnext": true,
   "globals": {
-    "PIXI": true
+    "PIXI": true,
+    "Howl": true,
+    "BZRK": true
   },
   // "strict": "global",
   "undef": true,

@@ -1,18 +1,14 @@
-/**
- *
- * GLOBALS: num_players_remaining, sound, timer, next_bullet_time
- * PIXI globals: Sprite
- * fns: keyboard, fire
- * fns: gameRestarting, exitingLevel, prepareToExitLevel
- *
- **/
+import { handle } from "./keyboard.js";
+import { getOutOfBoundsSide } from "./layout.js";
+import { fire } from "./bullet.js";
+/*******************************************************************************
+ * player.js
+ ******************************************************************************/
 
 var getPlayer = (function () {
 
 var colors8 = [0xFFFFFF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFF0000, 0x00FF00];
-
 return function (pos) {
-
 
 	var player_tex = PIXI.loader.resources["images/player.png"].texture.clone();
 	var player_sprite = new PIXI.Sprite(player_tex);
@@ -47,31 +43,13 @@ return function (pos) {
 	// public methods
 	player_sprite.tick = playerPending;
 
-	// var moveUp = {
-	// 	key: 'ArrowUp',
-	// 	pressFn: function () {
-	// 		if (moveUp.shiftKey === true) {
-	// 			sprite.ay = -1;
-	// 			tryToShoot(sprite);
-	// 		} else {
-	// 			sprite.vy = sprite.rate * -1;
-	// 		}
-	// 	},
-	// 	releaseFn: function () {
-	// 		if (moveDown.isDown === false) {
-	// 			sprite.ay = 0;
-	// 			sprite.vy = 0;
-	// 		}
-	// 	}
-	// };
-	// registerKey(moveUp);
 	setUpCtrlsFor(player_sprite);
 	function setUpCtrlsFor (sprite) {
 
-		var moveUp = keyboard(sprite.ctrl_keys[0]);
-		var moveRight = keyboard(sprite.ctrl_keys[1]);
-		var moveDown = keyboard(sprite.ctrl_keys[2]);
-		var moveLeft = keyboard(sprite.ctrl_keys[3]);
+		var moveUp = handle(sprite.ctrl_keys[0]);
+		var moveRight = handle(sprite.ctrl_keys[1]);
+		var moveDown = handle(sprite.ctrl_keys[2]);
+		var moveLeft = handle(sprite.ctrl_keys[3]);
 
 		moveLeft.press = function () {
 			if (moveLeft.shiftKey === true) {
@@ -166,10 +144,10 @@ return function (pos) {
 	function playerPending () {
 
 		// blink player location
-		if (timer < player.blinking_duration) {
-			player.visible = (timer % 40 > 20);
+		if (timer < player_sprite.blinking_duration) {
+			player_sprite.visible = (timer % 40 > 20);
 		} else {
-			player.visible = true;
+			player_sprite.visible = true;
 			player_sprite.tick = playerPlay;
 		}
 	}
@@ -182,8 +160,7 @@ return function (pos) {
 
 		var exit_side = getOutOfBoundsSide(player_sprite);
 		if (exit_side !== 'none') {
-			prepareToExitLevel(exit_side);
-			gameState = exitingLevel;
+			pubSub.dispatch('player_is_exiting', window, exit_side);
 		}
 
 		if (player_sprite.was_hit === true && player_sprite.is_invincible === false) {
@@ -220,3 +197,4 @@ return function (pos) {
 }
 })();
 
+export { getPlayer };
