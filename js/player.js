@@ -1,7 +1,6 @@
 import { handle } from "./keyboard.js";
 import { getOutOfBoundsSide } from "./layout.js";
 import { fire } from "./bullet.js";
-import { updateRobots } from "./gameStates.js";
 /*******************************************************************************
  * player.js
  ******************************************************************************/
@@ -9,7 +8,11 @@ import { updateRobots } from "./gameStates.js";
 var getPlayer = (function () {
 
 var colors8 = [0xFFFFFF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFF0000, 0x00FF00];
-return function (pos) {
+return function (game_stuff) {
+
+	let { 
+	 	stage, sound, pubSub, is_game_restarting, start_pos, timer, bullets, next_bullet_time, num_players_remaining
+	} = game_stuff;
 
 	var player_tex = PIXI.loader.resources["images/player.png"].texture.clone();
 	var player_sprite = new PIXI.Sprite(player_tex);
@@ -17,8 +20,8 @@ return function (pos) {
 	player_tex.frame = rect;
 	player_sprite.scale.set(4, 4);
 	player_sprite.tint = 0x00FF00;
-	player_sprite.x = pos.x; // 150;
-	player_sprite.y = pos.y; // 90;
+	player_sprite.x = start_pos.x; // 150;
+	player_sprite.y = start_pos.y; // 90;
 	player_sprite.name = 'humanoid';
 	
 	player_sprite.vx = 0;
@@ -189,13 +192,12 @@ return function (pos) {
 				num_players_remaining -= 1;
 				is_game_restarting = true;
 				start_pos = {x: 90, y: 300};
-				gameState = gameRestarting;
+				pubSub.dispatch('player_has_died', window);
 			}
 		}
-		updateRobots();
 	}
 	return player_sprite;
-}
+};
 })();
 
 export { getPlayer };

@@ -10,7 +10,11 @@ var getRobot = (function () {
 var robot_score = 50;
 var robots_awake_time = 150;
 
-return function () {
+return function (game_stuff) {
+
+	let { 
+	 	enemy_color, sound, pubSub, timer, next_bullet_time, robots, score, player, robot_bullets, max_robot_bullets, maze
+	} = game_stuff;
 
 	var robot_tex = PIXI.loader.resources["images/robot.png"].texture.clone();
 	var robot_sprite = new PIXI.Sprite(robot_tex);

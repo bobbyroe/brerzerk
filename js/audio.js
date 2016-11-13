@@ -38,6 +38,7 @@ function getHowlerAudio () {
 	 	};
 	Object.assign(sfx_audio, talking_audio);
 
+	// sound sequences
 	function playSequence (arr) {
 
 		var snd = arr.shift();
@@ -57,9 +58,5 @@ function getHowlerAudio () {
 
 	return Object.assign(sound, { playSequence });
 }
-/*******************************************************************************
- * sound sequences
- *******************************************************************************/
-
 
 export { getHowlerAudio };

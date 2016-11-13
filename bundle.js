@@ -111,6 +111,7 @@ function getHowlerAudio () {
 	 	};
 	Object.assign(sfx_audio, talking_audio);
 
+	// sound sequences
 	function playSequence (arr) {
 
 		var snd = arr.shift();
@@ -848,177 +849,17 @@ function fire (sprite) {
 }
 
 /*******************************************************************************
- * robot.js
- ******************************************************************************/
-
-var getRobot = (function () {
-
-var robot_score = 50;
-var robots_awake_time = 150;
-
-return function () {
-
-	var robot_tex = PIXI.loader.resources["images/robot.png"].texture.clone();
-	var robot_sprite = new PIXI.Sprite(robot_tex);
-
-	var robot_explode_tex = PIXI.loader.resources["images/robot-explode.png"].texture.clone();
-	var rect = new PIXI.Rectangle(0, 0, 8, 11);
-	robot_tex.frame = rect;
-	robot_sprite.vx = 0;
-	robot_sprite.vy = 0;
-	robot_sprite.scale.set(4, 4);
-	robot_sprite.rate = 0;
-	robot_sprite.explode_tex = robot_explode_tex;
-	robot_sprite.explode_tex.num_frames = 3;
-	robot_sprite.tint = enemy_color;
-	robot_sprite.death_start_timer = -1;
-	robot_sprite.timer_offset = Math.floor(Math.random() * 100);
-	robot_sprite.index = -1;
-	robot_sprite.name = `robot${timer}`;
-	robot_sprite.bullet_velocity = getRobotBulletVelocity();
-	robot_sprite.bullet_length = 6;
-	robot_sprite.bullet_color = enemy_color;
-	robot_sprite.was_hit = false;
-	robot_sprite.qx = -1;
-	robot_sprite.qy = -1;
-
-	// public methods
-	robot_sprite.tick = robotPlay;
-	robot_sprite.aim = targetHumanoid;
-	
-	// animation vars
-	robot_sprite.frame_delay = 0.25; // smaller == slower
-
-	// ROBOT STATES
-	function robotDead () {
-
-		var frame_num = (Math.floor((timer - robot_sprite.death_start_timer) * 0.1) % 4);		
-		if (frame_num < robot_sprite.explode_tex.num_frames) {
-			robot_sprite.texture = robot_sprite.explode_tex;
-			robot_sprite.anchor.x = 0.28;
-			robot_sprite.anchor.y = 0.28;
-			robot_sprite.texture.frame = new PIXI.Rectangle( frame_num * 18, 0, 18, 18);
-		} else {
-
-			setTimeout(removeRobot, 1, robot_sprite);
-		}
-	}
-
-	function robotPlay () {
-
-		robot_sprite.frame_delay = 0.25 * (1 - robots.length * 0.11); // 2 / 12 (1 / max num robots)
-
-		var anim_frame_index = (Math.round(timer * robot_sprite.frame_delay) % 2) * 8;
-		var standing_frame_index = (Math.round( (timer + robot_sprite.timer_offset) * robot_sprite.frame_delay) % 6) * 8;
-		var robots_left = -1;
-		if (robot_sprite.was_hit === true) {
-			
-			robot_sprite.death_start_timer = timer;
-			sound.play('robot_dead');
-			score += robot_score;
-
-			// if all robots have been killed, award bonus
-			robots_left = robots.filter( r => (r.was_hit === false)).length;
-			if (robots_left === 0) {
-				pubSub.dispatch('all_robots_killed', window);
-			}
-
-			robot_sprite.tick = robotDead;
-		} else {
-
-			if (timer < robots_awake_time === false) {
-				robot_sprite.aim();
-			}
-
-			robot_sprite.x += robot_sprite.vx;
-			robot_sprite.y += robot_sprite.vy;
-
-			// animate him
-			if (robot_sprite.vy > 0) {
-				robot_sprite.texture.frame = new PIXI.Rectangle(anim_frame_index + 64, 0, 8, 11);
-			} else if (robot_sprite.vy < 0) {
-				robot_sprite.texture.frame = new PIXI.Rectangle(anim_frame_index + 96, 0, 8, 11);
-			}
-
-			if (robot_sprite.vx > 0) {
-				robot_sprite.texture.frame = new PIXI.Rectangle(anim_frame_index + 48, 0, 8, 11);
-			} else if (robot_sprite.vx < 0) {
-				robot_sprite.texture.frame = new PIXI.Rectangle(anim_frame_index + 80, 0, 8, 11);
-			}
-
-			if (robot_sprite.vx === 0 && robot_sprite.vy === 0) {
-				robot_sprite.texture.frame = new PIXI.Rectangle(standing_frame_index, 0, 8, 11);
-			}
-		}
-	}
-
-	function targetHumanoid () {
-
-		robot_sprite.rate = 2 - (robots.length * 0.16); // 2 / 12 (max speed / max num robots)
-
-		robot_sprite.ax = (robot_sprite.x - player.x > 1) ? -1 : 1;
-		robot_sprite.ay = (robot_sprite.y - player.y > 1) ? -1 : 1;
-
-		if (Math.abs(robot_sprite.x - player.x) < 20) { robot_sprite.ax = 0; }
-		if (Math.abs(robot_sprite.y - player.y) < 20) { robot_sprite.ay = 0; }
-
-		// update robot velocity
-		robot_sprite.vx = robot_sprite.ax * robot_sprite.rate;
-		robot_sprite.vy = robot_sprite.ay * robot_sprite.rate;
-		
-		var nearby_walls = getNearbyWalls(robot_sprite);
-		if (nearby_walls.top === true) {
-			robot_sprite.vy = Math.max(robot_sprite.vy, 0);
-		}
-		if (nearby_walls.right === true) {
-			robot_sprite.vx = Math.min(robot_sprite.vx, 0);
-		}
-		if (nearby_walls.bottom === true) {
-			robot_sprite.vy = Math.min(robot_sprite.vy, 0);
-		}
-		if (nearby_walls.left === true) {
-			robot_sprite.vx = Math.max(robot_sprite.vx, 0);
-		}
-	
-
-		if (timer < next_bullet_time === false && robot_bullets.length < max_robot_bullets) {
-
-			if (Math.abs(robot_sprite.x - player.x) < 20 ||
-				Math.abs(robot_sprite.y - player.y) < 20 ||
-				Math.abs((robot_sprite.x - robot_sprite.y) - (player.x - player.y)) < 20 ||
-				Math.abs((robot_sprite.x - player.y) - (player.x - robot_sprite.y)) < 20) {
-					fire(robot_sprite);
-			}	
-		}
-	}
-
-	// 
-	function getRobotBulletVelocity () {
-
-		var vel = (score < 7500) ? 4 : 8;
-		return vel;
-	}
-
-	function removeRobot (sprite) {
-
-		maze.removeChild(sprite);
-		robots.splice(robots.indexOf(sprite), 1);
-		sprite.destroy();
-	}
-
-	return robot_sprite;
-};
-
-})();
-
-/*******************************************************************************
  * player.js
  ******************************************************************************/
 
 var getPlayer = (function () {
 
 var colors8 = [0xFFFFFF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFF0000, 0x00FF00];
-return function (pos) {
+return function (game_stuff) {
+
+	let { 
+	 	stage, sound, pubSub, is_game_restarting, start_pos, timer, bullets, next_bullet_time, num_players_remaining
+	} = game_stuff;
 
 	var player_tex = PIXI.loader.resources["images/player.png"].texture.clone();
 	var player_sprite = new PIXI.Sprite(player_tex);
@@ -1026,8 +867,8 @@ return function (pos) {
 	player_tex.frame = rect;
 	player_sprite.scale.set(4, 4);
 	player_sprite.tint = 0x00FF00;
-	player_sprite.x = pos.x; // 150;
-	player_sprite.y = pos.y; // 90;
+	player_sprite.x = start_pos.x; // 150;
+	player_sprite.y = start_pos.y; // 90;
 	player_sprite.name = 'humanoid';
 	
 	player_sprite.vx = 0;
@@ -1198,13 +1039,180 @@ return function (pos) {
 				num_players_remaining -= 1;
 				is_game_restarting = true;
 				start_pos = {x: 90, y: 300};
-				gameState = gameRestarting;
+				pubSub.dispatch('player_has_died', window);
 			}
 		}
-		updateRobots();
 	}
 	return player_sprite;
-}
+};
+})();
+
+/*******************************************************************************
+ * robot.js
+ ******************************************************************************/
+
+var getRobot = (function () {
+
+var robot_score = 50;
+var robots_awake_time = 150;
+
+return function (game_stuff) {
+
+	let { 
+	 	enemy_color, sound, pubSub, timer, next_bullet_time, robots, score, player, robot_bullets, max_robot_bullets, maze
+	} = game_stuff;
+
+	var robot_tex = PIXI.loader.resources["images/robot.png"].texture.clone();
+	var robot_sprite = new PIXI.Sprite(robot_tex);
+
+	var robot_explode_tex = PIXI.loader.resources["images/robot-explode.png"].texture.clone();
+	var rect = new PIXI.Rectangle(0, 0, 8, 11);
+	robot_tex.frame = rect;
+	robot_sprite.vx = 0;
+	robot_sprite.vy = 0;
+	robot_sprite.scale.set(4, 4);
+	robot_sprite.rate = 0;
+	robot_sprite.explode_tex = robot_explode_tex;
+	robot_sprite.explode_tex.num_frames = 3;
+	robot_sprite.tint = enemy_color;
+	robot_sprite.death_start_timer = -1;
+	robot_sprite.timer_offset = Math.floor(Math.random() * 100);
+	robot_sprite.index = -1;
+	robot_sprite.name = `robot${timer}`;
+	robot_sprite.bullet_velocity = getRobotBulletVelocity();
+	robot_sprite.bullet_length = 6;
+	robot_sprite.bullet_color = enemy_color;
+	robot_sprite.was_hit = false;
+	robot_sprite.qx = -1;
+	robot_sprite.qy = -1;
+
+	// public methods
+	robot_sprite.tick = robotPlay;
+	robot_sprite.aim = targetHumanoid;
+	
+	// animation vars
+	robot_sprite.frame_delay = 0.25; // smaller == slower
+
+	// ROBOT STATES
+	function robotDead () {
+
+		var frame_num = (Math.floor((timer - robot_sprite.death_start_timer) * 0.1) % 4);		
+		if (frame_num < robot_sprite.explode_tex.num_frames) {
+			robot_sprite.texture = robot_sprite.explode_tex;
+			robot_sprite.anchor.x = 0.28;
+			robot_sprite.anchor.y = 0.28;
+			robot_sprite.texture.frame = new PIXI.Rectangle( frame_num * 18, 0, 18, 18);
+		} else {
+
+			setTimeout(removeRobot, 1, robot_sprite);
+		}
+	}
+
+	function robotPlay () {
+
+		robot_sprite.frame_delay = 0.25 * (1 - robots.length * 0.11); // 2 / 12 (1 / max num robots)
+
+		var anim_frame_index = (Math.round(timer * robot_sprite.frame_delay) % 2) * 8;
+		var standing_frame_index = (Math.round( (timer + robot_sprite.timer_offset) * robot_sprite.frame_delay) % 6) * 8;
+		var robots_left = -1;
+		if (robot_sprite.was_hit === true) {
+			
+			robot_sprite.death_start_timer = timer;
+			sound.play('robot_dead');
+			score += robot_score;
+
+			// if all robots have been killed, award bonus
+			robots_left = robots.filter( r => (r.was_hit === false)).length;
+			if (robots_left === 0) {
+				pubSub.dispatch('all_robots_killed', window);
+			}
+
+			robot_sprite.tick = robotDead;
+		} else {
+
+			if (timer < robots_awake_time === false) {
+				robot_sprite.aim();
+			}
+
+			robot_sprite.x += robot_sprite.vx;
+			robot_sprite.y += robot_sprite.vy;
+
+			// animate him
+			if (robot_sprite.vy > 0) {
+				robot_sprite.texture.frame = new PIXI.Rectangle(anim_frame_index + 64, 0, 8, 11);
+			} else if (robot_sprite.vy < 0) {
+				robot_sprite.texture.frame = new PIXI.Rectangle(anim_frame_index + 96, 0, 8, 11);
+			}
+
+			if (robot_sprite.vx > 0) {
+				robot_sprite.texture.frame = new PIXI.Rectangle(anim_frame_index + 48, 0, 8, 11);
+			} else if (robot_sprite.vx < 0) {
+				robot_sprite.texture.frame = new PIXI.Rectangle(anim_frame_index + 80, 0, 8, 11);
+			}
+
+			if (robot_sprite.vx === 0 && robot_sprite.vy === 0) {
+				robot_sprite.texture.frame = new PIXI.Rectangle(standing_frame_index, 0, 8, 11);
+			}
+		}
+	}
+
+	function targetHumanoid () {
+
+		robot_sprite.rate = 2 - (robots.length * 0.16); // 2 / 12 (max speed / max num robots)
+
+		robot_sprite.ax = (robot_sprite.x - player.x > 1) ? -1 : 1;
+		robot_sprite.ay = (robot_sprite.y - player.y > 1) ? -1 : 1;
+
+		if (Math.abs(robot_sprite.x - player.x) < 20) { robot_sprite.ax = 0; }
+		if (Math.abs(robot_sprite.y - player.y) < 20) { robot_sprite.ay = 0; }
+
+		// update robot velocity
+		robot_sprite.vx = robot_sprite.ax * robot_sprite.rate;
+		robot_sprite.vy = robot_sprite.ay * robot_sprite.rate;
+		
+		var nearby_walls = getNearbyWalls(robot_sprite);
+		if (nearby_walls.top === true) {
+			robot_sprite.vy = Math.max(robot_sprite.vy, 0);
+		}
+		if (nearby_walls.right === true) {
+			robot_sprite.vx = Math.min(robot_sprite.vx, 0);
+		}
+		if (nearby_walls.bottom === true) {
+			robot_sprite.vy = Math.min(robot_sprite.vy, 0);
+		}
+		if (nearby_walls.left === true) {
+			robot_sprite.vx = Math.max(robot_sprite.vx, 0);
+		}
+	
+
+		if (timer < next_bullet_time === false && robot_bullets.length < max_robot_bullets) {
+
+			if (Math.abs(robot_sprite.x - player.x) < 20 ||
+				Math.abs(robot_sprite.y - player.y) < 20 ||
+				Math.abs((robot_sprite.x - robot_sprite.y) - (player.x - player.y)) < 20 ||
+				Math.abs((robot_sprite.x - player.y) - (player.x - robot_sprite.y)) < 20) {
+					fire(robot_sprite);
+			}	
+		}
+	}
+
+	// 
+	function getRobotBulletVelocity () {
+
+		var vel = (score < 7500) ? 4 : 8;
+		return vel;
+	}
+
+	function removeRobot (sprite) {
+
+		maze.removeChild(sprite);
+		robots.splice(robots.indexOf(sprite), 1);
+		sprite.destroy();
+	}
+
+	return robot_sprite;
+};
+
 })();
 
 /*******************************************************************************
@@ -1212,7 +1220,11 @@ return function (pos) {
  ******************************************************************************/
 
 var otto_sprite;
-function getEvilOtto (pos) {
+function getEvilOtto (game_stuff) {
+
+	let { 
+	 	enemy_color, pos, evil_otto, player, sound, timer, robots, maze
+	} = game_stuff;
 
 	if (evil_otto != null) { evil_otto.destroy(); } // clean up
 	
@@ -1233,311 +1245,397 @@ function getEvilOtto (pos) {
 	otto_sprite.rate = 0.5;
 	otto_sprite.delay_timer = 100000; // default
 	
-	// public methods
+	// internal methods
+	var otto_frame_indices = [6,7,8,9,10,11,12,11,10,9,8,7];
+	var o_len = otto_frame_indices.length - 1;
+	function ottoPlay () {
+
+		// direction = target position - object position
+	    var dx = player.x - otto_sprite.x;
+	    var dy = player.y - otto_sprite.y;
+	    var angle = Math.atan2(dy, dx);
+	    otto_sprite.rate = 2 - (robots.length * 0.16); // 2 / 12 (max speed / max num robots)
+
+	    otto_sprite.vx = Math.cos(angle) * otto_sprite.rate;
+	    otto_sprite.vy = Math.sin(angle) * otto_sprite.rate;
+	    
+		otto_sprite.x += otto_sprite.vx;
+		otto_sprite.y += otto_sprite.vy;
+
+		// animate him
+		var x_frame = otto_frame_indices[(Math.round(timer * (otto_sprite.rate * 0.4)) % o_len)] * 11; 
+		otto_sprite.texture.frame = new PIXI.Rectangle( x_frame, 0, 11, 43);
+		
+	}
+
+	function ottoDormant () {
+
+		if (timer > otto_sprite.delay_timer) {
+			sound.playSequence('INTRUDER ALERT INTRUDER ALERT'.split(' '));
+			maze.addChild(evil_otto);
+			otto_sprite.tick = ottoStart;
+			evil_otto.position.set(start_pos.x, start_pos.y);
+		}
+	}
+
+	function ottoStart () {
+
+		var x_pos = (Math.round((timer - otto_sprite.delay_timer) * 0.1) % 8) * 11; 
+
+		if (x_pos > 66) {
+			otto_sprite.tick = ottoPlay;
+		} else {
+			// animate him
+			otto_sprite.texture.frame = new PIXI.Rectangle(x_pos, 0, 11, 43);
+		}
+		
+	}
+	
+	// public method
 	otto_sprite.tick = ottoDormant;
 
 	return otto_sprite;
 }
 
-var otto_frame_indices = [6,7,8,9,10,11,12,11,10,9,8,7];
-var o_len = otto_frame_indices.length - 1;
-
-function ottoPlay () {
-
-	// direction = target position - object position
-    var dx = player.x - otto_sprite.x;
-    var dy = player.y - otto_sprite.y;
-    var angle = Math.atan2(dy, dx);
-    otto_sprite.rate = 2 - (robots.length * 0.16); // 2 / 12 (max speed / max num robots)
-
-    otto_sprite.vx = Math.cos(angle) * otto_sprite.rate;
-    otto_sprite.vy = Math.sin(angle) * otto_sprite.rate;
-    
-	otto_sprite.x += otto_sprite.vx;
-	otto_sprite.y += otto_sprite.vy;
-
-	// animate him
-	var x_frame = otto_frame_indices[(Math.round(timer * (otto_sprite.rate * 0.4)) % o_len)] * 11; 
-	otto_sprite.texture.frame = new PIXI.Rectangle( x_frame, 0, 11, 43);
-	
-}
-
-function ottoDormant () {
-
-	if (timer > otto_sprite.delay_timer) {
-		sound.playSequence('INTRUDER ALERT INTRUDER ALERT'.split(' '));
-		maze.addChild(evil_otto);
-		otto_sprite.tick = ottoStart;
-		evil_otto.position.set(start_pos.x, start_pos.y);
-	}
-}
-
-function ottoStart () {
-
-	var x_pos = (Math.round((timer - otto_sprite.delay_timer) * 0.1) % 8) * 11; 
-
-	if (x_pos > 66) {
-		otto_sprite.tick = ottoPlay;
-	} else {
-		// animate him
-		otto_sprite.texture.frame = new PIXI.Rectangle(x_pos, 0, 11, 43);
-	}
-	
-}
-
 /*******************************************************************************
  * gameStates.js
  ******************************************************************************/
-function gameRestarting$1 () {
-	
-	// clean up
-	maze.x = 0;
-	maze.y = 0;
-	maze.removeChildren();
-	walls = [];
-	robots = [];
-	removeListeners();
-	hideSplashScreen();
+var initGameStates = (function () {
 
-	resetScoreDisplay();
+return function (game_objs) {
+	let gameState = null;
+	let {
+		player,	evil_otto, walls, robots, bullets, robot_bullets, 
+		max_robot_bullets, is_game_restarting, 
+		timer, next_bullet_time, game_over_timer, 
+		enemy_color, score, level_bonus, num_players_remaining, 
+		pubSub,	start_pos, 
+		stage, maze, sound, renderer
+	} = game_objs;
 
-	timer = 0;
-	next_bullet_time = 150;
-	enemy_color = getEnemyColor();
-	max_robot_bullets = getMaxNumRobotBullets();
-	
-	if (num_players_remaining > 0) {
-		player = getPlayer(start_pos);
-		maze.addChild(player);
-		drawWalls();
-		gameState = gameStart;
-		is_game_restarting = false; 
-
-	} else { // RESET
-		score = 0;
-		num_players_remaining = 3;
-		game_over_timer = timer + 30;
-		gameState = gameOver;
-		is_game_restarting = true;
+	function initializeGame () {
+		resetGameState();
+		gameLoop();	
 	}
-	evil_otto = getEvilOtto({x: 0, y: 0}); // keep him offscreen for now
-}
 
-function gameStart () {
-
-	player.visible = true;
-	robots = getRobots();
-	for (var r = 0, r_len = robots.length; r < r_len; r++) {
-		maze.addChild(robots[r]);
+	function resetGameState () {
+		// listen for any key
+		function fn () { 
+			window.removeEventListener("keydown", fn); 
+			gameState = gameRestarting;
+			renderer.view.hidden = false;
+		}
+		window.addEventListener("keydown", fn, false);
+		gameState = gameDormant;
 	}
-	evil_otto.delay_timer = robots.length * 115;
-	level_bonus = robots.length * 10;
 
-	//
-	// play a random robot speach bit
-	// var SPACE = keyboard.handle('Space');
-	// SPACE.press = function () { 
-	// 	var snds = Object.keys(talking_audio);
-	// 	var id = sound.play(snds[Math.floor(Math.random() * snds.length)]); 
-	// 	var random_rate = Math.random() + 0.5;
-	// 	sound.rate(random_rate, id);
-	// };
-	// SPACE.release = function () { /* no op */ };
+	function gameRestarting () {
+		
+		// clean up
+		maze.x = 0;
+		maze.y = 0;
+		maze.removeChildren();
+		walls = [];
+		robots = [];
+		removeListeners();
+		hideSplashScreen();
 
-	// toggle : pause the game
-	var ESC = handle('Escape');
-	ESC.press = function () { 
-		gameState = (gameState === gamePlay) ? gamePaused : gamePlay;
-	};
-	ESC.release = function () { /* no op */ };
-	//
+		resetScoreDisplay();
 
-	gameState = gamePlay;
-	
-}
+		timer = 0;
+		next_bullet_time = 150;
+		enemy_color = getEnemyColor();
+		max_robot_bullets = getMaxNumRobotBullets();
+		
+		if (num_players_remaining > 0) {
+			player = getPlayer({stage, sound, pubSub, is_game_restarting, start_pos, timer, bullets, next_bullet_time, num_players_remaining});
+			maze.addChild(player);
+			drawWalls();
+			gameState = gameStart;
+			is_game_restarting = false; 
 
-function gameDormant () {
-	renderer.view.hidden = true;
-	showSplashScreen();
-}
+		} else { // RESET
+			score = 0;
+			num_players_remaining = 3;
+			game_over_timer = timer + 30;
+			gameState = gameOver;
+			is_game_restarting = true;
+		}
+		let pos = {x: 0, y: 0};
+		evil_otto = getEvilOtto({enemy_color, pos, evil_otto, player, sound, timer, robots, maze}); // keep him offscreen for now
+	}
 
-function gamePlay () {
+	// GAME PLAY LOOP
+	function gameLoop() {
 
-	hitTestAll({player, evil_otto, walls, robots, bullets, robot_bullets});
-	player.tick();
-	evil_otto.tick();
-	updateRobots();
-	updateBullets(); // score, etc ... including debug stuff – in layout.js
-}
+		requestAnimationFrame(gameLoop);
+		timer += 1;
+		gameState();
+		renderer.render(stage);
+	}
 
-function gamePaused () { /* no op */ }
+	var x_vel = 0;
+	var y_vel = 0;
 
-var x_vel = 0;
-var y_vel = 0;
-function prepareToExitLevel (side) {
+	function prepareToExitLevel (side) {
 
-	maze.children.forEach( function (child) {
-		child.tint = 0x0000FF;
-	});
+		maze.children.forEach( function (child) {
+			child.tint = 0x0000FF;
+		});
 
-	x_vel = 0;
-	y_vel = 0;
-	var rate = 7;
-	switch (side) {
-		case 'top': 
 		x_vel = 0;
-		y_vel = rate * 1;
-		start_pos = {x: maze.width * 0.5, y: maze.height - player.height - 100};
-		break;
-		case 'right': 
-		x_vel = rate * -1;
 		y_vel = 0;
-		start_pos = {x: 90, y: maze.height * 0.5};
-		break;
-		case 'bottom': 
-		x_vel = 0;
-		y_vel = rate * -1;
-		start_pos = {x: maze.width * 0.5, y: 90};
-		break;
-		case 'left': 
-		x_vel = rate;
-		y_vel = 0;
-		start_pos = {x: maze.width - player.width - 100, y: maze.height * 0.5};
-		break;
+		var rate = 7;
+		switch (side) {
+			case 'top': 
+			x_vel = 0;
+			y_vel = rate * 1;
+			start_pos = {x: maze.width * 0.5, y: maze.height - player.height - 100};
+			break;
+			case 'right': 
+			x_vel = rate * -1;
+			y_vel = 0;
+			start_pos = {x: 90, y: maze.height * 0.5};
+			break;
+			case 'bottom': 
+			x_vel = 0;
+			y_vel = rate * -1;
+			start_pos = {x: maze.width * 0.5, y: 90};
+			break;
+			case 'left': 
+			x_vel = rate;
+			y_vel = 0;
+			start_pos = {x: maze.width - player.width - 100, y: maze.height * 0.5};
+			break;
+		}
+
+		// robot talk to player
+		if (robots.length !== 0) {
+			sound.play('chicken');
+			sound.playSequence('chicken fight like a robot'.split(' '));
+		} else {
+			sound.playSequence('the humanoid must not escape'.split(' '));
+		}
+		gameState = exitingLevel;
 	}
 
-	// robot talk to player
-	if (robots.length !== 0) {
-		sound.play('chicken');
-		sound.playSequence('chicken fight like a robot'.split(' '));
-	} else {
-		sound.playSequence('the humanoid must not escape'.split(' '));
+	function exitingLevel () {
+
+		if (maze.x + maze.width < -50 || 
+			maze.x > maze.width + 50 ||
+			maze.y + maze.height < -50 ||
+			maze.y > maze.height + 50) {
+				gameState = gameRestarting;
+		} else { 
+			maze.x += x_vel;
+			maze.y += y_vel;
+		}
 	}
-}
 
-function exitingLevel () {
+	// PRIVATE
+	function gameStart () {
 
-	if (maze.x + maze.width < -50 || 
-		maze.x > maze.width + 50 ||
-		maze.y + maze.height < -50 ||
-		maze.y > maze.height + 50) {
-			gameState = gameRestarting$1;
-	} else { 
-		maze.x += x_vel;
-		maze.y += y_vel;
+		player.visible = true;
+		robots = getRobots();
+		for (var r = 0, r_len = robots.length; r < r_len; r++) {
+			maze.addChild(robots[r]);
+		}
+		evil_otto.delay_timer = robots.length * 115;
+		level_bonus = robots.length * 10;
+
+		//
+		// play a random robot speach bit
+		// var SPACE = keyboard.handle('Space');
+		// SPACE.press = function () { 
+		// 	var snds = Object.keys(talking_audio);
+		// 	var id = sound.play(snds[Math.floor(Math.random() * snds.length)]); 
+		// 	var random_rate = Math.random() + 0.5;
+		// 	sound.rate(random_rate, id);
+		// };
+		// SPACE.release = function () { /* no op */ };
+
+		// toggle : pause the game
+		var ESC = handle('Escape');
+		ESC.press = function () { 
+			gameState = (gameState === gamePlay) ? gamePaused : gamePlay;
+		};
+		ESC.release = function () { /* no op */ };
+		//
+
+		gameState = gamePlay;
+		
 	}
-}
 
-function gameOver () {
-
-	if (timer > game_over_timer) {
-		gameState = resetGameState;
-	} else {
+	function gameDormant () {
 		renderer.view.hidden = true;
-		// splash_header.textContent = "GAME OVER";
+		showSplashScreen();
 	}
-}
 
-// BULLETS
-function updateBullets () {
+	function gamePlay () {
 
-	for (var i = 0, s_len = bullets.length; i < s_len; i++) {
-		bullets[i].tick();
+		hitTestAll({player, evil_otto, walls, robots, bullets, robot_bullets});
+		player.tick();
+		evil_otto.tick();
+		updateRobots();
+		updateBullets(); // score, etc ... including debug stuff – in layout.js
 	}
-	for (var j = 0, rs_len = robot_bullets.length; j < rs_len; j++) {
-		robot_bullets[j].tick();
+
+	function gamePaused () { /* no op */ }
+
+	function gameOver () {
+
+		if (timer > game_over_timer) {
+			gameState = resetGameState;
+		} else {
+			renderer.view.hidden = true;
+			// splash_header.textContent = "GAME OVER";
+		}
 	}
-}
 
-function updateRobots () {
+	function updateBullets () {
 
-	for (var i = 0, r_len = robots.length; i < r_len; i++) {
-		robots[i].tick();
+		for (var i = 0, s_len = bullets.length; i < s_len; i++) {
+			bullets[i].tick();
+		}
+		for (var j = 0, rs_len = robot_bullets.length; j < rs_len; j++) {
+			robot_bullets[j].tick();
+		}
 	}
-}
 
-// robots
-function getRobots () {
+	function updateRobots () {
 
-	var robots = [];
-	var max_num_robots = 12, min_num_robots = 3;
-	var num_robots = Math.floor(Math.random() * (max_num_robots - min_num_robots)) + min_num_robots;
-	var possible_positions = getPossiblePositions();
-	var robot, robot_pos;
-
-	for (var r = 0; r < num_robots; r++) {
-
-		robot = getRobot();
-
-		var random_index = Math.floor(Math.random() * possible_positions.length);
-		robot_pos = possible_positions.splice(random_index, 1)[0];
-		robot_pos.x += Math.floor(Math.random() * 50) - 25;
-		robot_pos.y += Math.floor(Math.random() * 50) - 25;
-		robot.position.set(robot_pos.x, robot_pos.y);
-		robot.index = r;
-
-		robots.push(robot);
+		for (var i = 0, r_len = robots.length; i < r_len; i++) {
+			robots[i].tick();
+		}
 	}
-	return robots;
-}
 
-// for robots and evil otto
-/*
-	Dark yellow robots that do not fire
-	Red robots that can fire 1 bullet (500 points)
-	Dark cyan robots that can fire 2 bullets (1,500 points)
-	Green robots that fire 3 bullets (3k)
-	Dark purple robots that fire 4 bullets (4.5k)
-	Light yellow robots that fire 5 bullets (6k)
-	White robots that fire 1 fast bullet (7.5k)
-	Dark cyan robots that fire 2 fast bullets (10k)
-	Light purple robots that fire 3 fast bullets (11k)
-	Gray robots that fire 4 fast bullets (13k)
-	Dark yellow robots that fire 5 fast bullets (15k)
-	Red robots that fire 5 fast bullets (17k)
-	Light cyan robots that fire 5 fast bullets (19k)
-*/
-var score_tiers = [500, 1500, 3000, 4500, 6000, 7500, 10000, 11000, 13000, 15000, 17000, 19000];
-function getEnemyColor () {
+	// robots
+	function getRobots () {
 
-	var colors = [0xFFFF00, 0xFF0000, 0x00FFFF, 0x00FF00, 0xFF00FF, 0xFFFF00, 0xFFFFFF, 0x00FFFF, 0xFF00FF];
-	var col = colors[0];
+		var robots = [];
+		var max_num_robots = 12, min_num_robots = 3;
+		var num_robots = Math.floor(Math.random() * (max_num_robots - min_num_robots)) + min_num_robots;
+		var possible_positions = getPossiblePositions();
+		var robot, robot_pos;
 
-	if (score >= score_tiers[0]) { col = colors[1]; }
-	if (score >= score_tiers[1]) { col = colors[2]; }
-	if (score >= score_tiers[2]) { col = colors[3]; }
-	if (score >= score_tiers[3]) { col = colors[4]; }
-	if (score >= score_tiers[4]) { col = colors[5]; }
-	if (score >= score_tiers[5]) { col = colors[6]; }
-	if (score >= score_tiers[6]) { col = colors[7]; }
-	if (score >= score_tiers[7]) { col = colors[8]; }
-	if (score >= score_tiers[8]) { col = Math.floor(Math.random() * 0xFFFFFF); } // MAX
-	return col;
-}
+		for (var r = 0; r < num_robots; r++) {
 
-function getMaxNumRobotBullets () {
+			robot = getRobot({enemy_color, sound, pubSub, timer, next_bullet_time, robots, score, player, robot_bullets, max_robot_bullets, maze});
 
-	var num_bullets = [0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5];
-	var num = num_bullets[0];
+			var random_index = Math.floor(Math.random() * possible_positions.length);
+			robot_pos = possible_positions.splice(random_index, 1)[0];
+			robot_pos.x += Math.floor(Math.random() * 50) - 25;
+			robot_pos.y += Math.floor(Math.random() * 50) - 25;
+			robot.position.set(robot_pos.x, robot_pos.y);
+			robot.index = r;
 
-	if (score >= score_tiers[0]) { num = num_bullets[1]; }
-	if (score >= score_tiers[1]) { num = num_bullets[2]; }
-	if (score >= score_tiers[2]) { num = num_bullets[3]; }
-	if (score >= score_tiers[3]) { num = num_bullets[4]; }
-	if (score >= score_tiers[4]) { num = num_bullets[5]; }
-	if (score >= score_tiers[5]) { num = num_bullets[6]; } // fast bullets
-	if (score >= score_tiers[6]) { num = num_bullets[7]; }
-	if (score >= score_tiers[7]) { num = num_bullets[8]; }
-	if (score >= score_tiers[8]) { num = 5;  			 } // MAX
-	return num;
-}
+			robots.push(robot);
+		}
+		return robots;
+	}
+
+	// for robots and evil otto
+	/*
+		Dark yellow robots that do not fire
+		Red robots that can fire 1 bullet (500 points)
+		Dark cyan robots that can fire 2 bullets (1,500 points)
+		Green robots that fire 3 bullets (3k)
+		Dark purple robots that fire 4 bullets (4.5k)
+		Light yellow robots that fire 5 bullets (6k)
+		White robots that fire 1 fast bullet (7.5k)
+		Dark cyan robots that fire 2 fast bullets (10k)
+		Light purple robots that fire 3 fast bullets (11k)
+		Gray robots that fire 4 fast bullets (13k)
+		Dark yellow robots that fire 5 fast bullets (15k)
+		Red robots that fire 5 fast bullets (17k)
+		Light cyan robots that fire 5 fast bullets (19k)
+	*/
+	var score_tiers = [500, 1500, 3000, 4500, 6000, 7500, 10000, 11000, 13000, 15000, 17000, 19000];
+	function getEnemyColor () {
+
+		var colors = [0xFFFF00, 0xFF0000, 0x00FFFF, 0x00FF00, 0xFF00FF, 0xFFFF00, 0xFFFFFF, 0x00FFFF, 0xFF00FF];
+		var col = colors[0];
+
+		if (score >= score_tiers[0]) { col = colors[1]; }
+		if (score >= score_tiers[1]) { col = colors[2]; }
+		if (score >= score_tiers[2]) { col = colors[3]; }
+		if (score >= score_tiers[3]) { col = colors[4]; }
+		if (score >= score_tiers[4]) { col = colors[5]; }
+		if (score >= score_tiers[5]) { col = colors[6]; }
+		if (score >= score_tiers[6]) { col = colors[7]; }
+		if (score >= score_tiers[7]) { col = colors[8]; }
+		if (score >= score_tiers[8]) { col = Math.floor(Math.random() * 0xFFFFFF); } // MAX
+		return col;
+	}
+
+	function getMaxNumRobotBullets () {
+
+		var num_bullets = [0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5];
+		var num = num_bullets[0];
+
+		if (score >= score_tiers[0]) { num = num_bullets[1]; }
+		if (score >= score_tiers[1]) { num = num_bullets[2]; }
+		if (score >= score_tiers[2]) { num = num_bullets[3]; }
+		if (score >= score_tiers[3]) { num = num_bullets[4]; }
+		if (score >= score_tiers[4]) { num = num_bullets[5]; }
+		if (score >= score_tiers[5]) { num = num_bullets[6]; } // fast bullets
+		if (score >= score_tiers[6]) { num = num_bullets[7]; }
+		if (score >= score_tiers[7]) { num = num_bullets[8]; }
+		if (score >= score_tiers[8]) { num = 5;  			 } // MAX
+		return num;
+	}
+
+	return {
+		init: initializeGame,
+		prepareToExitLevel,
+		restart: function () { gameState = gameRestarting; }
+	};
+};
+})();
 
 /*******************************************************************************
  * main.js
  ******************************************************************************/
-pubSub = new Events();
-sound = getHowlerAudio();
+ // GLOBALS
+ let player$1 = null;
+ let evil_otto = null;
+ let walls$1 = [];
+ let robots = [];
+ let bullets$1 = [];
+ let robot_bullets$1 = [];
+ let max_robot_bullets = 1;
 
+ let is_game_restarting$1 = true;
+
+ let timer$1 = 0;
+ let next_bullet_time = 150;
+ let game_over_timer = -1;
+
+ let enemy_color$1 = 0x000000;
+ let score$1 = 0;
+ let level_bonus$1 = 0;
+ let num_players_remaining$1 = 3;
+
+ let pubSub =  new Events();
+ let start_pos$1 = {x: 90, y: 300};
+
+ let stage$1 = new PIXI.Container();
+ let maze$1 = new PIXI.Container();
+ let sound$1 = getHowlerAudio();
+
+ let renderer = PIXI.autoDetectRenderer(
+ 	1024, 768, 
+ 	{antialias: false, transparent: false, resolution: 1}
+ );
+
+let game = initGameStates({ 
+	player: player$1,	evil_otto, walls: walls$1, robots, bullets: bullets$1, robot_bullets: robot_bullets$1, 
+	max_robot_bullets, is_game_restarting: is_game_restarting$1, 
+	timer: timer$1, next_bullet_time, game_over_timer, 
+	enemy_color: enemy_color$1, score: score$1, level_bonus: level_bonus$1, num_players_remaining: num_players_remaining$1, 
+	pubSub,	start_pos: start_pos$1, 
+	stage: stage$1, maze: maze$1, sound: sound$1, renderer
+});
 // make stuff look pixelated
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 // https://github.com/kittykatattack/learningPixi#pixis-graphic-primitives
@@ -1548,8 +1646,8 @@ document.body.appendChild(renderer.view);
 // debug_timer, score, game over screen ...
 createGameUIBits();
 
-renderer.render(stage);
-stage.addChild(maze);
+renderer.render(stage$1);
+stage$1.addChild(maze$1);
 
 // APP STARTS-UP HERE ...
 PIXI.loader
@@ -1564,33 +1662,16 @@ function setup() {
 	
 	pubSub.listenTo(window, 'all_robots_killed', handleAllRobotsKilled);
 	pubSub.listenTo(window, 'player_is_exiting', handlePlayerExiting);
+	pubSub.listenTo(window, 'player_has_died', handlePlayerDied);
 
 	init();
-	resetGameState$1();
-	gameLoop();	
-}
-
-function resetGameState$1 () {
-	// listen for any key
-	function fn () { 
-		window.removeEventListener("keydown", fn); 
-		gameState = gameRestarting$1;
-		renderer.view.hidden = false;
-	}
-	window.addEventListener("keydown", fn, false);
-	gameState = gameDormant;
-}
-
-// GAME PLAY LOOP
-function gameLoop() {
-
-	requestAnimationFrame(gameLoop);
-	timer += 1;
-	gameState();
-	renderer.render(stage);
+	game.init();
 }
 
 function handlePlayerExiting (exit_side) {
-	prepareToExitLevel(exit_side);
-	gameState = exitingLevel;
+	game.prepareToExitLevel(exit_side);
+}
+
+function handlePlayerDied () {
+	game.restart();
 }
