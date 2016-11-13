@@ -1,80 +1,12 @@
-import { Events } from "./events.js";
-import { getHowlerAudio } from "./audio.js";
-import * as keyboard from "./keyboard.js";
-import { hitTestAll, createGameUIBits, showSplashScreen, hideSplashScreen } from "./utils.js";
-import { getBullet } from "./bullet.js";
+import * as keyboard from "./keyboard.js"; // ***
+import { hitTestAll, showSplashScreen, hideSplashScreen } from "./utils.js"; //***
 import { getPlayer } from "./player.js";
 import { getRobot } from "./robot.js";
 import { getEvilOtto } from "./evilotto.js";
-import { drawWalls, getPossiblePositions, resetScoreDisplay, handleAllRobotsKilled, updateGameUI } from "./layout.js";
-import { soundsInSequence } from "./audio.js";
+import { drawWalls, getPossiblePositions, resetScoreDisplay } from "./layout.js"; // ***
 /*******************************************************************************
- * main.js
+ * gameStates.js
  ******************************************************************************/
-pubSub = new Events();
-sound = getHowlerAudio();
-
-// make stuff look pixelated
-PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
-// https://github.com/kittykatattack/learningPixi#pixis-graphic-primitives
-
-/*******************************************************************************
- * Setup
- *******************************************************************************/
-
-let renderer = PIXI.autoDetectRenderer(
-	1024, 768, 
-	{antialias: false, transparent: false, resolution: 1}
-);
-document.body.appendChild(renderer.view);
-
-// debug_timer, score, game over screen ...
-createGameUIBits();
-
-renderer.render(stage);
-stage.addChild(maze);
-
-// APP STARTS-UP HERE ...
-PIXI.loader
-	.add("images/robot.png")
-	.add("images/robot-explode.png")
-	.add("images/player.png")
-	.add("images/evil-otto.png")
-	.add("images/charset.png")
-	.load(setup);
-
-function setup() {
-	
-	pubSub.listenTo(window, 'all_robots_killed', handleAllRobotsKilled);
-	pubSub.listenTo(window, 'player_is_exiting', handlePlayerExiting);
-
-	keyboard.init();
-	resetGameState();
-	gameLoop();	
-}
-
-function resetGameState () {
-	// listen for any key
-	function fn () { 
-		window.removeEventListener("keydown", fn); 
-		gameState = gameRestarting;
-		renderer.view.hidden = false;
-	}
-	window.addEventListener("keydown", fn, false);
-	gameState = gameDormant;
-}
-
-/*******************************************************************************
- * GAME PLAY LOOP
- *******************************************************************************/
-function gameLoop() {
-
-	requestAnimationFrame(gameLoop);
-	timer += 1;
-	gameState();
-	renderer.render(stage);
-}
-
 function gameRestarting () {
 	
 	// clean up
@@ -134,7 +66,7 @@ function gameStart () {
 	// toggle : pause the game
 	var ESC = keyboard.handle('Escape');
 	ESC.press = function () { 
-			gameState = (gameState === gamePlay) ? gamePaused : gamePlay;
+		gameState = (gameState === gamePlay) ? gamePaused : gamePlay;
 	};
 	ESC.release = function () { /* no op */ };
 	//
@@ -154,17 +86,10 @@ function gamePlay () {
 	player.tick();
 	evil_otto.tick();
 	updateRobots();
-	updateBullets();
-	updateGameUI(); // score, etc ... including debug stuff – in layout.js
-	console.log('!!');
+	updateBullets(); // score, etc ... including debug stuff – in layout.js
 }
 
 function gamePaused () { /* no op */ }
-
-function handlePlayerExiting (exit_side) {
-	prepareToExitLevel(exit_side);
-	gameState = exitingLevel;
-}
 
 var x_vel = 0;
 var y_vel = 0;
@@ -203,9 +128,9 @@ function prepareToExitLevel (side) {
 	// robot talk to player
 	if (robots.length !== 0) {
 		sound.play('chicken');
-		soundsInSequence('chicken fight like a robot'.split(' '));
+		sound.playSequence('chicken fight like a robot'.split(' '));
 	} else {
-		soundsInSequence('the humanoid must not escape'.split(' '));
+		sound.playSequence('the humanoid must not escape'.split(' '));
 	}
 }
 
@@ -243,9 +168,14 @@ function updateBullets () {
 	}
 }
 
-/*******************************************************************************
- * robots
- *******************************************************************************/
+function updateRobots () {
+
+	for (var i = 0, r_len = robots.length; i < r_len; i++) {
+		robots[i].tick();
+	}
+}
+
+// robots
 function getRobots () {
 
 	var robots = [];
@@ -268,13 +198,6 @@ function getRobots () {
 		robots.push(robot);
 	}
 	return robots;
-}
-
-function updateRobots () {
-
-	for (var i = 0, r_len = robots.length; i < r_len; i++) {
-		robots[i].tick();
-	}
 }
 
 // for robots and evil otto
@@ -328,4 +251,4 @@ function getMaxNumRobotBullets () {
 	return num;
 }
 
-
+export { gameRestarting, gameStart, gameDormant, gamePlay, gamePaused, prepareToExitLevel, exitingLevel, gameOver, updateRobots };

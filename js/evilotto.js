@@ -1,4 +1,3 @@
-import { soundsInSequence } from "./audio.js";
 /*******************************************************************************
  * evilotto.js
  ******************************************************************************/
@@ -57,7 +56,7 @@ function ottoPlay () {
 function ottoDormant () {
 
 	if (timer > otto_sprite.delay_timer) {
-		soundsInSequence('INTRUDER ALERT INTRUDER ALERT'.split(' '));
+		sound.playSequence('INTRUDER ALERT INTRUDER ALERT'.split(' '));
 		maze.addChild(evil_otto);
 		otto_sprite.tick = ottoStart;
 		evil_otto.position.set(start_pos.x, start_pos.y);

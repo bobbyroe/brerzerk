@@ -1,6 +1,7 @@
 import { handle } from "./keyboard.js";
 import { getOutOfBoundsSide } from "./layout.js";
 import { fire } from "./bullet.js";
+import { updateRobots } from "./gameStates.js";
 /*******************************************************************************
  * player.js
  ******************************************************************************/

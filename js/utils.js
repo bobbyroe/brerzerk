@@ -195,10 +195,9 @@ function degToRad (deg) { // bullet.js only
 	return deg * Math.PI / 180;
 }
 
-function radToDeg (rad) {
-
-	return rad / Math.PI * 180;
-}
+// function radToDeg (rad) {
+// 	return rad / Math.PI * 180;
+// }
 
 
 export { hitTestAll, createGameUIBits, showSplashScreen, hideSplashScreen, degToRad };

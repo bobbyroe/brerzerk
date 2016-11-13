@@ -25,3 +25,8 @@ let start_pos = {x: 90, y: 300};
 let stage = new PIXI.Container();
 let maze = new PIXI.Container();
 let sound = null;
+
+let renderer = PIXI.autoDetectRenderer(
+	1024, 768, 
+	{antialias: false, transparent: false, resolution: 1}
+);

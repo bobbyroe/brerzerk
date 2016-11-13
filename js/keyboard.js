@@ -69,8 +69,4 @@ function init () {
 	window.addEventListener("keyup", onKeyUp, false);
 }
 
-export {
-	handle,
-	removeListeners,
-	init
-};
+export { handle, removeListeners, init };

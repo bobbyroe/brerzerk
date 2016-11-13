@@ -1,5 +1,5 @@
 export default {
-	entry: 'js/main.js',
+	entry: 'js/_main.js',
 	format: 'cjs',
 	dest: 'bundle.js'
 };

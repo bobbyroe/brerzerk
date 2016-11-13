@@ -37,26 +37,29 @@ function getHowlerAudio () {
 	 		robot_dead: 	[14100, 800]
 	 	};
 	Object.assign(sfx_audio, talking_audio);
-	return new Howl({
+
+	function playSequence (arr) {
+
+		var snd = arr.shift();
+		var id = sound.play(snd);
+		if (arr.length > 0) {
+			sound.once('end', function () { 
+				playSequence(arr);
+			}, id);
+		}
+	}
+
+	var sound = new Howl({
 	 	src: ['audio/sound_sprite.mp3'],
 	 	volume: 0.05,
 	 	sprite: sfx_audio
 	 });
-}
 
+	return Object.assign(sound, { playSequence });
+}
 /*******************************************************************************
  * sound sequences
  *******************************************************************************/
-function soundsInSequence (arr) {
 
-	var snd = arr.shift();
-	var id = sound.play(snd);
-	if (arr.length > 0) {
-		sound.once('end', function () { 
-			soundsInSequence(arr);
-		}, id);
-	}
-	
-}
 
-export { getHowlerAudio, soundsInSequence };
+export { getHowlerAudio };
