@@ -2,6 +2,21 @@
  * layout.js
  ******************************************************************************/
 
+let score = -1;
+let start_pos = null;
+let is_game_restarting = false;
+let enemy_color = null;
+let maze = null;
+let walls = [];
+let level_bonus = -1;
+let stage = null;
+let num_players_remaining = -1;
+
+function initLayout (game_data) {
+
+	({ score, start_pos, is_game_restarting, maze, walls, level_bonus, stage, num_players_remaining } = game_data);
+}
+
 // more globals
 var quad_width = 200;
 var quad_height = 225;
@@ -56,7 +71,7 @@ function drawWalls () { // main
 			if (w === num_rows - 1 && h === 0) { random_sides = 'bottom,left'.split(','); }
 
 			if (Math.random() < random_prob) {
-				remaining_sides = sides.filter( function (s, i) {
+				remaining_sides = sides.filter( function (s) {
 					return random_sides.indexOf(s) === -1;
 				});
 				random_sides.push(remaining_sides[Math.floor(Math.random() * remaining_sides.length)]);
@@ -119,7 +134,7 @@ function drawWalls () { // main
 				}
 
 				rect.endFill();
-				rect.name = `${h}${w}${i}` // `Rectangle${h}${w}, ${s}`; // debug
+				rect.name = `${h}${w}${i}`; // `Rectangle${h}${w}, ${s}`; // debug
 				maze.addChild(rect);
 
 				// for hit testing
@@ -217,35 +232,11 @@ function getOutOfBoundsSide (obj) { // bullet.js && player.js
 	return side;
 }
 
-/*******************************************************************************
- * Game UI, score and num players icons
- *******************************************************************************/
-
+// Game UI, score and num players icons
 function handleAllRobotsKilled () { // main.js
 
 	score += level_bonus;
 	showBonusMessage();
-};
-
-function updateGameUI () { // main.js
-
-	updateScore();
-}
-
-function updateScore () {
-
-	var score_str = getScoreString();
-	var x_index = -1;
-	for (var c = 0, len = score_str.length; c < len; c++) {
-		x_index = getXindexForChar(score_str[c]);
-		digits_sprites[c].texture.frame = new PIXI.Rectangle(x_index, 0, 8, 9);
-	}
-}
-
-function showBonusMessage () {
-
-	resetBonusText();
-	bonus_text.visible = true;
 }
 
 function resetScoreDisplay () { // main.js
@@ -261,7 +252,7 @@ function resetScoreDisplay () { // main.js
 	score_cntr.x = 30;
 	score_cntr.y = 0;
 	var cur_digit;
-	var score_str = getScoreString();
+	var score_str = getScoreString(score);
 	digits_sprites = []; // reset
 	for (var i = 0; i < num_digits; i++) {
 		cur_digit = getDigit(score_str, i);
@@ -287,6 +278,31 @@ function resetScoreDisplay () { // main.js
 
 	// BONUS text + 3 digit sprites
 	stage.addChild(score_container);
+}
+
+
+function updateGameUI () { // main.js
+
+	updateScore();
+}
+
+//
+//
+// PRIVATE
+function updateScore () {
+
+	var score_str = getScoreString(score);
+	var x_index = -1;
+	for (var c = 0, len = score_str.length; c < len; c++) {
+		x_index = getXindexForChar(score_str[c]);
+		digits_sprites[c].texture.frame = new PIXI.Rectangle(x_index, 0, 8, 9);
+	}
+}
+
+function showBonusMessage () {
+
+	resetBonusText();
+	bonus_text.visible = true;
 }
 
 function resetBonusText () {
@@ -346,9 +362,9 @@ function getDigit (score_str, index) {
 	return digit_sprite;
 }
 
-function getScoreString () {
+function getScoreString (_score) {
 
-	var score_str = "" + score;
+	var score_str = "" + _score;
 	// catch scores 100,00 and up ...
 	if (score_str.length > 5) {
 		throw new Error('score is greater then 99,999!!! fix me!');
@@ -370,9 +386,6 @@ function getXindexForChar (c) {
 	return (c.charCodeAt(0) - 31) * width;
 }
 
-export { 
-	drawWalls, getPossiblePositions, getNearbyWalls, handleAllRobotsKilled, 
-	resetScoreDisplay, updateGameUI, getOutOfBoundsSide 
-};
+export { initLayout, drawWalls, getPossiblePositions, getNearbyWalls, getOutOfBoundsSide, resetScoreDisplay, updateGameUI, handleAllRobotsKilled };
 
 

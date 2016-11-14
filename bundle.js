@@ -407,6 +407,21 @@ function degToRad (deg) { // bullet.js only
  * layout.js
  ******************************************************************************/
 
+let score$1 = -1;
+let start_pos$2 = null;
+let is_game_restarting$1 = false;
+let enemy_color$1 = null;
+let maze$2 = null;
+let walls$1 = [];
+let level_bonus$1 = -1;
+let stage$1 = null;
+let num_players_remaining$1 = -1;
+
+function initLayout (game_data) {
+
+	({ score: score$1, start_pos: start_pos$2, is_game_restarting: is_game_restarting$1, maze: maze$2, walls: walls$1, level_bonus: level_bonus$1, stage: stage$1, num_players_remaining: num_players_remaining$1 } = game_data);
+}
+
 // more globals
 var quad_width = 200;
 var quad_height = 225;
@@ -434,8 +449,8 @@ function drawWalls () { // main
 	var random_prob = 0.2;
 	var a_random_side = '';
 	var player_start = {
-		col: Math.floor(start_pos.x / quad_width),
-		row: Math.floor(start_pos.y / quad_height)
+		col: Math.floor(start_pos$2.x / quad_width),
+		row: Math.floor(start_pos$2.y / quad_height)
 	};
 	var blocker_side = '';
 	var remaining_sides = [];
@@ -461,7 +476,7 @@ function drawWalls () { // main
 			if (w === num_rows - 1 && h === 0) { random_sides = 'bottom,left'.split(','); }
 
 			if (Math.random() < random_prob) {
-				remaining_sides = sides.filter( function (s, i) {
+				remaining_sides = sides.filter( function (s) {
 					return random_sides.indexOf(s) === -1;
 				});
 				random_sides.push(remaining_sides[Math.floor(Math.random() * remaining_sides.length)]);
@@ -473,7 +488,7 @@ function drawWalls () { // main
 			if (w === num_rows - 1 && h === 2) { random_sides = []; }
 			if (w === 1 && h === 0) { random_sides = []; }
 
-			if (is_game_restarting === false) {
+			if (is_game_restarting$1 === false) {
 				// draw exit blocker
 				if (player_start.row === 0 && player_start.col === 2) { blocker_side = 'top'; }
 				if (player_start.row === 1 && player_start.col === num_cols - 1) { blocker_side = 'right'; }
@@ -481,7 +496,7 @@ function drawWalls () { // main
 				if (player_start.row === 1 && player_start.col === 0) { blocker_side = 'left'; }
 
 				if (w === player_start.row && h === player_start.col) {
-					color = enemy_color;
+					color = enemy_color$1;
 					width = 8;
 					random_sides = [ blocker_side ];
 				} else {
@@ -525,10 +540,10 @@ function drawWalls () { // main
 
 				rect.endFill();
 				rect.name = `${h}${w}${i}`; // `Rectangle${h}${w}, ${s}`; // debug
-				maze.addChild(rect);
+				maze$2.addChild(rect);
 
 				// for hit testing
-				walls.push(rect);
+				walls$1.push(rect);
 			});
 
 			x_pos += quad_width;
@@ -548,8 +563,8 @@ function getPossiblePositions () { // main.js
 	var positions = [];
 	var pos = {};
 	var player_start = {
-		col: Math.floor(start_pos.x / quad_width),
-		row: Math.floor(start_pos.y / quad_height)
+		col: Math.floor(start_pos$2.x / quad_width),
+		row: Math.floor(start_pos$2.y / quad_height)
 	};
 	// console.log(player_start);
 
@@ -589,14 +604,14 @@ function getNearbyWalls (sprite) { // robot.js
 	// annotate this one please 
 	var re = new RegExp(`${sprite.qx}${sprite.qy}\\d`);
 	
-	walls.forEach( function (w) {
+	walls$1.forEach( function (w) {
 		top = top 		 || w.name === `${sprite.qx}${sprite.qy - 1}2`;
 		right = right 	 || w.name === `${sprite.qx + 1}${sprite.qy}3`;
 		bottom 	= bottom || w.name === `${sprite.qx}${sprite.qy + 1}0`;
 		left = left 	 || w.name === `${sprite.qx - 1}${sprite.qy}1`;
 	});
 
-	var quad_walls = walls.filter( function (w) { return re.test(w.name); });
+	var quad_walls = walls$1.filter( function (w) { return re.test(w.name); });
 	
 	quad_walls.forEach( function (w) {
 		top = top 		 || w.name[2] === '0';
@@ -622,19 +637,61 @@ function getOutOfBoundsSide (obj) { // bullet.js && player.js
 	return side;
 }
 
-/*******************************************************************************
- * Game UI, score and num players icons
- *******************************************************************************/
-
+// Game UI, score and num players icons
 function handleAllRobotsKilled () { // main.js
 
-	score += level_bonus;
+	score$1 += level_bonus$1;
 	showBonusMessage();
 }
 
+function resetScoreDisplay () { // main.js
+
+	if (score_container != null) {
+		stage$1.removeChild(score_container);
+	}
+	score_container = new PIXI.Container();
+	score_container.x = 10;
+	score_container.y = 710;
+
+	score_cntr = new PIXI.Container();
+	score_cntr.x = 30;
+	score_cntr.y = 0;
+	var cur_digit;
+	var score_str = getScoreString(score$1);
+	digits_sprites = []; // reset
+	for (var i = 0; i < num_digits; i++) {
+		cur_digit = getDigit(score_str, i);
+		score_cntr.addChild(cur_digit);
+		digits_sprites.push(cur_digit);
+	}
+	score_container.addChild(score_cntr);
+
+	players_remaining = new PIXI.Container();
+	players_remaining.x = 300;
+	players_remaining.y = 0;
+	for (var i = 0; i < num_players_remaining$1 - 1; i++) {
+		players_remaining.addChild(getPlayerIcon(i));
+	}
+	score_container.addChild(players_remaining);
+
+	bonus_text = new PIXI.Container();
+	bonus_text.x = 400;
+	bonus_text.y = 0;
+	resetBonusText();
+	bonus_text.visible = false;
+	score_container.addChild(bonus_text);
+
+	// BONUS text + 3 digit sprites
+	stage$1.addChild(score_container);
+}
+
+
+//
+//
+// PRIVATE
 function updateScore () {
 
-	var score_str = getScoreString();
+	var score_str = getScoreString(score$1);
 	var x_index = -1;
 	for (var c = 0, len = score_str.length; c < len; c++) {
 		x_index = getXindexForChar(score_str[c]);
@@ -648,51 +705,10 @@ function showBonusMessage () {
 	bonus_text.visible = true;
 }
 
-function resetScoreDisplay () { // main.js
-
-	if (score_container != null) {
-		stage.removeChild(score_container);
-	}
-	score_container = new PIXI.Container();
-	score_container.x = 10;
-	score_container.y = 710;
-
-	score_cntr = new PIXI.Container();
-	score_cntr.x = 30;
-	score_cntr.y = 0;
-	var cur_digit;
-	var score_str = getScoreString();
-	digits_sprites = []; // reset
-	for (var i = 0; i < num_digits; i++) {
-		cur_digit = getDigit(score_str, i);
-		score_cntr.addChild(cur_digit);
-		digits_sprites.push(cur_digit);
-	}
-	score_container.addChild(score_cntr);
-
-	players_remaining = new PIXI.Container();
-	players_remaining.x = 300;
-	players_remaining.y = 0;
-	for (var i = 0; i < num_players_remaining - 1; i++) {
-		players_remaining.addChild(getPlayerIcon(i));
-	}
-	score_container.addChild(players_remaining);
-
-	bonus_text = new PIXI.Container();
-	bonus_text.x = 400;
-	bonus_text.y = 0;
-	resetBonusText();
-	bonus_text.visible = false;
-	score_container.addChild(bonus_text);
-
-	// BONUS text + 3 digit sprites
-	stage.addChild(score_container);
-}
-
 function resetBonusText () {
 
 	bonus_text.removeChildren();
-	var bonus_str = "BONUS " + level_bonus;
+	var bonus_str = "BONUS " + level_bonus$1;
 	var char_tex, char_sprite, x_index, rect;
 	var padding = 2;
 	var width = 8;
@@ -746,9 +762,9 @@ function getDigit (score_str, index) {
 	return digit_sprite;
 }
 
-function getScoreString () {
+function getScoreString (_score) {
 
-	var score_str = "" + score;
+	var score_str = "" + _score;
 	// catch scores 100,00 and up ...
 	if (score_str.length > 5) {
 		throw new Error('score is greater then 99,999!!! fix me!');
@@ -1599,27 +1615,27 @@ return function (game_objs) {
  // GLOBALS
  let player$1 = null;
  let evil_otto = null;
- let walls$1 = [];
+ let walls = [];
  let robots = [];
  let bullets$1 = [];
  let robot_bullets$1 = [];
  let max_robot_bullets = 1;
 
- let is_game_restarting$1 = true;
+ let is_game_restarting = true;
 
  let timer$1 = 0;
  let next_bullet_time = 150;
  let game_over_timer = -1;
 
- let enemy_color$1 = 0x000000;
- let score$1 = 0;
- let level_bonus$1 = 0;
- let num_players_remaining$1 = 3;
+ let enemy_color = 0x000000;
+ let score = 0;
+ let level_bonus = 0;
+ let num_players_remaining = 3;
 
  let pubSub =  new Events();
  let start_pos$1 = {x: 90, y: 300};
 
- let stage$1 = new PIXI.Container();
+ let stage = new PIXI.Container();
  let maze$1 = new PIXI.Container();
  let sound$1 = getHowlerAudio();
 
@@ -1629,12 +1645,12 @@ return function (game_objs) {
  );
 
 let game = initGameStates({ 
-	player: player$1,	evil_otto, walls: walls$1, robots, bullets: bullets$1, robot_bullets: robot_bullets$1, 
-	max_robot_bullets, is_game_restarting: is_game_restarting$1, 
+	player: player$1,	evil_otto, walls, robots, bullets: bullets$1, robot_bullets: robot_bullets$1, 
+	max_robot_bullets, is_game_restarting, 
 	timer: timer$1, next_bullet_time, game_over_timer, 
-	enemy_color: enemy_color$1, score: score$1, level_bonus: level_bonus$1, num_players_remaining: num_players_remaining$1, 
+	enemy_color, score, level_bonus, num_players_remaining, 
 	pubSub,	start_pos: start_pos$1, 
-	stage: stage$1, maze: maze$1, sound: sound$1, renderer
+	stage, maze: maze$1, sound: sound$1, renderer
 });
 // make stuff look pixelated
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
@@ -1646,8 +1662,8 @@ document.body.appendChild(renderer.view);
 // debug_timer, score, game over screen ...
 createGameUIBits();
 
-renderer.render(stage$1);
-stage$1.addChild(maze$1);
+renderer.render(stage);
+stage.addChild(maze$1);
 
 // APP STARTS-UP HERE ...
 PIXI.loader
@@ -1664,6 +1680,7 @@ function setup() {
 	pubSub.listenTo(window, 'player_is_exiting', handlePlayerExiting);
 	pubSub.listenTo(window, 'player_has_died', handlePlayerDied);
 
+	initLayout({ score, start_pos: start_pos$1, is_game_restarting, maze: maze$1, walls, level_bonus, stage, num_players_remaining });
 	init();
 	game.init();
 }

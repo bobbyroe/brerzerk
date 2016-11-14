@@ -2,7 +2,7 @@ import { Events } from "./events.js"; // ***
 import { getHowlerAudio } from "./audio.js"; // ***
 import * as keyboard from "./keyboard.js"; // ***
 import { createGameUIBits } from "./utils.js"; //***
-import { handleAllRobotsKilled } from "./layout.js"; // ***
+import { initLayout, handleAllRobotsKilled } from "./layout.js"; // ***
 import { initGameStates } from "./gameStates.js";
 /*******************************************************************************
  * main.js
@@ -75,6 +75,7 @@ function setup() {
 	pubSub.listenTo(window, 'player_is_exiting', handlePlayerExiting);
 	pubSub.listenTo(window, 'player_has_died', handlePlayerDied);
 
+	initLayout({ score, start_pos, is_game_restarting, maze, walls, level_bonus, stage, num_players_remaining });
 	keyboard.init();
 	game.init();
 }
