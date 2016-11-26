@@ -79,6 +79,7 @@ return function (game_objs) {
 		timer += 1;
 		gameState();
 		renderer.render(stage);
+		console.log('gameLoop!');
 	}
 
 	var x_vel = 0;
