@@ -1,26 +1,24 @@
-import { getNearbyWalls } from "./layout.js";
-import { fire } from "./bullet.js";
 
-/*******************************************************************************
- * robot.js
- ******************************************************************************/
+var max_robot_bullets = 1;
+/**
+ *
+ * GLOBALS: loader, timer, sound, score, robots, player, enemy_color, start_pos
+ * fns: removeRobot, getNearbyWalls
+ *
+ **/
 
 var getRobot = (function () {
 
 var robot_score = 50;
 var robots_awake_time = 150;
 
-return function (game_stuff) {
-
-	let { 
-	 	enemy_color, sound, pubSub, timer, next_bullet_time, robots, score, player, robot_bullets, max_robot_bullets, maze
-	} = game_stuff;
+return function () {
 
 	var robot_tex = PIXI.loader.resources["images/robot.png"].texture.clone();
 	var robot_sprite = new PIXI.Sprite(robot_tex);
 
 	var robot_explode_tex = PIXI.loader.resources["images/robot-explode.png"].texture.clone();
-	var rect = new PIXI.Rectangle(0, 0, 8, 11);
+	var rect = rect = new PIXI.Rectangle(0, 0, 8, 11);
 	robot_tex.frame = rect;
 	robot_sprite.vx = 0;
 	robot_sprite.vy = 0;
@@ -68,6 +66,7 @@ return function (game_stuff) {
 
 		var anim_frame_index = (Math.round(timer * robot_sprite.frame_delay) % 2) * 8;
 		var standing_frame_index = (Math.round( (timer + robot_sprite.timer_offset) * robot_sprite.frame_delay) % 6) * 8;
+		var arr = [];
 		var robots_left = -1;
 		if (robot_sprite.was_hit === true) {
 			
@@ -157,18 +156,13 @@ return function (game_stuff) {
 		return vel;
 	}
 
-	function removeRobot (sprite) {
-
-		maze.removeChild(sprite);
-		robots.splice(robots.indexOf(sprite), 1);
-		sprite.destroy();
-	}
-
 	return robot_sprite;
-};
-
+}
 })();
 
-export { getRobot }; 
+function removeRobot (sprite) {
 
-
+	maze.removeChild(sprite);
+	robots.splice(robots.indexOf(sprite), 1);
+	sprite.destroy();
+}

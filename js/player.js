@@ -1,18 +1,18 @@
-import { handle } from "./keyboard.js";
-import { getOutOfBoundsSide } from "./layout.js";
-import { fire } from "./bullet.js";
-/*******************************************************************************
- * player.js
- ******************************************************************************/
+/**
+ *
+ * GLOBALS: num_players_remaining, sound, timer, next_bullet_time
+ * PIXI globals: Sprite
+ * fns: keyboard, fire
+ * fns: gameRestarting, exitingLevel, prepareToExitLevel
+ *
+ **/
 
 var getPlayer = (function () {
 
 var colors8 = [0xFFFFFF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFF0000, 0x00FF00];
-return function (game_stuff) {
 
-	let { 
-	 	stage, sound, pubSub, is_game_restarting, start_pos, timer, bullets, next_bullet_time, num_players_remaining
-	} = game_stuff;
+return function (pos) {
+
 
 	var player_tex = PIXI.loader.resources["images/player.png"].texture.clone();
 	var player_sprite = new PIXI.Sprite(player_tex);
@@ -20,8 +20,8 @@ return function (game_stuff) {
 	player_tex.frame = rect;
 	player_sprite.scale.set(4, 4);
 	player_sprite.tint = 0x00FF00;
-	player_sprite.x = start_pos.x; // 150;
-	player_sprite.y = start_pos.y; // 90;
+	player_sprite.x = pos.x; // 150;
+	player_sprite.y = pos.y; // 90;
 	player_sprite.name = 'humanoid';
 	
 	player_sprite.vx = 0;
@@ -47,13 +47,31 @@ return function (game_stuff) {
 	// public methods
 	player_sprite.tick = playerPending;
 
+	// var moveUp = {
+	// 	key: 'ArrowUp',
+	// 	pressFn: function () {
+	// 		if (moveUp.shiftKey === true) {
+	// 			sprite.ay = -1;
+	// 			tryToShoot(sprite);
+	// 		} else {
+	// 			sprite.vy = sprite.rate * -1;
+	// 		}
+	// 	},
+	// 	releaseFn: function () {
+	// 		if (moveDown.isDown === false) {
+	// 			sprite.ay = 0;
+	// 			sprite.vy = 0;
+	// 		}
+	// 	}
+	// };
+	// registerKey(moveUp);
 	setUpCtrlsFor(player_sprite);
 	function setUpCtrlsFor (sprite) {
 
-		var moveUp = handle(sprite.ctrl_keys[0]);
-		var moveRight = handle(sprite.ctrl_keys[1]);
-		var moveDown = handle(sprite.ctrl_keys[2]);
-		var moveLeft = handle(sprite.ctrl_keys[3]);
+		var moveUp = keyboard(sprite.ctrl_keys[0]);
+		var moveRight = keyboard(sprite.ctrl_keys[1]);
+		var moveDown = keyboard(sprite.ctrl_keys[2]);
+		var moveLeft = keyboard(sprite.ctrl_keys[3]);
 
 		moveLeft.press = function () {
 			if (moveLeft.shiftKey === true) {
@@ -148,10 +166,10 @@ return function (game_stuff) {
 	function playerPending () {
 
 		// blink player location
-		if (timer < player_sprite.blinking_duration) {
-			player_sprite.visible = (timer % 40 > 20);
+		if (timer < player.blinking_duration) {
+			player.visible = (timer % 40 > 20);
 		} else {
-			player_sprite.visible = true;
+			player.visible = true;
 			player_sprite.tick = playerPlay;
 		}
 	}
@@ -164,7 +182,8 @@ return function (game_stuff) {
 
 		var exit_side = getOutOfBoundsSide(player_sprite);
 		if (exit_side !== 'none') {
-			pubSub.dispatch('player_is_exiting', window, exit_side);
+			prepareToExitLevel(exit_side);
+			gameState = exitingLevel;
 		}
 
 		if (player_sprite.was_hit === true && player_sprite.is_invincible === false) {
@@ -192,12 +211,12 @@ return function (game_stuff) {
 				num_players_remaining -= 1;
 				is_game_restarting = true;
 				start_pos = {x: 90, y: 300};
-				pubSub.dispatch('player_has_died', window);
+				gameState = gameRestarting;
 			}
 		}
+		updateRobots();
 	}
 	return player_sprite;
-};
+}
 })();
 
-export { getPlayer };
