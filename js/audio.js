@@ -49,13 +49,16 @@ function getHowlerAudio () {
 /*******************************************************************************
  * sound sequences
  *******************************************************************************/
-function soundsInSequence (arr) {
+function soundsInSequence (arr, rate) {
 
 	var snd = arr.shift();
 	var id = sound.play(snd);
+	if (rate != null) {
+		sound.rate(rate, id);
+	}
 	if (arr.length > 0) {
 		sound.once('end', function () { 
-			soundsInSequence(arr);
+			soundsInSequence(arr, rate);
 		}, id);
 	}
 	

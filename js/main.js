@@ -207,11 +207,12 @@ function prepareToExitLevel (side) {
 	}
 
 	// robot talk to player
+	var random_rate = Math.random() + 0.5;	
 	if (robots.length !== 0) {
-		sound.play('chicken');
-		soundsInSequence('chicken fight like a robot'.split(' '));
+		// sound.play('chicken');
+		id = soundsInSequence('chicken fight like a robot'.split(' '), random_rate);
 	} else {
-		soundsInSequence('the humanoid must not escape'.split(' '));
+		id = soundsInSequence('the humanoid must not escape'.split(' '), random_rate);
 	}
 }
 
