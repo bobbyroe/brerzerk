@@ -1,4 +1,9 @@
-
+// GLOBALS:
+// Events, max_robot_bullets
+// anykey_subhead, logo_img
+// createGameUIBits, getHowlerAudio, handleAllRobotsKilled, removeListeners, resetScoreDisplay
+// getPlayer, drawWalls, getEvilOtto
+// updateGameUI, soundsInSequence, getBullet, getPossiblePositions, getRobot, 
 
 // make stuff look pixelated
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
@@ -15,7 +20,6 @@ var timer = 0;
 var num_players_remaining = 3;
 var walls = [];
 var robots = [];
-var DEBUG = false;
 var bullets = [];
 var next_bullet_time = 150;
 var enemy_color = 0x000000;
