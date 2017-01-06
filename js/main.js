@@ -283,7 +283,7 @@ function getRobots () {
 
 	for (var r = 0; r < num_robots; r++) {
 
-		robot = getRobot();
+		robot = getRobot(max_num_robots);
 
 		var random_index = Math.floor(Math.random() * possible_positions.length);
 		robot_pos = possible_positions.splice(random_index, 1)[0];
