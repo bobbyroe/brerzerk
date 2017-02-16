@@ -73,7 +73,7 @@ function resetGameState () {
 	function fn () { 
 		window.removeEventListener("keydown", fn); 
 		gameState = gameRestarting;
-		renderer.view.hidden = false;
+		renderer.view.className = "";
 	}
 	window.addEventListener("keydown", fn, false);
 	gameState = gameDormant;
@@ -160,7 +160,7 @@ function gameStart () {
 }
 
 function gameDormant () {
-	renderer.view.hidden = true;
+	renderer.view.className = "hidden";
 	// splash_header.textContent = "";
 	logo_img.style.display = 'block';
 	anykey_subhead.textContent = "HIT ANY KEY";
@@ -238,8 +238,7 @@ function gameOver () {
 	if (timer > game_over_timer) {
 		gameState = resetGameState;
 	} else {
-		renderer.view.hidden = true;
-		// splash_header.textContent = "GAME OVER";
+		renderer.view.className = "hidden";
 	}
 }
 
