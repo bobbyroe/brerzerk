@@ -12,7 +12,7 @@ var getRobot = (function () {
 var robot_score = 50;
 var robots_awake_time = 150;
 
-return function () {
+return function (max_num_robots) {
 
 	var robot_tex = PIXI.loader.resources["images/robot.png"].texture.clone();
 	var robot_sprite = new PIXI.Sprite(robot_tex);
@@ -60,9 +60,11 @@ return function () {
 		}
 	}
 
+	var delay_coefficient = 1 / max_num_robots; // 0.11
+	console.log(delay_coefficient);
 	function robotPlay () {
 
-		robot_sprite.frame_delay = 0.25 * (1 - robots.length * 0.11); // 2 / 12 (1 / max num robots)
+		robot_sprite.frame_delay = 0.25 * (1 - (robots.length * delay_coefficient)); // 2 / 12 (1 / max num robots)
 
 		var anim_frame_index = (Math.round(timer * robot_sprite.frame_delay) % 2) * 8;
 		var standing_frame_index = (Math.round( (timer + robot_sprite.timer_offset) * robot_sprite.frame_delay) % 6) * 8;
@@ -90,6 +92,10 @@ return function () {
 			robot_sprite.x += robot_sprite.vx;
 			robot_sprite.y += robot_sprite.vy;
 
+			// TEMP
+			// robot_sprite.vx = 0;
+			// robot_sprite.vy = 0;
+
 			// animate him
 			if (robot_sprite.vy > 0) {
 				robot_sprite.texture.frame = new PIXI.Rectangle(anim_frame_index + 64, 0, 8, 11);
@@ -105,6 +111,7 @@ return function () {
 
 			if (robot_sprite.vx === 0 && robot_sprite.vy === 0) {
 				robot_sprite.texture.frame = new PIXI.Rectangle(standing_frame_index, 0, 8, 11);
+				console.log(robot_sprite.index, ":", standing_frame_index);
 			}
 		}
 	}

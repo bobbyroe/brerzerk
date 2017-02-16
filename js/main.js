@@ -1,4 +1,9 @@
-
+// GLOBALS:
+// Events, max_robot_bullets
+// anykey_subhead, logo_img
+// createGameUIBits, getHowlerAudio, handleAllRobotsKilled, removeListeners, resetScoreDisplay
+// getPlayer, drawWalls, getEvilOtto
+// updateGameUI, soundsInSequence, getBullet, getPossiblePositions, getRobot, 
 
 // make stuff look pixelated
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
@@ -15,7 +20,6 @@ var timer = 0;
 var num_players_remaining = 3;
 var walls = [];
 var robots = [];
-var DEBUG = false;
 var bullets = [];
 var next_bullet_time = 150;
 var enemy_color = 0x000000;
@@ -207,11 +211,12 @@ function prepareToExitLevel (side) {
 	}
 
 	// robot talk to player
+	var random_rate = Math.random() + 0.5;	
 	if (robots.length !== 0) {
-		sound.play('chicken');
-		soundsInSequence('chicken fight like a robot'.split(' '));
+		// sound.play('chicken');
+		id = soundsInSequence('chicken fight like a robot'.split(' '), random_rate);
 	} else {
-		soundsInSequence('the humanoid must not escape'.split(' '));
+		id = soundsInSequence('the humanoid must not escape'.split(' '), random_rate);
 	}
 }
 
@@ -278,7 +283,7 @@ function getRobots () {
 
 	for (var r = 0; r < num_robots; r++) {
 
-		robot = getRobot();
+		robot = getRobot(max_num_robots);
 
 		var random_index = Math.floor(Math.random() * possible_positions.length);
 		robot_pos = possible_positions.splice(random_index, 1)[0];
