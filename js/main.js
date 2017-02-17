@@ -161,7 +161,6 @@ function gameStart () {
 
 function gameDormant () {
 	renderer.view.className = "hidden";
-	// splash_header.textContent = "";
 	logo_img.style.display = 'block';
 	anykey_subhead.textContent = "HIT ANY KEY";
 }

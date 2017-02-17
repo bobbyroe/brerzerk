@@ -144,7 +144,6 @@ return function (max_num_robots) {
 			robot_sprite.vx = Math.max(robot_sprite.vx, 0);
 		}
 	
-
 		if (timer < next_bullet_time === false && robot_bullets.length < max_robot_bullets) {
 
 			if (Math.abs(robot_sprite.x - player.x) < 20 ||
