@@ -15,8 +15,7 @@ var robots_awake_time = 150;
 return function (options_obj) {
 
 	// unpack
-	var max_num_robots = options_obj.max_num;
-	var bullets = options_obj.bullets;
+	var { max_num_robots, robot_bullets, walls } = options_obj;
 
 	var robot_tex = PIXI.loader.resources["images/robot.png"].texture.clone();
 	var robot_sprite = new PIXI.Sprite(robot_tex);
@@ -36,7 +35,7 @@ return function (options_obj) {
 	robot_sprite.index = -1;
 	robot_sprite.name = `robot${timer}`;
 
-	robot_sprite.bullets = bullets;
+	robot_sprite.bullets = robot_bullets;
 	robot_sprite.bullet_velocity = getRobotBulletVelocity();
 	robot_sprite.bullet_length = 6;
 	robot_sprite.bullet_color = enemy_color;
@@ -166,6 +165,41 @@ return function (options_obj) {
 		return vel;
 	}
 
+	function getNearbyWalls (sprite) {
+
+		var top = false;
+		var right = false;
+		var bottom = false;
+		var left = false;
+		sprite.qx = Math.floor(sprite.x / quad_width);
+		sprite.qy = Math.floor(sprite.y / quad_height);
+
+		// annotate this one please 
+		var re = new RegExp(`${sprite.qx}${sprite.qy}\\d`);
+		
+		walls.forEach( function (w) {
+			top = top 		 || w.name === `${sprite.qx}${sprite.qy - 1}2`;
+			right = right 	 || w.name === `${sprite.qx + 1}${sprite.qy}3`;
+			bottom 	= bottom || w.name === `${sprite.qx}${sprite.qy + 1}0`;
+			left = left 	 || w.name === `${sprite.qx - 1}${sprite.qy}1`;
+		});
+
+		var quad_walls = walls.filter( function (w) { return re.test(w.name); });
+		
+		quad_walls.forEach( function (w) {
+			top = top 		 || w.name[2] === '0';
+			right = right 	 || w.name[2] === '1';
+			bottom 	= bottom || w.name[2] === '2';
+			left = left  	 || w.name[2] === '3';
+		});
+
+		return {
+			top: top,
+			right: right,
+			bottom: bottom,
+			left: left,
+		};
+	}
 	return robot_sprite;
 }
 })();

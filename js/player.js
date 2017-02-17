@@ -1,6 +1,6 @@
 /**
  *
- * GLOBALS: num_players_remaining, sound, timer, next_bullet_time
+ * GLOBALS: sound, timer, next_bullet_time
  * PIXI globals: Sprite
  * fns: keyboard, fire
  * fns: gameRestarting, exitingLevel, prepareToExitLevel
@@ -14,8 +14,7 @@ var colors8 = [0xFFFFFF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFF0000, 0x00FF00];
 return function (options_obj) {
 
 	// unpack
-	var pos = options_obj.pos;
-	var bullets = options_obj.bullets;
+	var { pos, bullets } = options_obj;
 
 	var player_tex = PIXI.loader.resources["images/player.png"].texture.clone();
 	var player_sprite = new PIXI.Sprite(player_tex);
@@ -47,7 +46,7 @@ return function (options_obj) {
 	player_sprite.bullet_color = 0x00FF00;
 
 	// CHEAT
-	player_sprite.is_invincible = true;
+	player_sprite.is_invincible = false; // true;
 
 	// public methods
 	player_sprite.tick = playerPending;
@@ -170,7 +169,6 @@ return function (options_obj) {
 		var exit_side = getOutOfBoundsSide(player_sprite);
 		if (exit_side !== 'none') {
 			prepareToExitLevel(exit_side);
-			gameState = exitingLevel;
 		}
 
 		if (player_sprite.was_hit === true && player_sprite.is_invincible === false) {
@@ -193,13 +191,8 @@ return function (options_obj) {
 			player_sprite.texture.frame = new PIXI.Rectangle((Math.round(timer * 0.4) % 4) * 8 + 80, 0, 8, 17);
 			player_sprite.tint = colors8[Math.floor(Math.random() * colors8.length)];
 		} else {
-			stage.removeChild(player_sprite);
-			if (timer - player_sprite.death_start_timer - player_sprite.death_anim_duration > player_sprite.blinking_duration) {
-				num_players_remaining -= 1;
-				is_game_restarting = true;
-				start_pos = {x: 90, y: 300};
-				gameState = gameRestarting;
-			}
+
+			pubSub.dispatch('got_the_humanoid', window);
 		}
 		updateRobots();
 	}

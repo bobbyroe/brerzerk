@@ -16,11 +16,12 @@ var BZRK = {}; // game object
 var player;
 var evil_otto;
 var gameState;
-var timer = 0;
+var timer = 0; // ??? should this remain as a global, as-is?
 var num_players_remaining = 3;
 var walls = [];
 var robots = [];
 var bullets = [];
+// ----------------------- //
 var next_bullet_time = 150;
 var enemy_color = 0x000000;
 var robot_bullets = [];
@@ -65,6 +66,7 @@ var sound = getHowlerAudio();
 function setup() {
 	
 	pubSub.listenTo(window, 'all_robots_killed', handleAllRobotsKilled);
+	pubSub.listenTo(window, 'got_the_humanoid', handleHumanoidGot);
 	resetGameState();
 	gameLoop();	
 }
@@ -102,11 +104,12 @@ function gameRestarting () {
 	maze.removeChildren();
 	walls = [];
 	robots = [];
+	if (evil_otto != null) { evil_otto.destroy(); } // clean up
 	removeListeners();
 	anykey_subhead.textContent = "";
 	logo_img.style.display = 'none';
 
-	resetScoreDisplay();
+	resetScoreDisplay(num_players_remaining);
 
 	// initialize
 	timer = 0;
@@ -117,7 +120,7 @@ function gameRestarting () {
 	if (num_players_remaining > 0) {
 		player = getPlayer({pos: start_pos, bullets: bullets});
 		maze.addChild(player);
-		drawWalls();
+		drawWalls(walls);
 		gameState = gameStart;
 		is_game_restarting = false; 
 
@@ -128,7 +131,8 @@ function gameRestarting () {
 		gameState = gameOver;
 		is_game_restarting = true;
 	}
-	evil_otto = getEvilOtto({ pos: {x: 0, y: 0}, humanoid: player}); // keep him offscreen for now
+
+	evil_otto = getEvilOtto({ pos: {x: 0, y: 0}, player, robots}); // keep him offscreen for now
 }
 
 function gameStart () {
@@ -222,6 +226,8 @@ function prepareToExitLevel (side) {
 	} else {
 		id = soundsInSequence('the humanoid must not escape'.split(' '), random_rate);
 	}
+
+	gameState = exitingLevel;
 }
 
 function exitingLevel () {
@@ -243,6 +249,28 @@ function gameOver () {
 		gameState = resetGameState;
 	} else {
 		renderer.view.className = "hidden";
+	}
+}
+
+/*******************************************************************************
+ * some pubSub message handlers
+ *******************************************************************************/
+function handleAllRobotsKilled () {
+
+	console.log('handleAllRobotsKilled');
+	score += level_bonus;
+	showBonusMessage();
+}
+
+function handleHumanoidGot () {
+
+	console.log('handleHumanoidGot');
+	stage.removeChild(player);
+	if (timer - player.death_start_timer - player.death_anim_duration > player.blinking_duration) {
+		num_players_remaining -= 1;
+		is_game_restarting = true;
+		start_pos = {x: 90, y: 300};
+		gameState = gameRestarting;
 	}
 }
 
@@ -286,7 +314,7 @@ function getRobots () {
 
 	for (var r = 0; r < num_robots; r++) {
 
-		robot = getRobot({max_num: max_num_robots, bullets: robot_bullets});
+		robot = getRobot({max_num_robots, robot_bullets, walls});
 
 		var random_index = Math.floor(Math.random() * possible_positions.length);
 		robot_pos = possible_positions.splice(random_index, 1)[0];

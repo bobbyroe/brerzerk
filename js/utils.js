@@ -1,7 +1,6 @@
  /**
  * 
- * Globals: walls, robots, player, robot_bullets, bullets, evil_otto,
- * 			maze_width, maze_height
+ * Globals: maze_width, maze_height
  *          listeners
  **/
 /*******************************************************************************
