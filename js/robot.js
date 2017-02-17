@@ -12,7 +12,11 @@ var getRobot = (function () {
 var robot_score = 50;
 var robots_awake_time = 150;
 
-return function (max_num_robots) {
+return function (options_obj) {
+
+	// unpack
+	var max_num_robots = options_obj.max_num;
+	var bullets = options_obj.bullets;
 
 	var robot_tex = PIXI.loader.resources["images/robot.png"].texture.clone();
 	var robot_sprite = new PIXI.Sprite(robot_tex);
@@ -31,6 +35,8 @@ return function (max_num_robots) {
 	robot_sprite.timer_offset = Math.floor(Math.random() * 100);
 	robot_sprite.index = -1;
 	robot_sprite.name = `robot${timer}`;
+
+	robot_sprite.bullets = bullets;
 	robot_sprite.bullet_velocity = getRobotBulletVelocity();
 	robot_sprite.bullet_length = 6;
 	robot_sprite.bullet_color = enemy_color;
@@ -40,7 +46,6 @@ return function (max_num_robots) {
 
 	// public methods
 	robot_sprite.tick = robotPlay;
-	robot_sprite.aim = targetHumanoid;
 	
 	// animation vars
 	robot_sprite.frame_delay = 0.25; // smaller == slower
@@ -60,9 +65,8 @@ return function (max_num_robots) {
 		}
 	}
 
-	var delay_coefficient = 1 / max_num_robots; // 0.11
-	console.log(delay_coefficient);
-	function robotPlay () {
+	var delay_coefficient = 1 / max_num_robots;
+	function robotPlay (player_sprite) {
 
 		robot_sprite.frame_delay = 0.25 * (1 - (robots.length * delay_coefficient)); // 2 / 12 (1 / max num robots)
 
@@ -86,7 +90,7 @@ return function (max_num_robots) {
 		} else {
 
 			if (timer < robots_awake_time === false) {
-				robot_sprite.aim();
+				targetThe(player_sprite);
 			}
 
 			robot_sprite.x += robot_sprite.vx;
@@ -111,20 +115,20 @@ return function (max_num_robots) {
 
 			if (robot_sprite.vx === 0 && robot_sprite.vy === 0) {
 				robot_sprite.texture.frame = new PIXI.Rectangle(standing_frame_index, 0, 8, 11);
-				console.log(robot_sprite.index, ":", standing_frame_index);
+				// console.log(robot_sprite.index, ":", standing_frame_index);
 			}
 		}
 	}
 
-	function targetHumanoid () {
+	function targetThe (player_sprite) {
 
 		robot_sprite.rate = 2 - (robots.length * 0.16); // 2 / 12 (max speed / max num robots)
 
-		robot_sprite.ax = (robot_sprite.x - player.x > 1) ? -1 : 1;
-		robot_sprite.ay = (robot_sprite.y - player.y > 1) ? -1 : 1;
+		robot_sprite.ax = (robot_sprite.x - player_sprite.x > 1) ? -1 : 1;
+		robot_sprite.ay = (robot_sprite.y - player_sprite.y > 1) ? -1 : 1;
 
-		if (Math.abs(robot_sprite.x - player.x) < 20) { robot_sprite.ax = 0; }
-		if (Math.abs(robot_sprite.y - player.y) < 20) { robot_sprite.ay = 0; }
+		if (Math.abs(robot_sprite.x - player_sprite.x) < 20) { robot_sprite.ax = 0; }
+		if (Math.abs(robot_sprite.y - player_sprite.y) < 20) { robot_sprite.ay = 0; }
 
 		// update robot velocity
 		robot_sprite.vx = robot_sprite.ax * robot_sprite.rate;
@@ -146,10 +150,10 @@ return function (max_num_robots) {
 	
 		if (timer < next_bullet_time === false && robot_bullets.length < max_robot_bullets) {
 
-			if (Math.abs(robot_sprite.x - player.x) < 20 ||
-				Math.abs(robot_sprite.y - player.y) < 20 ||
-				Math.abs((robot_sprite.x - robot_sprite.y) - (player.x - player.y)) < 20 ||
-				Math.abs((robot_sprite.x - player.y) - (player.x - robot_sprite.y)) < 20) {
+			if (Math.abs(robot_sprite.x - player_sprite.x) < 20 ||
+				Math.abs(robot_sprite.y - player_sprite.y) < 20 ||
+				Math.abs((robot_sprite.x - robot_sprite.y) - (player_sprite.x - player_sprite.y)) < 20 ||
+				Math.abs((robot_sprite.x - player_sprite.y) - (player_sprite.x - robot_sprite.y)) < 20) {
 					fire(robot_sprite);
 			}	
 		}

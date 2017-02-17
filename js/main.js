@@ -29,6 +29,7 @@ var level_bonus = 0;
 var game_over_timer = -1;
 var is_game_restarting = true;
 var pubSub = new Events(BZRK);
+var all_sprites = {};
 
 // exit level velocity
 var x_vel = 0;
@@ -90,6 +91,9 @@ function gameLoop() {
 	renderer.render(stage);
 }
 
+/*******************************************************************************
+ * SETUP GAME
+ *******************************************************************************/
 function gameRestarting () {
 	
 	// clean up
@@ -104,13 +108,14 @@ function gameRestarting () {
 
 	resetScoreDisplay();
 
+	// initialize
 	timer = 0;
 	next_bullet_time = 150;
 	enemy_color = getEnemyColor();
 	max_robot_bullets = getMaxNumRobotBullets();
 	
 	if (num_players_remaining > 0) {
-		player = getPlayer(start_pos);
+		player = getPlayer({pos: start_pos, bullets: bullets});
 		maze.addChild(player);
 		drawWalls();
 		gameState = gameStart;
@@ -123,7 +128,7 @@ function gameRestarting () {
 		gameState = gameOver;
 		is_game_restarting = true;
 	}
-	evil_otto = getEvilOtto({x: 0, y: 0}); // keep him offscreen for now
+	evil_otto = getEvilOtto({ pos: {x: 0, y: 0}, humanoid: player}); // keep him offscreen for now
 }
 
 function gameStart () {
@@ -155,8 +160,8 @@ function gameStart () {
 	ESC.release = function () { /* no op */ };
 	//
 
+	all_sprites = { player,  walls, robots, robot_bullets, bullets, evil_otto };
 	gameState = gamePlay;
-	
 }
 
 function gameDormant () {
@@ -167,7 +172,7 @@ function gameDormant () {
 
 function gamePlay () {
 
-	hitTestAll();
+	hitTestAll(all_sprites);
 	player.tick();
 	evil_otto.tick();
 	updateRobots();
@@ -274,14 +279,14 @@ function updateBullets () {
 function getRobots () {
 
 	var robots = [];
-	var max_num_robots = 12, min_num_robots = 3;
-	var num_robots = Math.floor(Math.random() * (max_num_robots - min_num_robots)) + min_num_robots;
+	var max_num_robots = 14, min_num_robots = 3;
+	var num_robots = max_num_robots; // Math.floor(Math.random() * (max_num_robots - min_num_robots)) + min_num_robots;
 	var possible_positions = getPossiblePositions();
 	var robot, robot_pos;
 
 	for (var r = 0; r < num_robots; r++) {
 
-		robot = getRobot(max_num_robots);
+		robot = getRobot({max_num: max_num_robots, bullets: robot_bullets});
 
 		var random_index = Math.floor(Math.random() * possible_positions.length);
 		robot_pos = possible_positions.splice(random_index, 1)[0];
@@ -298,7 +303,7 @@ function getRobots () {
 function updateRobots () {
 
 	for (var i = 0, r_len = robots.length; i < r_len; i++) {
-		robots[i].tick();
+		robots[i].tick(player);
 	}
 }
 

@@ -59,7 +59,7 @@ return function (sprite) {
 
 function removeBullet (shot) {
 
-	var arr = (shot.sprite.name === player.name) ? bullets : robot_bullets;
+	var arr = shot.sprite.bullets; // (shot.sprite.name === player.name) ? bullets : robot_bullets;
 	maze.removeChild(shot);
 	arr.splice(arr.indexOf(shot), 1);
 	shot.destroy();

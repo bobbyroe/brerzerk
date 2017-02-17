@@ -4,7 +4,11 @@
  * PIXI globals: Sprite
  *
  **/
-function getEvilOtto (pos) {
+function getEvilOtto (options_obj) {
+
+	// unpack
+	var pos = options_obj.pos;
+	var humanoid = options_obj.humanoid;
 
 	if (evil_otto != null) { evil_otto.destroy(); } // clean up
 	
@@ -21,6 +25,7 @@ function getEvilOtto (pos) {
 	otto_sprite.tint = enemy_color;
 	otto_sprite.x = pos.x; // 150;
 	otto_sprite.y = pos.y; // 90;
+	otto_sprite.target = humanoid;
 	otto_sprite.name = 'EVIL OTTO';
 	otto_sprite.rate = 0.5;
 	otto_sprite.delay_timer = 100000; // default
@@ -37,9 +42,11 @@ var o_len = otto_frame_indices.length - 1;
 
 function ottoPlay () {
 
+	var target = otto_sprite.target;
+	
 	// direction = target position - object position
-    var dx = player.x - otto_sprite.x;
-    var dy = player.y - otto_sprite.y;
+    var dx = target.x - otto_sprite.x;
+    var dy = target.y - otto_sprite.y;
     var angle = Math.atan2(dy, dx);
     otto_sprite.rate = 2 - (robots.length * 0.16); // 2 / 12 (max speed / max num robots)
 

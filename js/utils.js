@@ -7,7 +7,11 @@
 /*******************************************************************************
  * HIT TESTING!
  *******************************************************************************/
-function hitTestAll () {
+function hitTestAll (all_sprites) {
+
+
+	// unpack
+	var { player, walls, robots, robot_bullets, bullets, evil_otto } = all_sprites;
 
 	// check every wall
 	for (var a = 0, a_len = walls.length; a < a_len; a++) {

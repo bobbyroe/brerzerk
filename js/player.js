@@ -11,8 +11,11 @@ var getPlayer = (function () {
 
 var colors8 = [0xFFFFFF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFF0000, 0x00FF00];
 
-return function (pos) {
+return function (options_obj) {
 
+	// unpack
+	var pos = options_obj.pos;
+	var bullets = options_obj.bullets;
 
 	var player_tex = PIXI.loader.resources["images/player.png"].texture.clone();
 	var player_sprite = new PIXI.Sprite(player_tex);
@@ -35,6 +38,8 @@ return function (pos) {
 	player_sprite.death_start_timer = -1;
 	player_sprite.blinking_duration = (is_game_restarting === true) ? 120 : 10;
 	player_sprite.bullet_delay = 30;
+
+	player_sprite.bullets = bullets;
 	player_sprite.next_bullet_time = 0;
 	player_sprite.max_bullets = 2;
 	player_sprite.bullet_velocity = 8;
@@ -123,7 +128,7 @@ return function (pos) {
 	function tryToShoot (sprite) {
 		if (player_sprite.tick === playerPlay &&
 			timer < sprite.bullet_delay === false &&
-			bullets.length < sprite.max_bullets) {
+			player_sprite.bullets.length < sprite.max_bullets) {
 
 			sprite.next_bullet_time += sprite.bullet_delay;
 			fire(sprite);
@@ -148,10 +153,10 @@ return function (pos) {
 	function playerPending () {
 
 		// blink player location
-		if (timer < player.blinking_duration) {
-			player.visible = (timer % 40 > 20);
+		if (timer < player_sprite.blinking_duration) {
+			player_sprite.visible = (timer % 40 > 20);
 		} else {
-			player.visible = true;
+			player_sprite.visible = true;
 			player_sprite.tick = playerPlay;
 		}
 	}
