@@ -1,20 +1,10 @@
-// js/events.js
-// js/keyboard.js
-// js/utils.js
-// js/bullet.js
-// js/player.js
-// js/robot.js
-// js/evilotto.js
-// js/layout.js
-// js/ui.js
-// js/audio.js
-
+'use strict';
 
 // GLOBALS:
 // Events
 // getHowlerAudio, removeListeners
 // getPlayer, drawWalls, getEvilOtto
-// getBullet, getRobot, 
+// soundsInSequence, getBullet, getPossiblePositions, getRobot, 
 
 // make stuff look pixelated
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
@@ -27,21 +17,23 @@ var BZRK = {}; // game object
 var player;
 var evil_otto;
 var gameState;
+var timer = 0;						// *** primitive – not passed by reference!
+var num_players_remaining = 3;		// *** primitive – not passed by reference!
 var walls = [];
 var robots = [];
 var bullets = [];
+var next_robot_bullet_time = 150;	// *** primitive – not passed by reference!
+var enemy_color = 0x000000;
 var robot_bullets = [];
-var timer = 0;						// *** primitive – not passed by reference! // ***, ***
-var next_robot_bullet_time = 150;	// *** primitive – not passed by reference! // ***
-var enemy_color = 0x000000;			// *** primitive – not passed by reference! // ***, ***, ***
-var max_robot_bullets = 1; 			// *** primitive – not passed by reference! // ***
-var score = 0;						// *** primitive – not passed by reference! // ***
-var level_bonus = 0;				// *** primitive – not passed by reference! // ***
-var is_game_restarting = true; 		// *** primitive – not passed by reference! // ***
-var _num_players_remaining = 3;
-var _game_over_timer = -1;
+var max_robot_bullets = 1; 			// *** primitive – not passed by reference!
+var score = 0;						// *** primitive – not passed by reference!
+var level_bonus = 0;				// *** primitive – not passed by reference!
+var game_over_timer = -1;			// *** primitive – not passed by reference!
+var is_game_restarting = true; 		// *** primitive – not passed by reference!
+
 var pubSub = new Events(BZRK);
 var all_sprites = {};
+
 var start_pos = {x: 90, y: 300};
 
 var renderer = PIXI.autoDetectRenderer(
@@ -49,6 +41,8 @@ var renderer = PIXI.autoDetectRenderer(
 	{antialias: false, transparent: false, resolution: 1}
 );
 document.body.appendChild(renderer.view);
+
+
 
 var stage = new PIXI.Container();
 renderer.render(stage);
@@ -116,7 +110,7 @@ function gameRestarting () {
 	removeListeners();
 	UI.splashScreen.hide();
 
-	UI.resetScore(_num_players_remaining);
+	UI.resetScore(num_players_remaining);
 
 	// initialize
 	timer = 0;
@@ -124,8 +118,8 @@ function gameRestarting () {
 	enemy_color = getEnemyColor();
 	max_robot_bullets = getMaxNumRobotBullets();
 	
-	if (_num_players_remaining > 0) {
-		player = getPlayer({start_pos, bullets, BZRK, sound, pubSub });
+	if (num_players_remaining > 0) {
+		player = getPlayer({start_pos, bullets});
 		maze.addChild(player);
 		drawWalls({walls, enemy_color, maze, start_pos, quad_width, quad_height });
 		gameState = gameStart;
@@ -133,13 +127,13 @@ function gameRestarting () {
 
 	} else { // RESET
 		score = 0;
-		_num_players_remaining = 3;
-		_game_over_timer = timer + 30;
+		num_players_remaining = 3;
+		game_over_timer = timer + 30;
 		gameState = gameOver;
 		is_game_restarting = true;
 	}
 
-	evil_otto = getEvilOtto({ pos: {x: 0, y: 0}, player, robots, enemy_color, start_pos, maze, sound });
+	evil_otto = getEvilOtto({ pos: {x: 0, y: 0}, player, robots, enemy_color, start_pos, maze });
 	// keep him offscreen for now
 }
 
@@ -182,68 +176,9 @@ function gamePlay () {
 
 function gamePaused () { /* no op */ }
 
-// exit level velocity
-var x_vel = 0;
-var y_vel = 0;
-function prepareToExitLevel (side) {
-
-	maze.children.forEach( function (child) {
-		child.tint = 0x0000FF;
-	});
-
-	x_vel = 0;
-	y_vel = 0;
-	var rate = 7;
-	switch (side) {
-		case 'top': 
-		x_vel = 0;
-		y_vel = rate * 1;
-		start_pos = {x: maze.width * 0.5, y: maze.height - player.height - 100};
-		break;
-		case 'right': 
-		x_vel = rate * -1;
-		y_vel = 0;
-		start_pos = {x: 90, y: maze.height * 0.5};
-		break;
-		case 'bottom': 
-		x_vel = 0;
-		y_vel = rate * -1;
-		start_pos = {x: maze.width * 0.5, y: 90};
-		break;
-		case 'left': 
-		x_vel = rate;
-		y_vel = 0;
-		start_pos = {x: maze.width - player.width - 100, y: maze.height * 0.5};
-		break;
-	}
-
-	// robot talk to player
-	var random_rate = Math.random() + 0.5;	
-	if (robots.length !== 0) {
-		sound.inSequence('chicken fight like a robot'.split(' '), random_rate);
-	} else {
-		sound.inSequence('the humanoid must not escape'.split(' '), random_rate);
-	}
-
-	gameState = exitingLevel;
-}
-
-function exitingLevel () {
-
-	if (maze.x + maze.width < -50 || 
-		maze.x > maze.width + 50 ||
-		maze.y + maze.height < -50 ||
-		maze.y > maze.height + 50) {
-			gameState = gameRestarting;
-	} else { 
-		maze.x += x_vel;
-		maze.y += y_vel;
-	}
-}
-
 function gameOver () {
 
-	if (timer > _game_over_timer) {
+	if (timer > game_over_timer) {
 		gameState = resetGameState;
 	} else {
 		renderer.view.className = "hidden";
@@ -265,27 +200,10 @@ function handleHumanoidGot () {
 	console.log('handleHumanoidGot');
 	stage.removeChild(player);
 	if (timer - player.death_start_timer - player.death_anim_duration > player.blinking_duration) {
-		_num_players_remaining -= 1;
+		num_players_remaining -= 1;
 		is_game_restarting = true;
 		start_pos = {x: 90, y: 300};
 		gameState = gameRestarting;
-	}
-}
-
-/*******************************************************************************
- * bullets
- *******************************************************************************/
-function fire (sprite) {
-
-	var shot = getBullet(sprite);
-	maze.addChild(shot);
-
-	if (sprite === player) {
-		bullets.push(shot);
-		sound.play('player_bullet');
-	} else {
-		robot_bullets.push(shot);
-		sound.play('robot_bullet');
 	}
 }
 
@@ -311,7 +229,7 @@ function getRobots () {
 
 	for (var r = 0; r < num_robots; r++) {
 
-		robot = getRobot({max_num_robots, robots, robot_bullets, walls, enemy_color, maze, BZRK, sound, pubSub });
+		robot = getRobot({max_num_robots, robots, robot_bullets, walls, enemy_color, maze });
 
 		var random_index = Math.floor(Math.random() * possible_positions.length);
 		robot_pos = possible_positions.splice(random_index, 1)[0];
@@ -421,5 +339,3 @@ function getMaxNumRobotBullets () {
 	if (score >= score_tiers[8]) { num = 5; } 				// MAX
 	return num;
 }
-
-

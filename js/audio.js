@@ -40,37 +40,40 @@ function getHowlerAudio () {
 	 	};
 	Object.assign(sfx_audio, talking_audio);
 
+	var _sound = new Howl({
+	 	src: ['audio/sound_sprite.mp3'],
+	 	volume: 0.05,
+	 	sprite: sfx_audio
+	});
+
+	/*******************************************************************************
+	 * sound sequences
+	 *******************************************************************************/
+	function inSequence (arr, rate) {
+
+		var snd = arr.shift();
+		var id = _sound.play(snd);
+		if (rate != null) {
+			_sound.rate(rate, id);
+		}
+		if (arr.length > 0) {
+			_sound.once('end', function () { 
+				inSequence(arr, rate);
+			}, id);
+		}
+		
+	}
+	Object.assign(_sound, { inSequence });
+
 	// play a random robot speach bit
 	var SPACE = keyboard('Space');
 	SPACE.press = function () { 
 		var snds = Object.keys(talking_audio);
-		var id = sound.play(snds[Math.floor(Math.random() * snds.length)]); 
+		var id = _sound.play(snds[Math.floor(Math.random() * snds.length)]); 
 		var random_rate = Math.random() + 0.5;
-		sound.rate(random_rate, id);
+		_sound.rate(random_rate, id);
 	};
 	SPACE.release = function () { /* no op */ };
 	
-	return new Howl({
-	 	src: ['audio/sound_sprite.mp3'],
-	 	volume: 0.05,
-	 	sprite: sfx_audio
-	 });
-}
-
-/*******************************************************************************
- * sound sequences
- *******************************************************************************/
-function soundsInSequence (arr, rate) {
-
-	var snd = arr.shift();
-	var id = sound.play(snd);
-	if (rate != null) {
-		sound.rate(rate, id);
-	}
-	if (arr.length > 0) {
-		sound.once('end', function () { 
-			soundsInSequence(arr, rate);
-		}, id);
-	}
-	
+	return _sound;
 }

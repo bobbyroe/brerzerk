@@ -13,7 +13,7 @@ var robots_awake_time = 150;
 return function (options_obj) {
 
 	// unpack
-	var { max_num_robots, robots, robot_bullets, walls, enemy_color, maze } = options_obj;
+	var { max_num_robots, robots, robot_bullets, walls, enemy_color, maze, BZRK, sound, pubSub } = options_obj;
 
 	var robot_tex = PIXI.loader.resources["images/robot.png"].texture.clone();
 	var robot_sprite = new PIXI.Sprite(robot_tex);

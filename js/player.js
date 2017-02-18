@@ -14,7 +14,7 @@ var getPlayer = (function () {
 	return function (options_obj) {
 
 		// unpack
-		var { start_pos, bullets } = options_obj;
+		var { start_pos, bullets, BZRK, sound, pubSub } = options_obj;
 
 		var player_tex = PIXI.loader.resources["images/player.png"].texture.clone();
 		var player_sprite = new PIXI.Sprite(player_tex);

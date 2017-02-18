@@ -5,8 +5,8 @@
 /*******************************************************************************
  * HIT TESTING!
  *******************************************************************************/
-var quad_width = 200;
-var quad_height = 225;
+var quad_width = 200; 						// *** primitive – not passed by reference! // ***
+var quad_height = 225;						// *** primitive – not passed by reference! // ***
 var maze_width = 10 + quad_width * 5;
 var maze_height = 10 + quad_height * 3;
 function hitTestAll (all_sprites) {
