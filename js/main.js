@@ -1,13 +1,12 @@
 // GLOBALS:
-// Events, max_robot_bullets
-// anykey_subhead, logo_img
-// createGameUIBits, getHowlerAudio, handleAllRobotsKilled, removeListeners, resetScoreDisplay
+// Events
+// getHowlerAudio, removeListeners
 // getPlayer, drawWalls, getEvilOtto
-// updateGameUI, soundsInSequence, getBullet, getPossiblePositions, getRobot, 
+// soundsInSequence, getBullet, getPossiblePositions, getRobot, 
 
 // make stuff look pixelated
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
-// https://github.com/kittykatattack/learningPixi#pixis-graphic-primitives
+// https://github.com/kittykatattack/learningPixi
 
 /*******************************************************************************
  * Setup
@@ -16,19 +15,19 @@ var BZRK = {}; // game object
 var player;
 var evil_otto;
 var gameState;
-var timer = 0;
-var num_players_remaining = 3;
+var timer = 0;						// *** primitive – not passed by reference!
+var num_players_remaining = 3;		// *** primitive – not passed by reference!
 var walls = [];
 var robots = [];
 var bullets = [];
-var next_robot_bullet_time = 150;
+var next_robot_bullet_time = 150;	// *** primitive – not passed by reference!
 var enemy_color = 0x000000;
 var robot_bullets = [];
-var max_robot_bullets = 1;
-var score = 0;
-var level_bonus = 0;
-var game_over_timer = -1;
-var is_game_restarting = true;
+var max_robot_bullets = 1; 			// *** primitive – not passed by reference!
+var score = 0;						// *** primitive – not passed by reference!
+var level_bonus = 0;				// *** primitive – not passed by reference!
+var game_over_timer = -1;			// *** primitive – not passed by reference!
+var is_game_restarting = true; 		// *** primitive – not passed by reference!
 
 var quad_width = 200;
 var quad_height = 225;
@@ -37,7 +36,6 @@ var maze_height = 10 + quad_height * 3;
 
 var pubSub = new Events(BZRK);
 var all_sprites = {};
-var anykey_subhead, logo_img;
 
 // exit level velocity
 var x_vel = 0;
@@ -50,8 +48,7 @@ var renderer = PIXI.autoDetectRenderer(
 );
 document.body.appendChild(renderer.view);
 
-// score, game over screen ...
-createGameUIBits();
+
 
 var stage = new PIXI.Container();
 renderer.render(stage);
@@ -59,7 +56,9 @@ renderer.render(stage);
 var maze = new PIXI.Container();
 stage.addChild(maze);
 
+// score, game over screen ...
 var UI = getGameUI({stage});
+UI.splashScreen.create();
 
 // APP STARTS-UP HERE ...
 PIXI.loader
@@ -115,8 +114,7 @@ function gameRestarting () {
 	robots = [];
 	if (evil_otto != null) { evil_otto.destroy(); } // clean up
 	removeListeners();
-	anykey_subhead.textContent = "";
-	logo_img.style.display = 'none';
+	UI.splashScreen.hide();
 
 	UI.resetScore(num_players_remaining);
 
@@ -169,8 +167,7 @@ function gameStart () {
 
 function gameDormant () {
 	renderer.view.className = "hidden";
-	logo_img.style.display = 'block';
-	anykey_subhead.textContent = "HIT ANY KEY";
+	UI.splashScreen.show();
 }
 
 function gamePlay () {
