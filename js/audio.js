@@ -39,6 +39,17 @@ function getHowlerAudio () {
 	 		robot_dead: 	[14100, 800]
 	 	};
 	Object.assign(sfx_audio, talking_audio);
+
+	// play a random robot speach bit
+	var SPACE = keyboard('Space');
+	SPACE.press = function () { 
+		var snds = Object.keys(talking_audio);
+		var id = sound.play(snds[Math.floor(Math.random() * snds.length)]); 
+		var random_rate = Math.random() + 0.5;
+		sound.rate(random_rate, id);
+	};
+	SPACE.release = function () { /* no op */ };
+	
 	return new Howl({
 	 	src: ['audio/sound_sprite.mp3'],
 	 	volume: 0.05,

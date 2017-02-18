@@ -8,7 +8,7 @@
 function getEvilOtto (options_obj) {
 
 	// unpack
-	var { pos, player, robots, enemy_color, start_pos } = options_obj;
+	var { pos, player, robots, enemy_color, start_pos, maze } = options_obj;
 	
 	var otto_tex = PIXI.loader.resources["images/evil-otto.png"].texture;
 	var otto_sprite = new PIXI.Sprite(otto_tex);

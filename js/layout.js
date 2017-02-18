@@ -5,22 +5,11 @@
  *
  **/
 
-// more globals
-var quad_width = 200;
-var quad_height = 225;
-var maze_width = 10 + quad_width * 5;
-var maze_height = 10 + quad_height * 3;
-var num_digits = 5;
-
-var score_container;
-var players_remaining;
-var score_cntr;
-var bonus_text;
 
 function drawWalls (options_obj) {
 	
 	// unpack
-	var { walls, enemy_color } = options_obj;
+	var { walls, enemy_color, maze, start_pos, quad_width, quad_height } = options_obj;
 
 	var num_cols = 5;
 	var num_rows = 3;
@@ -60,7 +49,7 @@ function drawWalls (options_obj) {
 			if (w === num_rows - 1 && h === 0) { random_sides = 'bottom,left'.split(','); }
 
 			if (Math.random() < random_prob) {
-				remaining_sides = sides.filter( function (s, i) {
+				remaining_sides = sides.filter( function (s) {
 					return random_sides.indexOf(s) === -1;
 				});
 				random_sides.push(remaining_sides[Math.floor(Math.random() * remaining_sides.length)]);
@@ -89,89 +78,52 @@ function drawWalls (options_obj) {
 				}
 			}
 
-			random_sides.forEach( function (s) {
-
-				var i = -1; // clockwise position index: 0,1,2,3 = top,right,bottom,left
-				rect = new PIXI.Graphics();
-				rect.beginFill(color);
-
-				switch (s) {
-					case 'top': 
-					rect.drawRect(0, 0, quad_width + 10, width);
-					rect.x = x_pos;
-					rect.y = y_pos;
-					i = 0;
-					break;
-					case 'right': 
-					rect.drawRect(0, 0, width, quad_height + 5);
-					rect.x = x_pos + quad_width;
-					rect.y = y_pos;
-					i = 1;
-					break;
-					case 'bottom': 
-					rect.drawRect(0, 0, quad_width + 5, width);
-					rect.x = x_pos;
-					rect.y = y_pos + quad_height;
-					i = 2;
-					break;
-					case 'left': 
-					rect.drawRect(0, 0, width, quad_height + 5);
-					rect.x = x_pos;
-					rect.y = y_pos;
-					i = 3;
-					break;
-				}
-
-				rect.endFill();
-				rect.name = `${h}${w}${i}` // `Rectangle${h}${w}, ${s}`; // debug
-				maze.addChild(rect);
-
-				// for hit testing
-				walls.push(rect);
-			});
+			random_sides.forEach(_addSide);
 
 			x_pos += quad_width;
 		}
 
 		y_pos += quad_height;
 	}
-}
 
-// used by 'getRobots'
-function getPossiblePositions () {
+	function _addSide (s) {
 
-	var num_cols = 5;
-	var num_rows = 3;
-	var x_pos = quad_width * 0.5;
-	var y_pos = quad_height * 0.5;
-	var positions = [];
-	var pos = {};
-	var player_start = {
-		col: Math.floor(start_pos.x / quad_width),
-		row: Math.floor(start_pos.y / quad_height)
-	};
-	// console.log(player_start);
+		var i = -1; // clockwise position index: 0,1,2,3 = top,right,bottom,left
+		rect = new PIXI.Graphics();
+		rect.beginFill(color);
 
-	for (var row = 0; row < num_rows; row++) {
-
-		x_pos = quad_width * 0.5;
-		for (var col = 0; col < num_cols; col++) {
-
-			// skip the first box, since the player is there already
-			// TODO fix this to look for the players pos (start_pos)
-			if (row === player_start.row && col === player_start.col) { 
-				x_pos += quad_width;
-				continue; 
-			}
-			pos = {
-				x: x_pos,
-				y: y_pos
-			};
-			positions.push(pos);
-			x_pos += quad_width;
+		switch (s) {
+			case 'top': 
+			rect.drawRect(0, 0, quad_width + 10, width);
+			rect.x = x_pos;
+			rect.y = y_pos;
+			i = 0;
+			break;
+			case 'right': 
+			rect.drawRect(0, 0, width, quad_height + 5);
+			rect.x = x_pos + quad_width;
+			rect.y = y_pos;
+			i = 1;
+			break;
+			case 'bottom': 
+			rect.drawRect(0, 0, quad_width + 5, width);
+			rect.x = x_pos;
+			rect.y = y_pos + quad_height;
+			i = 2;
+			break;
+			case 'left': 
+			rect.drawRect(0, 0, width, quad_height + 5);
+			rect.x = x_pos;
+			rect.y = y_pos;
+			i = 3;
+			break;
 		}
 
-		y_pos += quad_height;
+		rect.endFill();
+		rect.name = `${h}${w}${i}`; // `Rectangle${h}${w}, ${s}`; // debug
+		maze.addChild(rect);
+
+		// for hit testing
+		walls.push(rect);
 	}
-	return positions;
 }

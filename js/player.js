@@ -190,7 +190,7 @@ var getPlayer = (function () {
 				player_sprite.tint = colors8[Math.floor(Math.random() * colors8.length)];
 			} else {
 
-				pubSub.dispatch('got_the_humanoid', window);
+				pubSub.dispatch('got_the_humanoid', BZRK);
 			}
 			updateRobots();
 		}

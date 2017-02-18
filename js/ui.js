@@ -4,7 +4,16 @@
 
 function getGameUI (options_obj) {
 
-	var { score } = options_obj;
+	// unpack
+	var { stage } = options_obj;
+
+	// more globals
+	var num_digits = 5;
+	var score_container;
+	var players_remaining;
+	var score_cntr;
+	var bonus_text;
+	var digits_sprites = [];
 
 	function update () {
 
@@ -52,8 +61,8 @@ function getGameUI (options_obj) {
 		players_remaining = new PIXI.Container();
 		players_remaining.x = 300;
 		players_remaining.y = 0;
-		for (var i = 0; i < num_remaining - 1; i++) {
-			players_remaining.addChild(_getPlayerIcon(i));
+		for (var j = 0; j < num_remaining - 1; j++) {
+			players_remaining.addChild(_getPlayerIcon(j));
 		}
 		score_container.addChild(players_remaining);
 
@@ -154,4 +163,4 @@ function getGameUI (options_obj) {
 		resetScore
 	};
 
-};
+}

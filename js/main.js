@@ -28,9 +28,15 @@ var score = 0;
 var level_bonus = 0;
 var game_over_timer = -1;
 var is_game_restarting = true;
+
+var quad_width = 200;
+var quad_height = 225;
+var maze_width = 10 + quad_width * 5;
+var maze_height = 10 + quad_height * 3;
+
 var pubSub = new Events(BZRK);
 var all_sprites = {};
-var UI = getGameUI({score});
+var anykey_subhead, logo_img;
 
 // exit level velocity
 var x_vel = 0;
@@ -43,7 +49,7 @@ var renderer = PIXI.autoDetectRenderer(
 );
 document.body.appendChild(renderer.view);
 
-// debug_timer, score, game over screen ...
+// score, game over screen ...
 createGameUIBits();
 
 var stage = new PIXI.Container();
@@ -51,6 +57,8 @@ renderer.render(stage);
 
 var maze = new PIXI.Container();
 stage.addChild(maze);
+
+var UI = getGameUI({stage});
 
 // APP STARTS-UP HERE ...
 PIXI.loader
@@ -65,8 +73,8 @@ var sound = getHowlerAudio();
 
 function setup() {
 	
-	pubSub.listenTo(window, 'all_robots_killed', handleAllRobotsKilled);
-	pubSub.listenTo(window, 'got_the_humanoid', handleHumanoidGot);
+	pubSub.listenTo(BZRK, 'all_robots_killed', handleAllRobotsKilled);
+	pubSub.listenTo(BZRK, 'got_the_humanoid', handleHumanoidGot);
 	resetGameState();
 	gameLoop();	
 }
@@ -119,7 +127,7 @@ function gameRestarting () {
 	if (num_players_remaining > 0) {
 		player = getPlayer({start_pos, bullets});
 		maze.addChild(player);
-		drawWalls({walls, enemy_color});
+		drawWalls({walls, enemy_color, maze, start_pos, quad_width, quad_height });
 		gameState = gameStart;
 		is_game_restarting = false; 
 
@@ -131,7 +139,7 @@ function gameRestarting () {
 		is_game_restarting = true;
 	}
 
-	evil_otto = getEvilOtto({ pos: {x: 0, y: 0}, player, robots, enemy_color, start_pos });
+	evil_otto = getEvilOtto({ pos: {x: 0, y: 0}, player, robots, enemy_color, start_pos, maze });
 	// keep him offscreen for now
 }
 
@@ -144,17 +152,6 @@ function gameStart () {
 	}
 	evil_otto.delay_timer = robots.length * 115;
 	level_bonus = robots.length * 10;
-
-	//
-	// play a random robot speach bit
-	var SPACE = keyboard('Space');
-	SPACE.press = function () { 
-		var snds = Object.keys(talking_audio);
-		var id = sound.play(snds[Math.floor(Math.random() * snds.length)]); 
-		var random_rate = Math.random() + 0.5;
-		sound.rate(random_rate, id);
-	};
-	SPACE.release = function () { /* no op */ };
 
 	// toggle : pause the game
 	var ESC = keyboard('Escape');
@@ -221,10 +218,9 @@ function prepareToExitLevel (side) {
 	// robot talk to player
 	var random_rate = Math.random() + 0.5;	
 	if (robots.length !== 0) {
-		// sound.play('chicken');
-		id = soundsInSequence('chicken fight like a robot'.split(' '), random_rate);
+		soundsInSequence('chicken fight like a robot'.split(' '), random_rate);
 	} else {
-		id = soundsInSequence('the humanoid must not escape'.split(' '), random_rate);
+		soundsInSequence('the humanoid must not escape'.split(' '), random_rate);
 	}
 
 	gameState = exitingLevel;
@@ -309,7 +305,7 @@ function getRobots () {
 	// var robots = [];
 	var max_num_robots = 12, min_num_robots = 3;
 	var num_robots = max_num_robots; // Math.floor(Math.random() * (max_num_robots - min_num_robots)) + min_num_robots;
-	var possible_positions = getPossiblePositions();
+	var possible_positions = _getPossiblePositions();
 	var robot, robot_pos;
 
 	for (var r = 0; r < num_robots; r++) {
@@ -326,6 +322,44 @@ function getRobots () {
 		robots.push(robot);
 	}
 	// return _robots;
+}
+
+function _getPossiblePositions () {
+
+	var num_cols = 5;
+	var num_rows = 3;
+	var x_pos = quad_width * 0.5;
+	var y_pos = quad_height * 0.5;
+	var positions = [];
+	var pos = {};
+	var player_start = {
+		col: Math.floor(start_pos.x / quad_width),
+		row: Math.floor(start_pos.y / quad_height)
+	};
+	// console.log(player_start);
+
+	for (var row = 0; row < num_rows; row++) {
+
+		x_pos = quad_width * 0.5;
+		for (var col = 0; col < num_cols; col++) {
+
+			// skip the first box, since the player is there already
+			// TODO fix this to look for the players pos (start_pos)
+			if (row === player_start.row && col === player_start.col) { 
+				x_pos += quad_width;
+				continue; 
+			}
+			pos = {
+				x: x_pos,
+				y: y_pos
+			};
+			positions.push(pos);
+			x_pos += quad_width;
+		}
+
+		y_pos += quad_height;
+	}
+	return positions;
 }
 
 function updateRobots () {

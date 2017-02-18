@@ -80,7 +80,7 @@ return function (options_obj) {
 			// if all robots have been killed, award bonus
 			robots_left = robots.filter( r => (r.was_hit === false)).length;
 			if (robots_left === 0) {
-				pubSub.dispatch('all_robots_killed', window);
+				pubSub.dispatch('all_robots_killed', BZRK);
 			}
 
 			robot_sprite.tick = robotDead;

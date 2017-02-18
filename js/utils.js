@@ -169,16 +169,13 @@ function getOutOfBoundsSide (obj) {
 	return side;
 }
 
-
-var debug_timer, splash_header, anykey_subhead, logo_img;
 function createGameUIBits () {
 	// show timer 
-	debug_timer = document.createElement('div');
-	debug_timer.style = "position:absolute; top:30px;left:50px;color:#FFFFFF";
-	document.body.appendChild(debug_timer);
-
+	// debug_timer = document.createElement('div');
+	// debug_timer.style = "position:absolute; top:30px;left:50px;color:#FFFFFF";
+	// document.body.appendChild(debug_timer);
 	// SPLASH SCREEN
-	splash_header = document.createElement('div');
+	var splash_header = document.createElement('div');
 	splash_header.style = "margin:0 auto;color:#FF0000;font-size:96px;font-family:sans-serif;font-weight:bold;text-align:center";
 	logo_img = document.createElement('img');
 	logo_img.src = 'images/berzerk_splash.png';
