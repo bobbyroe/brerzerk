@@ -21,6 +21,7 @@ var num_players_remaining = 3;
 var walls = [];
 var robots = [];
 var bullets = [];
+var next_robot_bullet_time = 150;
 var enemy_color = 0x000000;
 var robot_bullets = [];
 var max_robot_bullets = 1;
@@ -121,6 +122,7 @@ function gameRestarting () {
 
 	// initialize
 	timer = 0;
+	next_robot_bullet_time = 150;
 	enemy_color = getEnemyColor();
 	max_robot_bullets = getMaxNumRobotBullets();
 	
@@ -364,6 +366,9 @@ function _getPossiblePositions () {
 
 function updateRobots () {
 
+	if (timer > next_robot_bullet_time) {
+		next_robot_bullet_time += 30;
+	}
 	for (var i = 0, r_len = robots.length; i < r_len; i++) {
 		robots[i].tick(player);
 	}

@@ -140,7 +140,7 @@ return function (options_obj) {
 			robot_sprite.vx = Math.max(robot_sprite.vx, 0);
 		}
 	
-		if (robot_sprite.bullets.length < max_robot_bullets) {
+		if (timer >= next_robot_bullet_time && robot_sprite.bullets.length < max_robot_bullets) {
 
 			if (Math.abs(robot_sprite.x - player_sprite.x) < 20 ||
 				Math.abs(robot_sprite.y - player_sprite.y) < 20 ||

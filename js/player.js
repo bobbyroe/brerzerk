@@ -125,7 +125,7 @@ var getPlayer = (function () {
 
 		function tryToShoot (sprite) {
 			if (player_sprite.tick === playerPlay &&
-				timer < sprite.bullet_delay === false &&
+				timer >= sprite.bullet_delay &&
 				player_sprite.bullets.length < sprite.max_bullets) {
 
 				fire(sprite);
