@@ -23,7 +23,7 @@ PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 /*******************************************************************************
  * Setup
  *******************************************************************************/
-var BZRK = {}; // game object
+var game = {}; // game object
 var player;
 var evil_otto;
 var gameState;
@@ -31,16 +31,24 @@ var walls = [];
 var robots = [];
 var bullets = [];
 var robot_bullets = [];
-var timer = 0;						// *** primitive – not passed by reference! // ***, ***
-var next_robot_bullet_time = 150;	// *** primitive – not passed by reference! // ***
+
 var enemy_color = 0x000000;			// *** primitive – not passed by reference! // ***, ***, ***
-var max_robot_bullets = 1; 			// *** primitive – not passed by reference! // ***
-var score = 0;						// *** primitive – not passed by reference! // ***
-var level_bonus = 0;				// *** primitive – not passed by reference! // ***
 var is_game_restarting = true; 		// *** primitive – not passed by reference! // ***
+var level_bonus = 0;				// *** primitive – not passed by reference! // ***
+var max_robot_bullets = 1; 			// *** primitive – not passed by reference! // ***
+var next_robot_bullet_time = 150;	// *** primitive – not passed by reference! // ***
+var score = 0;						// *** primitive – not passed by reference! // ***
+var timer = 0;						// *** primitive – not passed by reference! // ***, ***
+
+/*
+	player: { start_pos, bullets, game, sound, pubSub }
+	otto: { pos: {x: 0, y: 0}, player, robots, start_pos, maze, sound }
+	robot: { max_num_robots, robots, robot_bullets, walls, maze, game, sound, pubSub }
+	drawWalls: { walls, maze, start_pos, quad_width, quad_height }
+*/
 var _num_players_remaining = 3;
 var _game_over_timer = -1;
-var pubSub = new Events(BZRK);
+var pubSub = new Events(game);
 var all_sprites = {};
 var start_pos = {x: 90, y: 300};
 
@@ -60,6 +68,8 @@ stage.addChild(maze);
 var UI = getGameUI({stage});
 UI.splashScreen.create();
 
+var sound = getHowlerAudio();
+
 // APP STARTS-UP HERE ...
 PIXI.loader
 	.add("images/robot.png")
@@ -69,12 +79,10 @@ PIXI.loader
 	.add("images/charset.png")
 	.load(setup);
 
-var sound = getHowlerAudio();
-
 function setup() {
 	
-	pubSub.listenTo(BZRK, 'all_robots_killed', handleAllRobotsKilled);
-	pubSub.listenTo(BZRK, 'got_the_humanoid', handleHumanoidGot);
+	pubSub.listenTo(game, 'all_robots_killed', handleAllRobotsKilled);
+	pubSub.listenTo(game, 'got_the_humanoid', handleHumanoidGot);
 	resetGameState();
 	gameLoop();	
 }
@@ -125,9 +133,9 @@ function gameRestarting () {
 	max_robot_bullets = getMaxNumRobotBullets();
 	
 	if (_num_players_remaining > 0) {
-		player = getPlayer({start_pos, bullets, BZRK, sound, pubSub });
+		player = getPlayer({ start_pos, bullets, game, sound, pubSub });
 		maze.addChild(player);
-		drawWalls({walls, enemy_color, maze, start_pos, quad_width, quad_height });
+		drawWalls({ walls, maze, start_pos, quad_width, quad_height });
 		gameState = gameStart;
 		is_game_restarting = false; 
 
@@ -139,7 +147,7 @@ function gameRestarting () {
 		is_game_restarting = true;
 	}
 
-	evil_otto = getEvilOtto({ pos: {x: 0, y: 0}, player, robots, enemy_color, start_pos, maze, sound });
+	evil_otto = getEvilOtto({ pos: {x: 0, y: 0}, player, robots, start_pos, maze, sound });
 	// keep him offscreen for now
 }
 
@@ -161,7 +169,7 @@ function gameStart () {
 	ESC.release = function () { /* no op */ };
 	//
 
-	all_sprites = { player,  walls, robots, robot_bullets, bullets, evil_otto };
+	all_sprites = { player, walls, robots, robot_bullets, bullets, evil_otto };
 	gameState = gamePlay;
 }
 
@@ -311,7 +319,7 @@ function getRobots () {
 
 	for (var r = 0; r < num_robots; r++) {
 
-		robot = getRobot({max_num_robots, robots, robot_bullets, walls, enemy_color, maze, BZRK, sound, pubSub });
+		robot = getRobot({ max_num_robots, robots, robot_bullets, walls, maze, game, sound, pubSub });
 
 		var random_index = Math.floor(Math.random() * possible_positions.length);
 		robot_pos = possible_positions.splice(random_index, 1)[0];

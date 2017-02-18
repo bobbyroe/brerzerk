@@ -14,7 +14,7 @@ var getPlayer = (function () {
 	return function (options_obj) {
 
 		// unpack
-		var { start_pos, bullets, BZRK, sound, pubSub } = options_obj;
+		var { start_pos, bullets, game, sound, pubSub } = options_obj;
 
 		var player_tex = PIXI.loader.resources["images/player.png"].texture.clone();
 		var player_sprite = new PIXI.Sprite(player_tex);
@@ -190,7 +190,7 @@ var getPlayer = (function () {
 				player_sprite.tint = colors8[Math.floor(Math.random() * colors8.length)];
 			} else {
 
-				pubSub.dispatch('got_the_humanoid', BZRK);
+				pubSub.dispatch('got_the_humanoid', game);
 			}
 			updateRobots();
 		}
