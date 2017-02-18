@@ -23,7 +23,9 @@ PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 /*******************************************************************************
  * Setup
  *******************************************************************************/
-var game = {}; // game object
+var game = {
+	enemy_color: 0x000000
+};
 var player;
 var evil_otto;
 var gameState;
@@ -32,7 +34,6 @@ var robots = [];
 var bullets = [];
 var robot_bullets = [];
 
-var enemy_color = 0x000000;			// *** primitive – not passed by reference! // ***, ***, ***
 var is_game_restarting = true; 		// *** primitive – not passed by reference! // ***
 var level_bonus = 0;				// *** primitive – not passed by reference! // ***
 var max_robot_bullets = 1; 			// *** primitive – not passed by reference! // ***
@@ -129,13 +130,13 @@ function gameRestarting () {
 	// initialize
 	timer = 0;
 	next_robot_bullet_time = 150;
-	enemy_color = getEnemyColor();
+	game.enemy_color = getEnemyColor();
 	max_robot_bullets = getMaxNumRobotBullets();
 	
 	if (_num_players_remaining > 0) {
 		player = getPlayer({ start_pos, bullets, game, sound, pubSub });
 		maze.addChild(player);
-		drawWalls({ walls, maze, start_pos, quad_width, quad_height });
+		drawWalls({ walls, maze, start_pos, quad_width, quad_height, game });
 		gameState = gameStart;
 		is_game_restarting = false; 
 
@@ -147,7 +148,7 @@ function gameRestarting () {
 		is_game_restarting = true;
 	}
 
-	evil_otto = getEvilOtto({ pos: {x: 0, y: 0}, player, robots, start_pos, maze, sound });
+	evil_otto = getEvilOtto({ pos: {x: 0, y: 0}, player, robots, start_pos, maze, sound, game });
 	// keep him offscreen for now
 }
 

@@ -1,6 +1,5 @@
 /**
  *
- * GLOBALS: enemy_color
  * PIXI globals: Sprite
  *
  **/
@@ -8,7 +7,7 @@
 function getEvilOtto (options_obj) {
 
 	// unpack
-	var { pos, player, robots, enemy_color, start_pos, maze, sound } = options_obj;
+	var { pos, player, robots, start_pos, maze, sound, game } = options_obj;
 	
 	var otto_tex = PIXI.loader.resources["images/evil-otto.png"].texture;
 	var otto_sprite = new PIXI.Sprite(otto_tex);
@@ -20,7 +19,7 @@ function getEvilOtto (options_obj) {
 	otto_sprite.ay = 0; // aim.y
 	otto_sprite.scale.set(4, 4);
 	otto_sprite.rate = 2;
-	otto_sprite.tint = enemy_color;
+	otto_sprite.tint = game.enemy_color;
 	otto_sprite.x = pos.x; // 150;
 	otto_sprite.y = pos.y; // 90;
 	otto_sprite.target = player;

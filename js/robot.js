@@ -13,7 +13,7 @@ var robots_awake_time = 150;
 return function (options_obj) {
 
 	// unpack
-	var { max_num_robots, robots, robot_bullets, walls, enemy_color, maze, game, sound, pubSub } = options_obj;
+	var { max_num_robots, robots, robot_bullets, walls, maze, game, sound, pubSub } = options_obj;
 
 	var robot_tex = PIXI.loader.resources["images/robot.png"].texture.clone();
 	var robot_sprite = new PIXI.Sprite(robot_tex);
@@ -27,7 +27,7 @@ return function (options_obj) {
 	robot_sprite.rate = 0;
 	robot_sprite.explode_tex = robot_explode_tex;
 	robot_sprite.explode_tex.num_frames = 3;
-	robot_sprite.tint = enemy_color;
+	robot_sprite.tint = game.enemy_color;
 	robot_sprite.death_start_timer = -1;
 	robot_sprite.timer_offset = Math.floor(Math.random() * 100);
 	robot_sprite.index = -1;
@@ -36,7 +36,7 @@ return function (options_obj) {
 	robot_sprite.bullets = robot_bullets;
 	robot_sprite.bullet_velocity = getRobotBulletVelocity();
 	robot_sprite.bullet_length = 6;
-	robot_sprite.bullet_color = enemy_color;
+	robot_sprite.bullet_color = game.enemy_color;
 	robot_sprite.was_hit = false;
 	robot_sprite.qx = -1;
 	robot_sprite.qy = -1;

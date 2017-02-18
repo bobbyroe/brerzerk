@@ -54,7 +54,7 @@ var getBullet = (function () {
 		function _removeBullet () {
 
 			var arr = shot.sprite.bullets;
-			shot.parent.removeChild(shot);
+			if (shot.parent != null) { shot.parent.removeChild(shot); }
 			arr.splice(arr.indexOf(shot), 1);
 			shot.destroy();
 		}

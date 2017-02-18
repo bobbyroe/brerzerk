@@ -9,7 +9,7 @@
 function drawWalls (options_obj) {
 	
 	// unpack
-	var { walls, enemy_color, maze, start_pos, quad_width, quad_height } = options_obj;
+	var { walls, maze, start_pos, quad_width, quad_height, game } = options_obj;
 
 	var num_cols = 5;
 	var num_rows = 3;
@@ -70,7 +70,7 @@ function drawWalls (options_obj) {
 				if (player_start.row === 1 && player_start.col === 0) { blocker_side = 'left'; }
 
 				if (w === player_start.row && h === player_start.col) {
-					color = enemy_color;
+					color = game.enemy_color;
 					width = 8;
 					random_sides = [ blocker_side ];
 				} else {
