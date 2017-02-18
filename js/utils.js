@@ -1,11 +1,14 @@
  /**
  * 
- * Globals: maze_width, maze_height
- *          listeners
+ * Globals: listeners
  **/
 /*******************************************************************************
  * HIT TESTING!
  *******************************************************************************/
+var quad_width = 200;
+var quad_height = 225;
+var maze_width = 10 + quad_width * 5;
+var maze_height = 10 + quad_height * 3;
 function hitTestAll (all_sprites) {
 
 
@@ -17,27 +20,27 @@ function hitTestAll (all_sprites) {
 		var cur_wall = walls[a];
 
 		// player
-		if (hitTestRectangle(player, cur_wall) ) {
+		if (_hitTestRectangle(player, cur_wall) ) {
 			player.was_hit = true;
 		}
 		
 		// all robots
 		for (var b = 0, b_len = robots.length; b < b_len; b++) {
-			if (hitTestRectangle(cur_wall, robots[b]) ) {
+			if (_hitTestRectangle(cur_wall, robots[b]) ) {
 				robots[b].was_hit = true;
 			}
 		}
 
 		// robot bullets
 		for (var c = 0, c_len = robot_bullets.length; c < c_len; c++) {
-			if (hitTestRectangle(cur_wall, robot_bullets[c]) ) {
+			if (_hitTestRectangle(cur_wall, robot_bullets[c]) ) {
 				robot_bullets[c].was_hit = true;
 			}
 		}
 
 		// player bullets
 		for (var d = 0, d_len = bullets.length; d < d_len; d++) {
-			if (hitTestRectangle(cur_wall, bullets[d]) ) {
+			if (_hitTestRectangle(cur_wall, bullets[d]) ) {
 				bullets[d].was_hit = true;
 			}
 		}
@@ -48,21 +51,21 @@ function hitTestAll (all_sprites) {
 
 		var cur_robot = robots[e];
 		// player
-		if (hitTestRectangle(player, cur_robot) ) {
+		if (_hitTestRectangle(player, cur_robot) ) {
 			player.was_hit = true;
 			cur_robot.was_hit = true;
 			break;
 		}
 
 		// evil otto
-		if (hitTestRectangle(evil_otto, cur_robot) ) {
+		if (_hitTestRectangle(evil_otto, cur_robot) ) {
 			cur_robot.was_hit = true;
 		}
 
 		// all robots
 		for (var f = 0, f_len = robots.length; f < f_len; f++) {
 			if (robots[f] !== cur_robot) {
-				if (hitTestRectangle(cur_robot, robots[f]) ) {
+				if (_hitTestRectangle(cur_robot, robots[f]) ) {
 					cur_robot.was_hit = true;
 					robots[f].was_hit = true;
 				}
@@ -72,7 +75,7 @@ function hitTestAll (all_sprites) {
 		// robot bullets
 		for (var g = 0, g_len = robot_bullets.length; g < g_len; g++) {
 			if (robot_bullets[g].sprite !== cur_robot) {
-				if (hitTestRectangle(cur_robot, robot_bullets[g]) ) {
+				if (_hitTestRectangle(cur_robot, robot_bullets[g]) ) {
 					cur_robot.was_hit = true;
 					robot_bullets[g].was_hit = true;
 				}
@@ -81,7 +84,7 @@ function hitTestAll (all_sprites) {
 
 		// player bullets
 		for (var h = 0, h_len = bullets.length; h < h_len; h++) {
-			if (hitTestRectangle(cur_robot, bullets[h]) ) {
+			if (_hitTestRectangle(cur_robot, bullets[h]) ) {
 				cur_robot.was_hit = true;
 				bullets[h].was_hit = true;
 			}
@@ -93,7 +96,7 @@ function hitTestAll (all_sprites) {
 		var cur_robot_bullet = robot_bullets[i];
 		
 		// player
-		if (hitTestRectangle(player, cur_robot_bullet) ) {
+		if (_hitTestRectangle(player, cur_robot_bullet) ) {
 			player.was_hit = true;
 			cur_robot_bullet.was_hit = true;
 			break;
@@ -102,7 +105,7 @@ function hitTestAll (all_sprites) {
 		// other robot bullets
 		for (var j = 0, j_len = robot_bullets.length; j < j_len; j++) {
 			if (robot_bullets[j] !== cur_robot_bullet) {
-				if (hitTestRectangle(robot_bullets[j], cur_robot_bullet) ) {
+				if (_hitTestRectangle(robot_bullets[j], cur_robot_bullet) ) {
 					cur_robot_bullet.was_hit = true;
 					robot_bullets[j].was_hit = true;
 				}
@@ -111,18 +114,18 @@ function hitTestAll (all_sprites) {
 
 		// player bullets
 		for (var k = 0, k_len = bullets.length; k < k_len; k++) {
-			if (hitTestRectangle(bullets[k], cur_robot_bullet) ) {
+			if (_hitTestRectangle(bullets[k], cur_robot_bullet) ) {
 				cur_robot_bullet.was_hit = true;
 				bullets[k].was_hit = true;
 			}
 		}
 	}
-	if (hitTestRectangle(player, evil_otto) ) {
+	if (_hitTestRectangle(player, evil_otto) ) {
 		player.was_hit = true;
 	}
 }
 
-function hitTestRectangle(r1, r2) {
+function _hitTestRectangle(r1, r2) {
 
 	var hit = false;
 	var combinedHalfWidths;
@@ -178,7 +181,3 @@ function degToRad (deg) {
 	return deg * Math.PI / 180;
 }
 
-function radToDeg (rad) {
-
-	return rad / Math.PI * 180;
-}

@@ -2,7 +2,6 @@
  *
  * GLOBALS: *timer
  * PIXI globals: Grfx
- * fns: removeBullet, isOutOfBounds
  *
  **/
 var getBullet = (function () {
@@ -36,31 +35,31 @@ var getBullet = (function () {
 		shot.vy = sprite.ay * sprite.bullet_velocity;
 		shot.sprite = sprite;
 		shot.name = `${sprite.name} bullet${timer}`; // debug
-		shot.tick = updateBullet;
+		shot.tick = _updateBullet;
 
 
-		function updateBullet () {
+		function _updateBullet () {
 			if (shot.was_hit === true) {
-				setTimeout(removeBullet, 1, shot);
+				setTimeout(_removeBullet, 1, shot);
 			} else {
 				shot.x += shot.vx;
 				shot.y += shot.vy;
 				// bounds
 				if (getOutOfBoundsSide(shot) !== 'none') {
-					setTimeout(removeBullet, 1, shot);
+					setTimeout(_removeBullet, 1);
 				}
 			}
 		}
+
+		function _removeBullet () {
+
+			var arr = shot.sprite.bullets;
+			shot.parent.removeChild(shot);
+			arr.splice(arr.indexOf(shot), 1);
+			shot.destroy();
+		}
+
 		return shot;
 	};
 
 })();
-
-
-function removeBullet (shot) {
-
-	var arr = shot.sprite.bullets;
-	maze.removeChild(shot);
-	arr.splice(arr.indexOf(shot), 1);
-	shot.destroy();
-}

@@ -1,6 +1,6 @@
 /**
  *
- * GLOBALS: stage, maze, enemy_color
+ * GLOBALS: enemy_color
  * PIXI globals: Sprite
  *
  **/

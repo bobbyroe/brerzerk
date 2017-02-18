@@ -29,11 +29,6 @@ var level_bonus = 0;				// *** primitive – not passed by reference!
 var game_over_timer = -1;			// *** primitive – not passed by reference!
 var is_game_restarting = true; 		// *** primitive – not passed by reference!
 
-var quad_width = 200;
-var quad_height = 225;
-var maze_width = 10 + quad_width * 5;
-var maze_height = 10 + quad_height * 3;
-
 var pubSub = new Events(BZRK);
 var all_sprites = {};
 
@@ -301,7 +296,6 @@ function updateBullets () {
  *******************************************************************************/
 function getRobots () {
 
-	// var robots = [];
 	var max_num_robots = 12, min_num_robots = 3;
 	var num_robots = max_num_robots; // Math.floor(Math.random() * (max_num_robots - min_num_robots)) + min_num_robots;
 	var possible_positions = _getPossiblePositions();
@@ -309,7 +303,7 @@ function getRobots () {
 
 	for (var r = 0; r < num_robots; r++) {
 
-		robot = getRobot({max_num_robots, robots, robot_bullets, walls, enemy_color });
+		robot = getRobot({max_num_robots, robots, robot_bullets, walls, enemy_color, maze });
 
 		var random_index = Math.floor(Math.random() * possible_positions.length);
 		robot_pos = possible_positions.splice(random_index, 1)[0];
@@ -320,7 +314,6 @@ function getRobots () {
 
 		robots.push(robot);
 	}
-	// return _robots;
 }
 
 function _getPossiblePositions () {
@@ -335,7 +328,6 @@ function _getPossiblePositions () {
 		col: Math.floor(start_pos.x / quad_width),
 		row: Math.floor(start_pos.y / quad_height)
 	};
-	// console.log(player_start);
 
 	for (var row = 0; row < num_rows; row++) {
 
@@ -373,19 +365,19 @@ function updateRobots () {
 
 // for robots and evil otto
 /*
-	Dark yellow robots that do not fire
+	Yellow robots that do not fire
 	Red robots that can fire 1 bullet (500 points)
-	Dark cyan robots that can fire 2 bullets (1,500 points)
+	Cyan robots that can fire 2 bullets (1,500 points)
 	Green robots that fire 3 bullets (3k)
-	Dark purple robots that fire 4 bullets (4.5k)
-	Light yellow robots that fire 5 bullets (6k)
+	Purple robots that fire 4 bullets (4.5k)
+	Yellow robots that fire 5 bullets (6k)
 	White robots that fire 1 fast bullet (7.5k)
-	Dark cyan robots that fire 2 fast bullets (10k)
-	Light purple robots that fire 3 fast bullets (11k)
+	Cyan robots that fire 2 fast bullets (10k)
+	Purple robots that fire 3 fast bullets (11k)
 	Gray robots that fire 4 fast bullets (13k)
-	Dark yellow robots that fire 5 fast bullets (15k)
+	Yellow robots that fire 5 fast bullets (15k)
 	Red robots that fire 5 fast bullets (17k)
-	Light cyan robots that fire 5 fast bullets (19k)
+	Cyan robots that fire 5 fast bullets (19k)
 */
 var score_tiers = [500, 1500, 3000, 4500, 6000, 7500, 10000, 11000, 13000, 15000, 17000, 19000];
 function getEnemyColor () {
@@ -415,10 +407,10 @@ function getMaxNumRobotBullets () {
 	if (score >= score_tiers[2]) { num = num_bullets[3]; }
 	if (score >= score_tiers[3]) { num = num_bullets[4]; }
 	if (score >= score_tiers[4]) { num = num_bullets[5]; }
-	if (score >= score_tiers[5]) { num = num_bullets[6]; } // fast bullets
+	if (score >= score_tiers[5]) { num = num_bullets[6]; } 	// fast bullets
 	if (score >= score_tiers[6]) { num = num_bullets[7]; }
 	if (score >= score_tiers[7]) { num = num_bullets[8]; }
-	if (score >= score_tiers[8]) { num = 5;  			 } // MAX
+	if (score >= score_tiers[8]) { num = 5; } 				// MAX
 	return num;
 }
 

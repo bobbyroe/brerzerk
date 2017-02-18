@@ -27,6 +27,7 @@ function drawWalls (options_obj) {
 		row: Math.floor(start_pos.y / quad_height)
 	};
 	var blocker_side = '';
+	var remaining_sides = [];
 
 	for (var w = 0; w < num_rows; w++) {
 

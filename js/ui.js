@@ -40,7 +40,7 @@ function getGameUI (options_obj) {
 			anykey_subhead.textContent = "";
 			logo_img.style.display = 'none';
 		}
-	}
+	};
 
 	function update () {
 

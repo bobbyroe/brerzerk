@@ -1,8 +1,7 @@
 
 /**
  *
- * GLOBALS: loader, sound, score, start_pos
- * fns: removeRobot, getNearbyWalls
+ * GLOBALS: loader, sound, score
  *
  **/
 
@@ -14,7 +13,7 @@ var robots_awake_time = 150;
 return function (options_obj) {
 
 	// unpack
-	var { max_num_robots, robots, robot_bullets, walls, enemy_color } = options_obj;
+	var { max_num_robots, robots, robot_bullets, walls, enemy_color, maze } = options_obj;
 
 	var robot_tex = PIXI.loader.resources["images/robot.png"].texture.clone();
 	var robot_sprite = new PIXI.Sprite(robot_tex);
@@ -59,7 +58,7 @@ return function (options_obj) {
 			robot_sprite.texture.frame = new PIXI.Rectangle( frame_num * 18, 0, 18, 18);
 		} else {
 
-			setTimeout(removeRobot, 1, robot_sprite);
+			setTimeout(_removeRobot, 1, robot_sprite);
 		}
 	}
 
@@ -126,7 +125,7 @@ return function (options_obj) {
 		robot_sprite.vx = robot_sprite.ax * robot_sprite.rate;
 		robot_sprite.vy = robot_sprite.ay * robot_sprite.rate;
 		
-		var nearby_walls = getNearbyWalls(robot_sprite);
+		var nearby_walls = _getNearbyWalls(robot_sprite);
 		if (nearby_walls.top === true) {
 			robot_sprite.vy = Math.max(robot_sprite.vy, 0);
 		}
@@ -158,7 +157,7 @@ return function (options_obj) {
 		return vel;
 	}
 
-	function getNearbyWalls (sprite) {
+	function _getNearbyWalls (sprite) {
 
 		var top = false;
 		var right = false;
@@ -194,7 +193,7 @@ return function (options_obj) {
 		};
 	}
 
-	function removeRobot (sprite) {
+	function _removeRobot (sprite) {
 
 		maze.removeChild(sprite);
 		robots.splice(robots.indexOf(sprite), 1);
