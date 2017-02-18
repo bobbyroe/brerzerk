@@ -10,7 +10,6 @@ var quad_width = 200;
 var quad_height = 225;
 var maze_width = 10 + quad_width * 5;
 var maze_height = 10 + quad_height * 3;
-var digits_sprites = [];
 var num_digits = 5;
 
 var score_container;
@@ -18,8 +17,11 @@ var players_remaining;
 var score_cntr;
 var bonus_text;
 
-function drawWalls (walls_arr) {
+function drawWalls (options_obj) {
 	
+	// unpack
+	var { walls, enemy_color } = options_obj;
+
 	var num_cols = 5;
 	var num_rows = 3;
 	var x_pos = 10;
@@ -125,7 +127,7 @@ function drawWalls (walls_arr) {
 				maze.addChild(rect);
 
 				// for hit testing
-				walls_arr.push(rect);
+				walls.push(rect);
 			});
 
 			x_pos += quad_width;

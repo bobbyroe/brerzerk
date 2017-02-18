@@ -1,8 +1,7 @@
 
-var max_robot_bullets = 1;
 /**
  *
- * GLOBALS: loader, timer, sound, score, robots, player, enemy_color, start_pos
+ * GLOBALS: loader, sound, score, start_pos
  * fns: removeRobot, getNearbyWalls
  *
  **/
@@ -15,13 +14,13 @@ var robots_awake_time = 150;
 return function (options_obj) {
 
 	// unpack
-	var { max_num_robots, robot_bullets, walls } = options_obj;
+	var { max_num_robots, robots, robot_bullets, walls, enemy_color } = options_obj;
 
 	var robot_tex = PIXI.loader.resources["images/robot.png"].texture.clone();
 	var robot_sprite = new PIXI.Sprite(robot_tex);
 
 	var robot_explode_tex = PIXI.loader.resources["images/robot-explode.png"].texture.clone();
-	var rect = rect = new PIXI.Rectangle(0, 0, 8, 11);
+	var rect = new PIXI.Rectangle(0, 0, 8, 11);
 	robot_tex.frame = rect;
 	robot_sprite.vx = 0;
 	robot_sprite.vy = 0;
@@ -71,7 +70,6 @@ return function (options_obj) {
 
 		var anim_frame_index = (Math.round(timer * robot_sprite.frame_delay) % 2) * 8;
 		var standing_frame_index = (Math.round( (timer + robot_sprite.timer_offset) * robot_sprite.frame_delay) % 6) * 8;
-		var arr = [];
 		var robots_left = -1;
 		if (robot_sprite.was_hit === true) {
 			
@@ -95,10 +93,6 @@ return function (options_obj) {
 			robot_sprite.x += robot_sprite.vx;
 			robot_sprite.y += robot_sprite.vy;
 
-			// TEMP
-			// robot_sprite.vx = 0;
-			// robot_sprite.vy = 0;
-
 			// animate him
 			if (robot_sprite.vy > 0) {
 				robot_sprite.texture.frame = new PIXI.Rectangle(anim_frame_index + 64, 0, 8, 11);
@@ -114,7 +108,6 @@ return function (options_obj) {
 
 			if (robot_sprite.vx === 0 && robot_sprite.vy === 0) {
 				robot_sprite.texture.frame = new PIXI.Rectangle(standing_frame_index, 0, 8, 11);
-				// console.log(robot_sprite.index, ":", standing_frame_index);
 			}
 		}
 	}
@@ -147,7 +140,7 @@ return function (options_obj) {
 			robot_sprite.vx = Math.max(robot_sprite.vx, 0);
 		}
 	
-		if (timer < next_bullet_time === false && robot_bullets.length < max_robot_bullets) {
+		if (robot_sprite.bullets.length < max_robot_bullets) {
 
 			if (Math.abs(robot_sprite.x - player_sprite.x) < 20 ||
 				Math.abs(robot_sprite.y - player_sprite.y) < 20 ||
@@ -200,13 +193,14 @@ return function (options_obj) {
 			left: left,
 		};
 	}
+
+	function removeRobot (sprite) {
+
+		maze.removeChild(sprite);
+		robots.splice(robots.indexOf(sprite), 1);
+		sprite.destroy();
+	}
+
 	return robot_sprite;
-}
+};
 })();
-
-function removeRobot (sprite) {
-
-	maze.removeChild(sprite);
-	robots.splice(robots.indexOf(sprite), 1);
-	sprite.destroy();
-}

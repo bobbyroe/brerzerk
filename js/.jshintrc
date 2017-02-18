@@ -14,5 +14,6 @@
   // "strict": "global",
   "undef": true,
   "unused": true,
-  "camelcase": false
+  "camelcase": false,
+  "eqnull": true
 }

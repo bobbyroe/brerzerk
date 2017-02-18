@@ -16,21 +16,21 @@ var BZRK = {}; // game object
 var player;
 var evil_otto;
 var gameState;
-var timer = 0; // ??? should this remain as a global, as-is?
+var timer = 0;
 var num_players_remaining = 3;
 var walls = [];
 var robots = [];
 var bullets = [];
-// ----------------------- //
-var next_bullet_time = 150;
 var enemy_color = 0x000000;
 var robot_bullets = [];
+var max_robot_bullets = 1;
 var score = 0;
 var level_bonus = 0;
 var game_over_timer = -1;
 var is_game_restarting = true;
 var pubSub = new Events(BZRK);
 var all_sprites = {};
+var UI = getGameUI({score});
 
 // exit level velocity
 var x_vel = 0;
@@ -109,18 +109,17 @@ function gameRestarting () {
 	anykey_subhead.textContent = "";
 	logo_img.style.display = 'none';
 
-	resetScoreDisplay(num_players_remaining);
+	UI.resetScore(num_players_remaining);
 
 	// initialize
 	timer = 0;
-	next_bullet_time = 150;
 	enemy_color = getEnemyColor();
 	max_robot_bullets = getMaxNumRobotBullets();
 	
 	if (num_players_remaining > 0) {
-		player = getPlayer({pos: start_pos, bullets: bullets});
+		player = getPlayer({start_pos, bullets});
 		maze.addChild(player);
-		drawWalls(walls);
+		drawWalls({walls, enemy_color});
 		gameState = gameStart;
 		is_game_restarting = false; 
 
@@ -132,13 +131,14 @@ function gameRestarting () {
 		is_game_restarting = true;
 	}
 
-	evil_otto = getEvilOtto({ pos: {x: 0, y: 0}, player, robots}); // keep him offscreen for now
+	evil_otto = getEvilOtto({ pos: {x: 0, y: 0}, player, robots, enemy_color, start_pos });
+	// keep him offscreen for now
 }
 
 function gameStart () {
 
 	player.visible = true;
-	robots = getRobots();
+	getRobots();
 	for (var r = 0, r_len = robots.length; r < r_len; r++) {
 		maze.addChild(robots[r]);
 	}
@@ -181,7 +181,7 @@ function gamePlay () {
 	evil_otto.tick();
 	updateRobots();
 	updateBullets();
-	updateGameUI(); // score, etc ... including debug stuff – in layout.js
+	UI.update({ score }); // score, etc ... including debug stuff – in layout.js
 }
 
 function gamePaused () { /* no op */ }
@@ -259,7 +259,7 @@ function handleAllRobotsKilled () {
 
 	console.log('handleAllRobotsKilled');
 	score += level_bonus;
-	showBonusMessage();
+	UI.showBonus();
 }
 
 function handleHumanoidGot () {
@@ -306,15 +306,15 @@ function updateBullets () {
  *******************************************************************************/
 function getRobots () {
 
-	var robots = [];
-	var max_num_robots = 14, min_num_robots = 3;
+	// var robots = [];
+	var max_num_robots = 12, min_num_robots = 3;
 	var num_robots = max_num_robots; // Math.floor(Math.random() * (max_num_robots - min_num_robots)) + min_num_robots;
 	var possible_positions = getPossiblePositions();
 	var robot, robot_pos;
 
 	for (var r = 0; r < num_robots; r++) {
 
-		robot = getRobot({max_num_robots, robot_bullets, walls});
+		robot = getRobot({max_num_robots, robots, robot_bullets, walls, enemy_color });
 
 		var random_index = Math.floor(Math.random() * possible_positions.length);
 		robot_pos = possible_positions.splice(random_index, 1)[0];
@@ -325,7 +325,7 @@ function getRobots () {
 
 		robots.push(robot);
 	}
-	return robots;
+	// return _robots;
 }
 
 function updateRobots () {
