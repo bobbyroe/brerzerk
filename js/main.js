@@ -9,13 +9,6 @@
 // js/ui.js
 // js/audio.js
 
-
-// GLOBALS:
-// Events
-// getHowlerAudio, removeListeners
-// getPlayer, drawWalls, getEvilOtto
-// getBullet, getRobot, 
-
 // make stuff look pixelated
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 // https://github.com/kittykatattack/learningPixi
@@ -24,7 +17,15 @@ PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
  * Setup
  *******************************************************************************/
 var game = {
-	enemy_color: 0x000000
+	enemy_color: 0x000000,
+	is_restarting: true,
+	level_bonus: 0,
+	max_robot_bullets: 1,
+	next_robot_bullet_time: 150,
+	quad_width: 200,
+	quad_height: 225,
+	score: 0,
+	timer: 0
 };
 var player;
 var evil_otto;
@@ -33,20 +34,6 @@ var walls = [];
 var robots = [];
 var bullets = [];
 var robot_bullets = [];
-
-var is_game_restarting = true; 		// *** primitive – not passed by reference! // ***
-var level_bonus = 0;				// *** primitive – not passed by reference! // ***
-var max_robot_bullets = 1; 			// *** primitive – not passed by reference! // ***
-var next_robot_bullet_time = 150;	// *** primitive – not passed by reference! // ***
-var score = 0;						// *** primitive – not passed by reference! // ***
-var timer = 0;						// *** primitive – not passed by reference! // ***, ***
-
-/*
-	player: { start_pos, bullets, game, sound, pubSub }
-	otto: { pos: {x: 0, y: 0}, player, robots, start_pos, maze, sound }
-	robot: { max_num_robots, robots, robot_bullets, walls, maze, game, sound, pubSub }
-	drawWalls: { walls, maze, start_pos, quad_width, quad_height }
-*/
 var _num_players_remaining = 3;
 var _game_over_timer = -1;
 var pubSub = new Events(game);
@@ -66,7 +53,7 @@ var maze = new PIXI.Container();
 stage.addChild(maze);
 
 // score, game over screen ...
-var UI = getGameUI({stage});
+var UI = getGameUI({ stage, game });
 UI.splashScreen.create();
 
 var sound = getHowlerAudio();
@@ -105,7 +92,7 @@ function resetGameState () {
 function gameLoop() {
 
 	requestAnimationFrame(gameLoop);
-	timer += 1;
+	game.timer += 1;
 	gameState();
 	renderer.render(stage);
 }
@@ -128,24 +115,24 @@ function gameRestarting () {
 	UI.resetScore(_num_players_remaining);
 
 	// initialize
-	timer = 0;
-	next_robot_bullet_time = 150;
+	game.timer = 0;
+	game.next_robot_bullet_time = 150;
 	game.enemy_color = getEnemyColor();
-	max_robot_bullets = getMaxNumRobotBullets();
+	game.max_robot_bullets = getMaxNumRobotBullets();
 	
 	if (_num_players_remaining > 0) {
 		player = getPlayer({ start_pos, bullets, game, sound, pubSub });
 		maze.addChild(player);
-		drawWalls({ walls, maze, start_pos, quad_width, quad_height, game });
+		drawWalls({ walls, maze, start_pos, game });
 		gameState = gameStart;
-		is_game_restarting = false; 
+		game.is_restarting = false; 
 
 	} else { // RESET
-		score = 0;
+		game.score = 0;
 		_num_players_remaining = 3;
-		_game_over_timer = timer + 30;
+		_game_over_timer = game.timer + 30;
 		gameState = gameOver;
-		is_game_restarting = true;
+		game.is_restarting = true;
 	}
 
 	evil_otto = getEvilOtto({ pos: {x: 0, y: 0}, player, robots, start_pos, maze, sound, game });
@@ -160,7 +147,7 @@ function gameStart () {
 		maze.addChild(robots[r]);
 	}
 	evil_otto.delay_timer = robots.length * 115;
-	level_bonus = robots.length * 10;
+	game.level_bonus = robots.length * 10;
 
 	// toggle : pause the game
 	var ESC = keyboard('Escape');
@@ -186,7 +173,7 @@ function gamePlay () {
 	evil_otto.tick();
 	updateRobots();
 	updateBullets();
-	UI.update({ score }); // score, etc ... including debug stuff – in layout.js
+	UI.update(); // score, etc ... including debug stuff – in layout.js
 }
 
 function gamePaused () { /* no op */ }
@@ -252,7 +239,7 @@ function exitingLevel () {
 
 function gameOver () {
 
-	if (timer > _game_over_timer) {
+	if (game.timer > _game_over_timer) {
 		gameState = resetGameState;
 	} else {
 		renderer.view.className = "hidden";
@@ -265,7 +252,7 @@ function gameOver () {
 function handleAllRobotsKilled () {
 
 	console.log('handleAllRobotsKilled');
-	score += level_bonus;
+	game.score += game.level_bonus;
 	UI.showBonus();
 }
 
@@ -273,9 +260,9 @@ function handleHumanoidGot () {
 
 	console.log('handleHumanoidGot');
 	stage.removeChild(player);
-	if (timer - player.death_start_timer - player.death_anim_duration > player.blinking_duration) {
+	if (game.timer - player.death_start_timer - player.death_anim_duration > player.blinking_duration) {
 		_num_players_remaining -= 1;
-		is_game_restarting = true;
+		game.is_restarting = true;
 		start_pos = {x: 90, y: 300};
 		gameState = gameRestarting;
 	}
@@ -286,7 +273,7 @@ function handleHumanoidGot () {
  *******************************************************************************/
 function fire (sprite) {
 
-	var shot = getBullet(sprite);
+	var shot = getBullet(sprite, game);
 	maze.addChild(shot);
 
 	if (sprite === player) {
@@ -337,24 +324,24 @@ function _getPossiblePositions () {
 
 	var num_cols = 5;
 	var num_rows = 3;
-	var x_pos = quad_width * 0.5;
-	var y_pos = quad_height * 0.5;
+	var x_pos = game.quad_width * 0.5;
+	var y_pos = game.quad_height * 0.5;
 	var positions = [];
 	var pos = {};
 	var player_start = {
-		col: Math.floor(start_pos.x / quad_width),
-		row: Math.floor(start_pos.y / quad_height)
+		col: Math.floor(start_pos.x / game.quad_width),
+		row: Math.floor(start_pos.y / game.quad_height)
 	};
 
 	for (var row = 0; row < num_rows; row++) {
 
-		x_pos = quad_width * 0.5;
+		x_pos = game.quad_width * 0.5;
 		for (var col = 0; col < num_cols; col++) {
 
 			// skip the first box, since the player is there already
 			// TODO fix this to look for the players pos (start_pos)
 			if (row === player_start.row && col === player_start.col) { 
-				x_pos += quad_width;
+				x_pos += game.quad_width;
 				continue; 
 			}
 			pos = {
@@ -362,18 +349,18 @@ function _getPossiblePositions () {
 				y: y_pos
 			};
 			positions.push(pos);
-			x_pos += quad_width;
+			x_pos += game.quad_width;
 		}
 
-		y_pos += quad_height;
+		y_pos += game.quad_height;
 	}
 	return positions;
 }
 
 function updateRobots () {
 
-	if (timer > next_robot_bullet_time) {
-		next_robot_bullet_time += 30;
+	if (game.timer > game.next_robot_bullet_time) {
+		game.next_robot_bullet_time += 30;
 	}
 	for (var i = 0, r_len = robots.length; i < r_len; i++) {
 		robots[i].tick(player);
@@ -402,15 +389,15 @@ function getEnemyColor () {
 	var colors = [0xFFFF00, 0xFF0000, 0x00FFFF, 0x00FF00, 0xFF00FF, 0xFFFF00, 0xFFFFFF, 0x00FFFF, 0xFF00FF];
 	var col = colors[0];
 
-	if (score >= score_tiers[0]) { col = colors[1]; }
-	if (score >= score_tiers[1]) { col = colors[2]; }
-	if (score >= score_tiers[2]) { col = colors[3]; }
-	if (score >= score_tiers[3]) { col = colors[4]; }
-	if (score >= score_tiers[4]) { col = colors[5]; }
-	if (score >= score_tiers[5]) { col = colors[6]; }
-	if (score >= score_tiers[6]) { col = colors[7]; }
-	if (score >= score_tiers[7]) { col = colors[8]; }
-	if (score >= score_tiers[8]) { col = Math.floor(Math.random() * 0xFFFFFF); } // MAX
+	if (game.score >= score_tiers[0]) { col = colors[1]; }
+	if (game.score >= score_tiers[1]) { col = colors[2]; }
+	if (game.score >= score_tiers[2]) { col = colors[3]; }
+	if (game.score >= score_tiers[3]) { col = colors[4]; }
+	if (game.score >= score_tiers[4]) { col = colors[5]; }
+	if (game.score >= score_tiers[5]) { col = colors[6]; }
+	if (game.score >= score_tiers[6]) { col = colors[7]; }
+	if (game.score >= score_tiers[7]) { col = colors[8]; }
+	if (game.score >= score_tiers[8]) { col = Math.floor(Math.random() * 0xFFFFFF); } // MAX
 	return col;
 }
 
@@ -419,15 +406,15 @@ function getMaxNumRobotBullets () {
 	var num_bullets = [0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5];
 	var num = num_bullets[0];
 
-	if (score >= score_tiers[0]) { num = num_bullets[1]; }
-	if (score >= score_tiers[1]) { num = num_bullets[2]; }
-	if (score >= score_tiers[2]) { num = num_bullets[3]; }
-	if (score >= score_tiers[3]) { num = num_bullets[4]; }
-	if (score >= score_tiers[4]) { num = num_bullets[5]; }
-	if (score >= score_tiers[5]) { num = num_bullets[6]; } 	// fast bullets
-	if (score >= score_tiers[6]) { num = num_bullets[7]; }
-	if (score >= score_tiers[7]) { num = num_bullets[8]; }
-	if (score >= score_tiers[8]) { num = 5; } 				// MAX
+	if (game.score >= score_tiers[0]) { num = num_bullets[1]; }
+	if (game.score >= score_tiers[1]) { num = num_bullets[2]; }
+	if (game.score >= score_tiers[2]) { num = num_bullets[3]; }
+	if (game.score >= score_tiers[3]) { num = num_bullets[4]; }
+	if (game.score >= score_tiers[4]) { num = num_bullets[5]; }
+	if (game.score >= score_tiers[5]) { num = num_bullets[6]; } 	// fast bullets
+	if (game.score >= score_tiers[6]) { num = num_bullets[7]; }
+	if (game.score >= score_tiers[7]) { num = num_bullets[8]; }
+	if (game.score >= score_tiers[8]) { num = 5; } 				// MAX
 	return num;
 }
 

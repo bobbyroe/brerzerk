@@ -5,10 +5,6 @@
 /*******************************************************************************
  * HIT TESTING!
  *******************************************************************************/
-var quad_width = 200; 						// *** primitive – not passed by reference! // ***
-var quad_height = 225;						// *** primitive – not passed by reference! // ***
-var maze_width = 10 + quad_width * 5;
-var maze_height = 10 + quad_height * 3;
 function hitTestAll (all_sprites) {
 
 
@@ -163,7 +159,10 @@ function _hitTestRectangle(r1, r2) {
 	return hit;
 }
 
-function getOutOfBoundsSide (obj) {
+function getOutOfBoundsSide (obj, game) {
+
+	var maze_width = 10 + game.quad_width * 5;
+	var maze_height = 10 + game.quad_height * 3;
 	var side = (obj.x < 0) ? 'left' :
 		(obj.x + obj.width > maze_width + 25) ? 'right' : // add 25px fudge
 		(obj.y < 0) ? 'top' :

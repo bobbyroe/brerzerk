@@ -5,7 +5,7 @@
 function getGameUI (options_obj) {
 
 	// unpack
-	var { stage } = options_obj;
+	var { stage, game } = options_obj;
 
 	// more globals
 	var num_digits = 5;
@@ -107,7 +107,7 @@ function getGameUI (options_obj) {
 	function _resetBonusText () {
 
 		bonus_text.removeChildren();
-		var bonus_str = "BONUS " + level_bonus;
+		var bonus_str = "BONUS " + game.level_bonus;
 		var char_tex, char_sprite, x_index, rect;
 		var padding = 2;
 		var width = 8;
@@ -163,7 +163,7 @@ function getGameUI (options_obj) {
 
 	function _getScoreString () {
 
-		var score_str = "" + score;
+		var score_str = "" + game.score;
 		// catch scores 100,00 and up ...
 		if (score_str.length > 5) {
 			throw new Error('score is greater then 99,999!!! fix me!');

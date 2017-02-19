@@ -1,7 +1,7 @@
 
 /**
  *
- * GLOBALS: loader, sound, score
+ * GLOBALS: loader, sound
  *
  **/
 
@@ -31,7 +31,7 @@ return function (options_obj) {
 	robot_sprite.death_start_timer = -1;
 	robot_sprite.timer_offset = Math.floor(Math.random() * 100);
 	robot_sprite.index = -1;
-	robot_sprite.name = `robot${timer}`;
+	robot_sprite.name = `robot${game.timer}`;
 
 	robot_sprite.bullets = robot_bullets;
 	robot_sprite.bullet_velocity = getRobotBulletVelocity();
@@ -50,7 +50,7 @@ return function (options_obj) {
 	// ROBOT STATES
 	function robotDead () {
 
-		var frame_num = (Math.floor((timer - robot_sprite.death_start_timer) * 0.1) % 4);		
+		var frame_num = (Math.floor((game.timer - robot_sprite.death_start_timer) * 0.1) % 4);		
 		if (frame_num < robot_sprite.explode_tex.num_frames) {
 			robot_sprite.texture = robot_sprite.explode_tex;
 			robot_sprite.anchor.x = 0.28;
@@ -67,14 +67,14 @@ return function (options_obj) {
 
 		robot_sprite.frame_delay = 0.25 * (1 - (robots.length * delay_coefficient)); // 2 / 12 (1 / max num robots)
 
-		var anim_frame_index = (Math.round(timer * robot_sprite.frame_delay) % 2) * 8;
-		var standing_frame_index = (Math.round( (timer + robot_sprite.timer_offset) * robot_sprite.frame_delay) % 6) * 8;
+		var anim_frame_index = (Math.round(game.timer * robot_sprite.frame_delay) % 2) * 8;
+		var standing_frame_index = (Math.round( (game.timer + robot_sprite.timer_offset) * robot_sprite.frame_delay) % 6) * 8;
 		var robots_left = -1;
 		if (robot_sprite.was_hit === true) {
 			
-			robot_sprite.death_start_timer = timer;
+			robot_sprite.death_start_timer = game.timer;
 			sound.play('robot_dead');
-			score += robot_score;
+			game.score += robot_score;
 
 			// if all robots have been killed, award bonus
 			robots_left = robots.filter( r => (r.was_hit === false)).length;
@@ -85,7 +85,7 @@ return function (options_obj) {
 			robot_sprite.tick = robotDead;
 		} else {
 
-			if (timer < robots_awake_time === false) {
+			if (game.timer < robots_awake_time === false) {
 				targetThe(player_sprite);
 			}
 
@@ -139,7 +139,7 @@ return function (options_obj) {
 			robot_sprite.vx = Math.max(robot_sprite.vx, 0);
 		}
 	
-		if (timer >= next_robot_bullet_time && robot_sprite.bullets.length < max_robot_bullets) {
+		if (game.timer >= game.next_robot_bullet_time && robot_sprite.bullets.length < game.max_robot_bullets) {
 
 			if (Math.abs(robot_sprite.x - player_sprite.x) < 20 ||
 				Math.abs(robot_sprite.y - player_sprite.y) < 20 ||
@@ -153,7 +153,7 @@ return function (options_obj) {
 	// 
 	function getRobotBulletVelocity () {
 
-		var vel = (score < 7500) ? 4 : 8;
+		var vel = (game.score < 7500) ? 4 : 8;
 		return vel;
 	}
 
@@ -163,8 +163,8 @@ return function (options_obj) {
 		var right = false;
 		var bottom = false;
 		var left = false;
-		sprite.qx = Math.floor(sprite.x / quad_width);
-		sprite.qy = Math.floor(sprite.y / quad_height);
+		sprite.qx = Math.floor(sprite.x / game.quad_width);
+		sprite.qy = Math.floor(sprite.y / game.quad_height);
 
 		// annotate this one please 
 		var re = new RegExp(`${sprite.qx}${sprite.qy}\\d`);

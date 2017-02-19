@@ -1,6 +1,6 @@
 /**
  *
- * GLOBALS: sound, timer, next_bullet_time
+ * GLOBALS: sound
  * PIXI globals: Sprite
  * fns: keyboard, fire
  * fns: gameRestarting, exitingLevel, prepareToExitLevel
@@ -35,7 +35,7 @@ var getPlayer = (function () {
 		player_sprite.rate = 2;
 		player_sprite.death_anim_duration = 80;
 		player_sprite.death_start_timer = -1;
-		player_sprite.blinking_duration = (is_game_restarting === true) ? 120 : 10;
+		player_sprite.blinking_duration = (game.is_restarting === true) ? 120 : 10;
 		player_sprite.bullet_delay = 30;
 
 		player_sprite.bullets = bullets;
@@ -125,7 +125,7 @@ var getPlayer = (function () {
 
 		function tryToShoot (sprite) {
 			if (player_sprite.tick === playerPlay &&
-				timer >= sprite.bullet_delay &&
+				game.timer >= sprite.bullet_delay &&
 				player_sprite.bullets.length < sprite.max_bullets) {
 
 				fire(sprite);
@@ -137,11 +137,11 @@ var getPlayer = (function () {
 			var rect = new PIXI.Rectangle(0, 0, 8, 17);
 
 			if (sprite.vx > 0 || sprite.vy !== 0) {
-				rect = new PIXI.Rectangle( (Math.round(timer * 0.4) % 3) * 8 + 8, 0, 8, 17);
+				rect = new PIXI.Rectangle( (Math.round(game.timer * 0.4) % 3) * 8 + 8, 0, 8, 17);
 			}
 
 			if (sprite.vx < 0) {
-				rect = new PIXI.Rectangle( (Math.round(timer * 0.4) % 3) * 8 + 40, 0, 8, 17);
+				rect = new PIXI.Rectangle( (Math.round(game.timer * 0.4) % 3) * 8 + 40, 0, 8, 17);
 			}
 			return rect;
 		}
@@ -150,8 +150,8 @@ var getPlayer = (function () {
 		function playerPending () {
 
 			// blink player location
-			if (timer < player_sprite.blinking_duration) {
-				player_sprite.visible = (timer % 40 > 20);
+			if (game.timer < player_sprite.blinking_duration) {
+				player_sprite.visible = (game.timer % 40 > 20);
 			} else {
 				player_sprite.visible = true;
 				player_sprite.tick = playerPlay;
@@ -160,18 +160,14 @@ var getPlayer = (function () {
 
 		function playerPlay () {
 
-			// if (timer > next_robot_bullet_time) {
-			// 	next_robot_bullet_time += 30;
-			// }
-
-			var exit_side = getOutOfBoundsSide(player_sprite);
+			var exit_side = getOutOfBoundsSide(player_sprite, game);
 			if (exit_side !== 'none') {
 				prepareToExitLevel(exit_side);
 			}
 
 			if (player_sprite.was_hit === true && player_sprite.is_invincible === false) {
 
-				player_sprite.death_start_timer = timer;
+				player_sprite.death_start_timer = game.timer;
 				player_sprite.tick = playerDead;
 				sound.play('player_dead');		
 			} else {
@@ -184,9 +180,9 @@ var getPlayer = (function () {
 
 		function playerDead () {
 
-			if (timer - player_sprite.death_start_timer < player_sprite.death_anim_duration) {
+			if (game.timer - player_sprite.death_start_timer < player_sprite.death_anim_duration) {
 				// player death
-				player_sprite.texture.frame = new PIXI.Rectangle((Math.round(timer * 0.4) % 4) * 8 + 80, 0, 8, 17);
+				player_sprite.texture.frame = new PIXI.Rectangle((Math.round(game.timer * 0.4) % 4) * 8 + 80, 0, 8, 17);
 				player_sprite.tint = colors8[Math.floor(Math.random() * colors8.length)];
 			} else {
 

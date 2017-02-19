@@ -49,14 +49,14 @@ function getEvilOtto (options_obj) {
 		otto_sprite.y += otto_sprite.vy;
 
 		// animate him
-		var x_frame = otto_frame_indices[(Math.round(timer * (otto_sprite.rate * 0.4)) % o_len)] * 11; 
+		var x_frame = otto_frame_indices[(Math.round(game.timer * (otto_sprite.rate * 0.4)) % o_len)] * 11; 
 		otto_sprite.texture.frame = new PIXI.Rectangle( x_frame, 0, 11, 43);
 		
 	}
 
 	function ottoDormant () {
 
-		if (timer > otto_sprite.delay_timer) {
+		if (game.timer > otto_sprite.delay_timer) {
 			sound.inSequence('INTRUDER ALERT INTRUDER ALERT'.split(' '));
 			maze.addChild(otto_sprite);
 			otto_sprite.tick = ottoStart;
@@ -66,7 +66,7 @@ function getEvilOtto (options_obj) {
 
 	function ottoStart () {
 
-		var x_pos = (Math.round((timer - otto_sprite.delay_timer) * 0.1) % 8) * 11; 
+		var x_pos = (Math.round((game.timer - otto_sprite.delay_timer) * 0.1) % 8) * 11; 
 
 		if (x_pos > 66) {
 			otto_sprite.tick = ottoPlay;

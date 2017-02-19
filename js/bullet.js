@@ -1,18 +1,18 @@
 /**
  *
- * GLOBALS: *timer
  * PIXI globals: Grfx
  *
  **/
 var getBullet = (function () {
 
-	return function (sprite) {
+	return function (sprite, game) {
 
 		var direction = `${Math.abs(sprite.ax)}${Math.abs(sprite.ay)}`;
 		var rotation = (sprite.ax + sprite.ay === 0) ? -45 : 45;
 		var len = sprite.bullet_length;
 		var shot = new PIXI.Graphics();
 		shot.beginFill(sprite.bullet_color);
+		var id = 0; // debug 
 
 		switch (direction) {
 			case '01': 
@@ -34,7 +34,7 @@ var getBullet = (function () {
 		shot.vx = sprite.ax * sprite.bullet_velocity;
 		shot.vy = sprite.ay * sprite.bullet_velocity;
 		shot.sprite = sprite;
-		shot.name = `${sprite.name} bullet${timer}`; // debug
+		shot.name = `${sprite.name} bullet${id}`; // debug
 		shot.tick = _updateBullet;
 
 
@@ -45,7 +45,7 @@ var getBullet = (function () {
 				shot.x += shot.vx;
 				shot.y += shot.vy;
 				// bounds
-				if (getOutOfBoundsSide(shot) !== 'none') {
+				if (getOutOfBoundsSide(shot, game) !== 'none') {
 					setTimeout(_removeBullet, 1);
 				}
 			}

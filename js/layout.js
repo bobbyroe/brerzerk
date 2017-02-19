@@ -1,6 +1,5 @@
 /**
  *
- * GLOBALS: stage, start_pos, maze
  * PIXI globals: Grfx
  *
  **/
@@ -9,7 +8,7 @@
 function drawWalls (options_obj) {
 	
 	// unpack
-	var { walls, maze, start_pos, quad_width, quad_height, game } = options_obj;
+	var { walls, maze, start_pos, game } = options_obj;
 
 	var num_cols = 5;
 	var num_rows = 3;
@@ -23,8 +22,8 @@ function drawWalls (options_obj) {
 	var random_prob = 0.2;
 	var a_random_side = '';
 	var player_start = {
-		col: Math.floor(start_pos.x / quad_width),
-		row: Math.floor(start_pos.y / quad_height)
+		col: Math.floor(start_pos.x / game.quad_width),
+		row: Math.floor(start_pos.y / game.quad_height)
 	};
 	var blocker_side = '';
 	var remaining_sides = [];
@@ -62,7 +61,7 @@ function drawWalls (options_obj) {
 			if (w === num_rows - 1 && h === 2) { random_sides = []; }
 			if (w === 1 && h === 0) { random_sides = []; }
 
-			if (is_game_restarting === false) {
+			if (game.is_restarting === false) {
 				// draw exit blocker
 				if (player_start.row === 0 && player_start.col === 2) { blocker_side = 'top'; }
 				if (player_start.row === 1 && player_start.col === num_cols - 1) { blocker_side = 'right'; }
@@ -81,10 +80,10 @@ function drawWalls (options_obj) {
 
 			random_sides.forEach(_addSide);
 
-			x_pos += quad_width;
+			x_pos += game.quad_width;
 		}
 
-		y_pos += quad_height;
+		y_pos += game.quad_height;
 	}
 
 	function _addSide (s) {
@@ -95,25 +94,25 @@ function drawWalls (options_obj) {
 
 		switch (s) {
 			case 'top': 
-			rect.drawRect(0, 0, quad_width + 10, width);
+			rect.drawRect(0, 0, game.quad_width + 10, width);
 			rect.x = x_pos;
 			rect.y = y_pos;
 			i = 0;
 			break;
 			case 'right': 
-			rect.drawRect(0, 0, width, quad_height + 5);
-			rect.x = x_pos + quad_width;
+			rect.drawRect(0, 0, width, game.quad_height + 5);
+			rect.x = x_pos + game.quad_width;
 			rect.y = y_pos;
 			i = 1;
 			break;
 			case 'bottom': 
-			rect.drawRect(0, 0, quad_width + 5, width);
+			rect.drawRect(0, 0, game.quad_width + 5, width);
 			rect.x = x_pos;
-			rect.y = y_pos + quad_height;
+			rect.y = y_pos + game.quad_height;
 			i = 2;
 			break;
 			case 'left': 
-			rect.drawRect(0, 0, width, quad_height + 5);
+			rect.drawRect(0, 0, width, game.quad_height + 5);
 			rect.x = x_pos;
 			rect.y = y_pos;
 			i = 3;
