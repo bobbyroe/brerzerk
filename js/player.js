@@ -1,11 +1,5 @@
-/**
- *
- * GLOBALS: sound
- * PIXI globals: Sprite
- * fns: keyboard, fire
- * fns: gameRestarting, exitingLevel, prepareToExitLevel
- *
- **/
+import keyboard from "./keyboard.js";
+import { getOutOfBoundsSide } from "./utils.js";
 
 var getPlayer = (function () {
 
@@ -53,10 +47,10 @@ var getPlayer = (function () {
 		setUpCtrlsFor(player_sprite);
 		function setUpCtrlsFor (sprite) {
 
-			var moveUp = keyboard(sprite.ctrl_keys[0]);
-			var moveRight = keyboard(sprite.ctrl_keys[1]);
-			var moveDown = keyboard(sprite.ctrl_keys[2]);
-			var moveLeft = keyboard(sprite.ctrl_keys[3]);
+			var moveUp = keyboard.listen(sprite.ctrl_keys[0]);
+			var moveRight = keyboard.listen(sprite.ctrl_keys[1]);
+			var moveDown = keyboard.listen(sprite.ctrl_keys[2]);
+			var moveLeft = keyboard.listen(sprite.ctrl_keys[3]);
 
 			moveLeft.press = function () {
 				if (moveLeft.shiftKey === true) {
@@ -126,9 +120,9 @@ var getPlayer = (function () {
 		function tryToShoot (sprite) {
 			if (player_sprite.tick === playerPlay &&
 				game.timer >= sprite.bullet_delay &&
-				player_sprite.bullets.length < sprite.max_bullets) {
+				bullets.length < sprite.max_bullets) {
 
-				fire(sprite);
+				pubSub.dispatch('shot_fired', game, sprite);
 			}
 		}
 
@@ -162,7 +156,8 @@ var getPlayer = (function () {
 
 			var exit_side = getOutOfBoundsSide(player_sprite, game);
 			if (exit_side !== 'none') {
-				prepareToExitLevel(exit_side);
+				// prepareToExitLevel(exit_side);
+				pubSub.dispatch('player_exiting_maze', game, exit_side);
 			}
 
 			if (player_sprite.was_hit === true && player_sprite.is_invincible === false) {
@@ -185,12 +180,13 @@ var getPlayer = (function () {
 				player_sprite.texture.frame = new PIXI.Rectangle((Math.round(game.timer * 0.4) % 4) * 8 + 80, 0, 8, 17);
 				player_sprite.tint = colors8[Math.floor(Math.random() * colors8.length)];
 			} else {
-
+				player_sprite.tint = 0x000000;
 				pubSub.dispatch('got_the_humanoid', game);
 			}
-			updateRobots();
 		}
 		return player_sprite;
 	};
 })();
 
+
+export default getPlayer;

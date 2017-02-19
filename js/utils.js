@@ -1,11 +1,8 @@
- /**
- * 
- * Globals: listeners
- **/
+
 /*******************************************************************************
  * HIT TESTING!
  *******************************************************************************/
-function hitTestAll (all_sprites) {
+ export function hitTestAll (all_sprites) {
 
 
 	// unpack
@@ -159,7 +156,7 @@ function _hitTestRectangle(r1, r2) {
 	return hit;
 }
 
-function getOutOfBoundsSide (obj, game) {
+export function getOutOfBoundsSide (obj, game) {
 
 	var maze_width = 10 + game.quad_width * 5;
 	var maze_height = 10 + game.quad_height * 3;
@@ -175,7 +172,7 @@ function getOutOfBoundsSide (obj, game) {
 /*******************************************************************************
  * UTILS!
  *******************************************************************************/
-function degToRad (deg) {
+export function degToRad (deg) {
 
 	return deg * Math.PI / 180;
 }

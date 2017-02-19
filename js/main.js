@@ -1,13 +1,13 @@
-// js/events.js
-// js/keyboard.js
-// js/utils.js
-// js/bullet.js
-// js/player.js
-// js/robot.js
-// js/evilotto.js
-// js/layout.js
-// js/ui.js
-// js/audio.js
+import Events from "./Events.js";
+import keyboard from "./keyboard";
+import { hitTestAll } from "./utils.js";
+import getBullet from "./bullet.js";
+import getPlayer from "./player.js";
+import getRobot from "./robot.js";
+import getEvilOtto from "./evilotto.js";
+import drawWalls from "./layout.js";
+import getGameUI from "./ui.js";
+import getHowlerAudio from "./audio.js";
 
 // make stuff look pixelated
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
@@ -71,6 +71,8 @@ function setup() {
 	
 	pubSub.listenTo(game, 'all_robots_killed', handleAllRobotsKilled);
 	pubSub.listenTo(game, 'got_the_humanoid', handleHumanoidGot);
+	pubSub.listenTo(game, 'shot_fired', handleShotFired);
+	pubSub.listenTo(game, 'player_exiting_maze', handlePlayerExit);
 	resetGameState();
 	gameLoop();	
 }
@@ -105,11 +107,11 @@ function gameRestarting () {
 	// clean up
 	maze.x = 0;
 	maze.y = 0;
-	maze.removeChildren();
+	maze.removeChildren(); // clean up children too? children.forEach( function (c) { c.destroy(); }); 
 	walls = [];
 	robots = [];
 	if (evil_otto != null) { evil_otto.destroy(); } // clean up
-	removeListeners();
+	keyboard.removeListeners();
 	UI.splashScreen.hide();
 
 	UI.resetScore(_num_players_remaining);
@@ -150,7 +152,7 @@ function gameStart () {
 	game.level_bonus = robots.length * 10;
 
 	// toggle : pause the game
-	var ESC = keyboard('Escape');
+	var ESC = keyboard.listen('Escape');
 	ESC.press = function () { 
 			gameState = (gameState === gamePlay) ? gamePaused : gamePlay;
 	};
@@ -181,49 +183,6 @@ function gamePaused () { /* no op */ }
 // exit level velocity
 var x_vel = 0;
 var y_vel = 0;
-function prepareToExitLevel (side) {
-
-	maze.children.forEach( function (child) {
-		child.tint = 0x0000FF;
-	});
-
-	x_vel = 0;
-	y_vel = 0;
-	var rate = 7;
-	switch (side) {
-		case 'top': 
-		x_vel = 0;
-		y_vel = rate * 1;
-		start_pos = {x: maze.width * 0.5, y: maze.height - player.height - 100};
-		break;
-		case 'right': 
-		x_vel = rate * -1;
-		y_vel = 0;
-		start_pos = {x: 90, y: maze.height * 0.5};
-		break;
-		case 'bottom': 
-		x_vel = 0;
-		y_vel = rate * -1;
-		start_pos = {x: maze.width * 0.5, y: 90};
-		break;
-		case 'left': 
-		x_vel = rate;
-		y_vel = 0;
-		start_pos = {x: maze.width - player.width - 100, y: maze.height * 0.5};
-		break;
-	}
-
-	// robot talk to player
-	var random_rate = Math.random() + 0.5;	
-	if (robots.length !== 0) {
-		sound.inSequence('chicken fight like a robot'.split(' '), random_rate);
-	} else {
-		sound.inSequence('the humanoid must not escape'.split(' '), random_rate);
-	}
-
-	gameState = exitingLevel;
-}
-
 function exitingLevel () {
 
 	if (maze.x + maze.width < -50 || 
@@ -268,23 +227,68 @@ function handleHumanoidGot () {
 	}
 }
 
-/*******************************************************************************
- * bullets
- *******************************************************************************/
-function fire (sprite) {
+function handleShotFired (game, sprite) {
 
+	console.log('handleShotFired', sprite.name);
 	var shot = getBullet(sprite, game);
 	maze.addChild(shot);
 
-	if (sprite === player) {
+	if (sprite.name === "humanoid") {
 		bullets.push(shot);
 		sound.play('player_bullet');
 	} else {
+		// robot shot
 		robot_bullets.push(shot);
 		sound.play('robot_bullet');
 	}
 }
 
+function handlePlayerExit (game, exit_side) {
+
+	maze.children.forEach( function (child) {
+		child.tint = 0x0000FF;
+	});
+
+	x_vel = 0;
+	y_vel = 0;
+	var rate = 7;
+	switch (exit_side) {
+		case 'top': 
+		x_vel = 0;
+		y_vel = rate * 1;
+		start_pos = {x: maze.width * 0.5, y: maze.height - player.height - 100};
+		break;
+		case 'right': 
+		x_vel = rate * -1;
+		y_vel = 0;
+		start_pos = {x: 90, y: maze.height * 0.5};
+		break;
+		case 'bottom': 
+		x_vel = 0;
+		y_vel = rate * -1;
+		start_pos = {x: maze.width * 0.5, y: 90};
+		break;
+		case 'left': 
+		x_vel = rate;
+		y_vel = 0;
+		start_pos = {x: maze.width - player.width - 100, y: maze.height * 0.5};
+		break;
+	}
+
+	// robot talk to player
+	var random_rate = Math.random() + 0.5;	
+	if (robots.length !== 0) {
+		sound.inSequence('chicken fight like a robot'.split(' '), random_rate);
+	} else {
+		sound.inSequence('the humanoid must not escape'.split(' '), random_rate);
+	}
+
+	gameState = exitingLevel;
+}
+
+/*******************************************************************************
+ * bullets
+ *******************************************************************************/
 function updateBullets () {
 
 	for (var i = 0, s_len = bullets.length; i < s_len; i++) {

@@ -190,5 +190,7 @@ function getGameUI (options_obj) {
 		showBonus,
 		resetScore
 	};
-
 }
+
+export default getGameUI;
+

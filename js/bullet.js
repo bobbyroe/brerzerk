@@ -1,8 +1,5 @@
-/**
- *
- * PIXI globals: Grfx
- *
- **/
+import { getOutOfBoundsSide, degToRad } from "./utils.js";
+
 var getBullet = (function () {
 
 	return function (sprite, game) {
@@ -63,3 +60,5 @@ var getBullet = (function () {
 	};
 
 })();
+
+export default getBullet;

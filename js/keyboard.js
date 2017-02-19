@@ -3,7 +3,7 @@
  *******************************************************************************/
 
 var listeners = [];
-function keyboard (code) {
+function listen (code) {
 
 	var key = {
 		code: code,
@@ -66,4 +66,6 @@ function onKeyUp (evt) {
 
 window.addEventListener("keydown", onKeyDown, false);
 window.addEventListener("keyup", onKeyUp, false);
+
+export default { listen, removeListeners };
 

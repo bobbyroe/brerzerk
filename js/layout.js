@@ -1,11 +1,5 @@
-/**
- *
- * PIXI globals: Grfx
- *
- **/
 
-
-function drawWalls (options_obj) {
+export default function drawWalls (options_obj) {
 	
 	// unpack
 	var { walls, maze, start_pos, game } = options_obj;

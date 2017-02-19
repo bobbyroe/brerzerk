@@ -4,7 +4,7 @@
  *
  **/
 
-function getEvilOtto (options_obj) {
+export default function getEvilOtto (options_obj) {
 
 	// unpack
 	var { pos, player, robots, start_pos, maze, sound, game } = options_obj;

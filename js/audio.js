@@ -1,10 +1,6 @@
- /**
- * 
- * Globals: sound
- *   
- **/
+import keyboard from "./keyboard.js";
 
-function getHowlerAudio () {
+export default function getHowlerAudio () {
 
 	var talking_audio = {
 	 		a: 			[0, 280],
@@ -65,8 +61,12 @@ function getHowlerAudio () {
 	}
 	Object.assign(_sound, { inSequence });
 
+	//
 	// play a random robot speach bit
-	var SPACE = keyboard('Space');
+	// this shouldn't be here
+	// consolodate listeners in one place!
+	//
+	var SPACE = keyboard.listen('Space');
 	SPACE.press = function () { 
 		var snds = Object.keys(talking_audio);
 		var id = _sound.play(snds[Math.floor(Math.random() * snds.length)]); 
