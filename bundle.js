@@ -419,7 +419,7 @@ var getPlayer = (function () {
 		player_sprite.bullet_color = 0x00FF00;
 
 		// CHEAT
-		player_sprite.is_invincible = false;
+		player_sprite.is_invincible = true;
 
 		// public methods
 		player_sprite.tick = playerPending;
@@ -873,25 +873,25 @@ function drawWalls (options_obj) {
 	var blocker_side = '';
 	var remaining_sides = [];
 
-	for (var w = 0; w < num_rows; w++) {
+	for (var row = 0; row < num_rows; row ++) {
 
 		x_pos = 10;
 
-		for (var h = 0; h < num_cols; h++) {
+		for (var col = 0; col < num_cols; col++) {
 			a_random_side = sides[Math.floor(Math.random() * sides.length)];
 			random_sides = [ a_random_side ];
 
 			// room borders
-			if (w === 0) { random_sides = ['top']; }
-			if (h === num_cols - 1) { random_sides = ['right']; }
-			if (w === num_rows - 1) { random_sides = ['bottom']; }
-			if (h === 0) { random_sides = ['left']; }
+			if (row === 0) { random_sides = ['top']; }
+			if (col === num_cols - 1) { random_sides = ['right']; }
+			if (row === num_rows - 1) { random_sides = ['bottom']; }
+			if (col === 0) { random_sides = ['left']; }
 
 			// corners
-			if (w === 0 && h === 0) { random_sides = 'top,left'.split(','); }
-			if (w === 0 && h === num_cols - 1) { random_sides = 'top,right'.split(','); }
-			if (w === num_rows - 1 && h === num_cols - 1) { random_sides = 'right,bottom'.split(','); }
-			if (w === num_rows - 1 && h === 0) { random_sides = 'bottom,left'.split(','); }
+			if (row === 0 && col === 0) { random_sides = 'top,left'.split(','); }
+			if (row === 0 && col === num_cols - 1) { random_sides = 'top,right'.split(','); }
+			if (row === num_rows - 1 && col === num_cols - 1) { random_sides = 'right,bottom'.split(','); }
+			if (row === num_rows - 1 && col === 0) { random_sides = 'bottom,left'.split(','); }
 
 			if (Math.random() < random_prob) {
 				remaining_sides = sides.filter( function (s) {
@@ -901,10 +901,10 @@ function drawWalls (options_obj) {
 			}
 
 			// "doors"
-			if (w === 0 && h === 2) { random_sides = []; }
-			if (w === 1 && h === num_cols - 1) { random_sides = []; }
-			if (w === num_rows - 1 && h === 2) { random_sides = []; }
-			if (w === 1 && h === 0) { random_sides = []; }
+			if (row === 0 && col === 2) { random_sides = []; }
+			if (row === 1 && col === num_cols - 1) { random_sides = []; }
+			if (row === num_rows - 1 && col === 2) { random_sides = []; }
+			if (row === 1 && col === 0) { random_sides = []; }
 
 			if (game.is_restarting === false) {
 				// draw exit blocker
@@ -913,7 +913,7 @@ function drawWalls (options_obj) {
 				if (player_start.row === num_rows - 1 && player_start.col === 2) { blocker_side = 'bottom'; }
 				if (player_start.row === 1 && player_start.col === 0) { blocker_side = 'left'; }
 
-				if (w === player_start.row && h === player_start.col) {
+				if (row === player_start.row && col === player_start.col) {
 					color = game.enemy_color;
 					width = 8;
 					random_sides = [ blocker_side ];
@@ -965,7 +965,7 @@ function drawWalls (options_obj) {
 		}
 
 		rect.endFill();
-		rect.name = `${h}${w}${i}`; // `Rectangle${h}${w}, ${s}`; // debug
+		rect.name = `${col}${row}${i}`; // `Rectangle${h}${w}, ${s}`; // debug
 		maze.addChild(rect);
 
 		// for hit testing
