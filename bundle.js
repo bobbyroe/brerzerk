@@ -874,16 +874,16 @@ function getEvilOtto (options_obj) {
 function drawWalls (options_obj) {
 	
 	// unpack
-	var { walls, maze, start_pos, game } = options_obj;
-
-	var num_cols = 5;
-	var num_rows = 3;
+	let { walls, maze, start_pos, game } = options_obj;
+	let num_cols = 5;
+	let num_rows = 3;
+	let width = 15;
+	let color = 0x0000FF;
+	//
 	var x_pos = 5;
 	var y_pos = 10;
-	var width = 15;
 	var sides = "top,right,bottom,left".split(',');
 	var random_sides = [];
-	var color = 0x0000FF;
 	var random_prob = 0.2;
 	var a_random_side = '';
 	var player_start = {
@@ -927,20 +927,87 @@ function drawWalls (options_obj) {
 				}
 			}
 
-			random_sides.forEach(_addSide);
+			// random_sides.forEach(_addSide);
 			x_pos += game.quad_width;
 		}
 		y_pos += game.quad_height;
 	}
 
-	// draw pillars
+
+	//
+	let start_index = 5;
+	let exit_id = 2;
+	let start_tile = _getTileWithId(start_index);
+	_findPathToExit(start_tile);
+
+	function _findPathToExit (tile) {
+
+		console.log(tile);
+
+		// mark as "open"
+		tile.is_open = true;
+
+		// are we an exit tile?
+		if (tile.id !== start_index && tile.id === exit_id) {
+
+			// we're done!
+			console.log("found it! ->", exit_id);
+
+		} else if (tile.adjacent_tiles.length === 0) { 
+
+			// no more adjacent tiles!!!
+			// start over!
+			console.log("on no!!!");
+
+		} else {
+
+			// continue
+			// pick an adjacent tile at random
+			let random_index = Math.floor(Math.random() * tile.adjacent_tiles.length);
+			let next_id = tile.adjacent_tiles[random_index];
+			let next_tile = _getTileWithId(next_id);
+
+			// remove the current tile from the list of adjacent tiles
+			next_tile.adjacent_tiles.splice(next_tile.adjacent_tiles.indexOf(tile.id), 1);
+
+			// recurse
+			_findPathToExit(next_tile);
+		}
+	}
+
+	// DEBUG draw path boxes
+	game_tiles.forEach( t => {
+
+		let column = t.id % num_cols;
+		let cur_row = Math.floor(t.id / num_cols);
+		let pos = {
+			x: 5 + column * game.quad_width,
+			y: 10 + cur_row * game.quad_height
+		};
+
+		let square = null;
+		if (t.is_open === true) {
+			square = new PIXI.Graphics();
+			square.lineStyle(2, 0x00FF00, 1);
+			square.drawRect(25, 25, game.quad_width - 35, game.quad_height - 35);
+			square.x = pos.x;
+			square.y = pos.y;
+			square.alpha = 0.2;
+			maze.addChild(square);
+		}
+	});
+
+	// draw!
 	game_tiles.forEach( t => {
 
 		// calculate position for tile 
+		let column = t.id % num_cols;
+		let cur_row = Math.floor(t.id / num_cols);
 		let pos = {
-			x: 5 + (t.id % num_cols) * game.quad_width,
-			y: 10 + Math.floor(t.id / num_cols) * game.quad_height
+			x: 5 + column * game.quad_width,
+			y: 10 + cur_row * game.quad_height
 		};
+
 
 		// draw each wall
 		t.walls.forEach( w => {
@@ -976,7 +1043,7 @@ function drawWalls (options_obj) {
 			}
 
 			rect.endFill();
-			rect.name = `${col}${row}${i}`; // `Rectangle${h}${w}, ${s}`; // debug
+			rect.name = `${column}${cur_row}${i}`; // `Rectangle${h}${w}, ${s}`; // debug
 			maze.addChild(rect);
 
 			// for hit testing
@@ -1014,48 +1081,15 @@ function drawWalls (options_obj) {
 			maze.addChild(box);
 			walls.push(box);
 		});
+
+
 	});
 	
-	function _addSide (s) {
+	
+}
 
-		let i = -1; // clockwise position index: 0,1,2,3 = top,right,bottom,left
-		let rect = new PIXI.Graphics();
-		rect.beginFill(0x00CCFF);
-
-		switch (s) {
-			case 'top': 
-			rect.drawRect(0, 0, game.quad_width, width);
-			rect.x = x_pos;
-			rect.y = y_pos;
-			i = 0;
-			break;
-			case 'right': 
-			rect.drawRect(0, 0, width, game.quad_height);
-			rect.x = x_pos + game.quad_width;
-			rect.y = y_pos;
-			i = 1;
-			break;
-			case 'bottom': 
-			rect.drawRect(0, 0, game.quad_width, width);
-			rect.x = x_pos;
-			rect.y = y_pos + game.quad_height;
-			i = 2;
-			break;
-			case 'left': 
-			rect.drawRect(0, 0, width, game.quad_height);
-			rect.x = x_pos;
-			rect.y = y_pos;
-			i = 3;
-			break;
-		}
-
-		rect.endFill();
-		rect.name = `${col}${row}${i}`; // `Rectangle${h}${w}, ${s}`; // debug
-		maze.addChild(rect);
-
-		// for hit testing
-		walls.push(rect);
-	}
+function _getTileWithId (id) {
+	return game_tiles.find( t => t.id === id);
 }
 
 let game_tiles = [
@@ -1064,105 +1098,120 @@ let game_tiles = [
 		is_open: false,
 		is_exit: false,
 		walls: [0, 3],
-		pillars: [0, 1, 2, 3]
+		pillars: [0, 1, 2, 3],
+		adjacent_tiles: [1, 5],
 	},
 	{
 		id: 1,
 		is_open: false,
 		is_exit: false,
 		walls: [0],
-		pillars: [1, 2]
+		pillars: [1, 2],
+		adjacent_tiles: [2, 6] // exclude 0
 	},
 	{
 		id: 2,
 		is_open: false,
 		is_exit: true,
 		walls: [],
-		pillars: [1, 2]
+		pillars: [1, 2],
+		adjacent_tiles: [1, 3, 7]
 	},
 	{
 		id: 3,
 		is_open: false,
 		is_exit: false,
 		walls: [0],
-		pillars: [1, 2]
+		pillars: [1, 2],
+		adjacent_tiles: [1, 4, 8]
 	},
 	{
 		id: 4,
 		is_open: false,
 		is_exit: false,
 		walls: [0, 1],
-		pillars: [1, 2]
+		pillars: [1, 2],
+		adjacent_tiles: [1, 9]
 	},
 	{
 		id: 5,
 		is_open: false,
 		is_exit: true,
 		walls: [],
-		pillars: [2, 3]
+		pillars: [2, 3],
+		adjacent_tiles: [0, 6, 10]
 	},
 	{
 		id: 6,
 		is_open: false,
 		is_exit: false,
 		walls: [],
-		pillars: [2]
+		pillars: [2],
+		adjacent_tiles: [1, 5, 7, 11]
 	},
 	{
 		id: 7,
 		is_open: false,
 		is_exit: false,
 		walls: [],
-		pillars: [2]
+		pillars: [2],
+		adjacent_tiles: [2, 6, 8, 12]
 	},
 	{
 		id: 8,
 		is_open: false,
 		is_exit: false,
 		walls: [],
-		pillars: [2]
+		pillars: [2],
+		adjacent_tiles: [3, 7, 9, 13]
 	},
 	{
 		id: 9,
 		is_open: false,
 		is_exit: true,
 		walls: [],
-		pillars: [2]
+		pillars: [2],
+		adjacent_tiles: [4, 8, 14]
 	},
 	{
 		id: 10,
 		is_open: false,
 		is_exit: false,
 		walls: [2, 3],
-		pillars: [2, 3]
+		pillars: [2, 3],
+		adjacent_tiles: [5, 11]
 	},
 	{
 		id: 11,
 		is_open: false,
 		is_exit: false,
 		walls: [2],
-		pillars: [2]
+		pillars: [2],
+		adjacent_tiles: [6, 12] // exclude 10
 	},
 	{
 		id: 12,
 		is_open: false,
 		is_exit: true,
 		walls: [],
-		pillars: [2]
+		pillars: [2],
+		adjacent_tiles: [7, 11, 13]
 	},
 	{
 		id: 13,
 		is_open: false,
 		is_exit: false,
 		walls: [2],
-		pillars: [2]
+		pillars: [2],
+		adjacent_tiles: [8, 12, 14]
 	},
 	{
 		id: 14,
 		is_open: false,
 		is_exit: false,
 		walls: [1, 2],
-		pillars: [2]
+		pillars: [2],
+		adjacent_tiles: [9, 14]
 	}
 ];
 
