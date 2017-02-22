@@ -60,20 +60,6 @@ export default function getHowlerAudio () {
 		
 	}
 	Object.assign(_sound, { inSequence });
-
-	//
-	// play a random robot speach bit
-	// this shouldn't be here
-	// consolodate listeners in one place!
-	//
-	var SPACE = keyboard.listen('Space');
-	SPACE.press = function () { 
-		var snds = Object.keys(talking_audio);
-		var id = _sound.play(snds[Math.floor(Math.random() * snds.length)]); 
-		var random_rate = Math.random() + 0.5;
-		_sound.rate(random_rate, id);
-	};
-	SPACE.release = function () { /* no op */ };
 	
 	return _sound;
 }

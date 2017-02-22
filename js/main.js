@@ -73,6 +73,7 @@ function setup() {
 	pubSub.listenTo(game, 'got_the_humanoid', handleHumanoidGot);
 	pubSub.listenTo(game, 'shot_fired', handleShotFired);
 	pubSub.listenTo(game, 'player_exiting_maze', handlePlayerExit);
+	pubSub.listenTo(game, 'TESTING', handleTestKeyPressed);
 	resetGameState();
 	gameLoop();	
 }
@@ -138,7 +139,8 @@ function gameRestarting () {
 	}
 
 	evil_otto = getEvilOtto({ pos: {x: 0, y: 0}, player, robots, start_pos, maze, sound, game });
-	// keep him offscreen for now
+	
+	keyboard.addTestKey({ pubSub, game });
 }
 
 function gameStart () {
@@ -286,6 +288,15 @@ function handlePlayerExit (game, exit_side) {
 	gameState = exitingLevel;
 }
 
+
+function handleTestKeyPressed () {
+
+	walls.forEach ( w => maze.removeChild(w) );
+	walls = [];
+	drawWalls({ walls, maze, start_pos, game });
+
+}
+
 /*******************************************************************************
  * bullets
  *******************************************************************************/
@@ -421,5 +432,3 @@ function getMaxNumRobotBullets () {
 	if (game.score >= score_tiers[8]) { num = 5; } 				// MAX
 	return num;
 }
-
-

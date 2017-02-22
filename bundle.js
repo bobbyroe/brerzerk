@@ -137,10 +137,31 @@ function onKeyUp (evt) {
 	}
 }
 
+
+/*******************************************************************************
+ * misc testing 
+ *******************************************************************************/
+//
+// play a random robot speach bit ?
+//
+function addTestKey (options_obj) {
+
+	var { pubSub, game } = options_obj;
+	var SPACE = listen('Space');
+	SPACE.press = function () { 
+		// var snds = Object.keys(talking_audio);
+		// var id = _sound.play(snds[Math.floor(Math.random() * snds.length)]); 
+		// var random_rate = Math.random() + 0.5;
+		// _sound.rate(random_rate, id);
+		pubSub.dispatch('TESTING', game);
+	};
+	SPACE.release = function () { /* no op */ };
+}
+
 window.addEventListener("keydown", onKeyDown, false);
 window.addEventListener("keyup", onKeyUp, false);
 
-var keyboard = { listen, removeListeners };
+var keyboard = { listen, removeListeners, addTestKey };
 
 /*******************************************************************************
  * HIT TESTING!
@@ -857,10 +878,9 @@ function drawWalls (options_obj) {
 
 	var num_cols = 5;
 	var num_rows = 3;
-	var x_pos = 10;
+	var x_pos = 5;
 	var y_pos = 10;
 	var width = 15;
-	var rect = null;
 	var sides = "top,right,bottom,left".split(',');
 	var random_sides = [];
 	var color = 0x0000FF;
@@ -875,36 +895,20 @@ function drawWalls (options_obj) {
 
 	for (var row = 0; row < num_rows; row ++) {
 
-		x_pos = 10;
+		x_pos = 5;
 
 		for (var col = 0; col < num_cols; col++) {
-			a_random_side = sides[Math.floor(Math.random() * sides.length)];
-			random_sides = [ a_random_side ];
-
-			// room borders
-			if (row === 0) { random_sides = ['top']; }
-			if (col === num_cols - 1) { random_sides = ['right']; }
-			if (row === num_rows - 1) { random_sides = ['bottom']; }
-			if (col === 0) { random_sides = ['left']; }
-
-			// corners
-			if (row === 0 && col === 0) { random_sides = 'top,left'.split(','); }
-			if (row === 0 && col === num_cols - 1) { random_sides = 'top,right'.split(','); }
-			if (row === num_rows - 1 && col === num_cols - 1) { random_sides = 'right,bottom'.split(','); }
-			if (row === num_rows - 1 && col === 0) { random_sides = 'bottom,left'.split(','); }
+			random_sides = [];
 
 			if (Math.random() < random_prob) {
+				a_random_side = sides[Math.floor(Math.random() * sides.length)];
+				random_sides.push(a_random_side);
+
 				remaining_sides = sides.filter( function (s) {
 					return random_sides.indexOf(s) === -1;
 				});
 				random_sides.push(remaining_sides[Math.floor(Math.random() * remaining_sides.length)]);
 			}
-
-			// "doors"
-			if (row === 0 && col === 2) { random_sides = []; }
-			if (row === 1 && col === num_cols - 1) { random_sides = []; }
-			if (row === num_rows - 1 && col === 2) { random_sides = []; }
-			if (row === 1 && col === 0) { random_sides = []; }
 
 			if (game.is_restarting === false) {
 				// draw exit blocker
@@ -924,40 +928,121 @@ function drawWalls (options_obj) {
 			}
 
 			random_sides.forEach(_addSide);
-
 			x_pos += game.quad_width;
 		}
-
 		y_pos += game.quad_height;
 	}
 
+	// draw pillars
+	game_tiles.forEach( t => {
+
+		// calculate position for tile 
+		let pos = {
+			x: 5 + (t.id % num_cols) * game.quad_width,
+			y: 10 + Math.floor(t.id / num_cols) * game.quad_height
+		};
+
+		// draw each wall
+		t.walls.forEach( w => {
+			let i = -1; // clockwise position index: 0,1,2,3 = top,right,bottom,left
+			let rect = new PIXI.Graphics();
+			rect.beginFill(color);
+
+			switch (w) {
+				case 0: 
+				rect.drawRect(0, 0, game.quad_width, width);
+				rect.x = pos.x;
+				rect.y = pos.y;
+				i = 0;
+				break;
+				case 1: 
+				rect.drawRect(0, 0, width, game.quad_height);
+				rect.x = pos.x + game.quad_width;
+				rect.y = pos.y;
+				i = 1;
+				break;
+				case 2: 
+				rect.drawRect(0, 0, game.quad_width, width);
+				rect.x = pos.x;
+				rect.y = pos.y + game.quad_height;
+				i = 2;
+				break;
+				case 3: 
+				rect.drawRect(0, 0, width, game.quad_height);
+				rect.x = pos.x;
+				rect.y = pos.y;
+				i = 3;
+				break;
+			}
+
+			rect.endFill();
+			rect.name = `${col}${row}${i}`; // `Rectangle${h}${w}, ${s}`; // debug
+			maze.addChild(rect);
+
+			// for hit testing
+			walls.push(rect);
+		});
+
+		// draw each pillar
+		t.pillars.forEach( p => {
+
+			// let col = 0xFF9900;
+			let box = new PIXI.Graphics();
+			box.beginFill(color);
+			box.drawRect(0, 0, width, width);
+			switch(p) {
+				case 0:
+				box.x = pos.x;
+				box.y = pos.y;
+				break;
+				case 1:
+				box.x = pos.x + game.quad_width;
+				box.y = pos.y;
+				break;
+				case 2:
+				box.x = pos.x + game.quad_width;
+				box.y = pos.y + game.quad_height;
+				break;
+				case 3:
+				box.x = pos.x;
+				box.y = pos.y + game.quad_height;
+				break;
+			}
+			box.endFill();
+			// box.alpha = 0.2;
+			box.name = `pillar${t.id}`;
+			maze.addChild(box);
+			walls.push(box);
+		});
+	});
+	
 	function _addSide (s) {
 
-		var i = -1; // clockwise position index: 0,1,2,3 = top,right,bottom,left
-		rect = new PIXI.Graphics();
-		rect.beginFill(color);
+		let i = -1; // clockwise position index: 0,1,2,3 = top,right,bottom,left
+		let rect = new PIXI.Graphics();
+		rect.beginFill(0x00CCFF);
 
 		switch (s) {
 			case 'top': 
-			rect.drawRect(0, 0, game.quad_width + 10, width);
+			rect.drawRect(0, 0, game.quad_width, width);
 			rect.x = x_pos;
 			rect.y = y_pos;
 			i = 0;
 			break;
 			case 'right': 
-			rect.drawRect(0, 0, width, game.quad_height + 5);
+			rect.drawRect(0, 0, width, game.quad_height);
 			rect.x = x_pos + game.quad_width;
 			rect.y = y_pos;
 			i = 1;
 			break;
 			case 'bottom': 
-			rect.drawRect(0, 0, game.quad_width + 5, width);
+			rect.drawRect(0, 0, game.quad_width, width);
 			rect.x = x_pos;
 			rect.y = y_pos + game.quad_height;
 			i = 2;
 			break;
 			case 'left': 
-			rect.drawRect(0, 0, width, game.quad_height + 5);
+			rect.drawRect(0, 0, width, game.quad_height);
 			rect.x = x_pos;
 			rect.y = y_pos;
 			i = 3;
@@ -972,6 +1057,114 @@ function drawWalls (options_obj) {
 		walls.push(rect);
 	}
 }
+
+let game_tiles = [
+	{
+		id: 0,
+		is_open: false,
+		is_exit: false,
+		walls: [0, 3],
+		pillars: [0, 1, 2, 3]
+	},
+	{
+		id: 1,
+		is_open: false,
+		is_exit: false,
+		walls: [0],
+		pillars: [1, 2]
+	},
+	{
+		id: 2,
+		is_open: false,
+		is_exit: true,
+		walls: [],
+		pillars: [1, 2]
+	},
+	{
+		id: 3,
+		is_open: false,
+		is_exit: false,
+		walls: [0],
+		pillars: [1, 2]
+	},
+	{
+		id: 4,
+		is_open: false,
+		is_exit: false,
+		walls: [0, 1],
+		pillars: [1, 2]
+	},
+	{
+		id: 5,
+		is_open: false,
+		is_exit: true,
+		walls: [],
+		pillars: [2, 3]
+	},
+	{
+		id: 6,
+		is_open: false,
+		is_exit: false,
+		walls: [],
+		pillars: [2]
+	},
+	{
+		id: 7,
+		is_open: false,
+		is_exit: false,
+		walls: [],
+		pillars: [2]
+	},
+	{
+		id: 8,
+		is_open: false,
+		is_exit: false,
+		walls: [],
+		pillars: [2]
+	},
+	{
+		id: 9,
+		is_open: false,
+		is_exit: true,
+		walls: [],
+		pillars: [2]
+	},
+	{
+		id: 10,
+		is_open: false,
+		is_exit: false,
+		walls: [2, 3],
+		pillars: [2, 3]
+	},
+	{
+		id: 11,
+		is_open: false,
+		is_exit: false,
+		walls: [2],
+		pillars: [2]
+	},
+	{
+		id: 12,
+		is_open: false,
+		is_exit: true,
+		walls: [],
+		pillars: [2]
+	},
+	{
+		id: 13,
+		is_open: false,
+		is_exit: false,
+		walls: [2],
+		pillars: [2]
+	},
+	{
+		id: 14,
+		is_open: false,
+		is_exit: false,
+		walls: [1, 2],
+		pillars: [2]
+	}
+];
 
 /*******************************************************************************
  * Game UI, score and num players icons
@@ -1227,20 +1420,6 @@ function getHowlerAudio () {
 		
 	}
 	Object.assign(_sound, { inSequence });
-
-	//
-	// play a random robot speach bit
-	// this shouldn't be here
-	// consolodate listeners in one place!
-	//
-	var SPACE = keyboard.listen('Space');
-	SPACE.press = function () { 
-		var snds = Object.keys(talking_audio);
-		var id = _sound.play(snds[Math.floor(Math.random() * snds.length)]); 
-		var random_rate = Math.random() + 0.5;
-		_sound.rate(random_rate, id);
-	};
-	SPACE.release = function () { /* no op */ };
 	
 	return _sound;
 }
@@ -1309,6 +1488,7 @@ function setup() {
 	pubSub.listenTo(game, 'got_the_humanoid', handleHumanoidGot);
 	pubSub.listenTo(game, 'shot_fired', handleShotFired);
 	pubSub.listenTo(game, 'player_exiting_maze', handlePlayerExit);
+	pubSub.listenTo(game, 'TESTING', handleTestKeyPressed);
 	resetGameState();
 	gameLoop();	
 }
@@ -1374,7 +1554,8 @@ function gameRestarting () {
 	}
 
 	evil_otto = getEvilOtto({ pos: {x: 0, y: 0}, player, robots, start_pos, maze, sound, game });
-	// keep him offscreen for now
+	
+	keyboard.addTestKey({ pubSub, game });
 }
 
 function gameStart () {
@@ -1520,6 +1701,15 @@ function handlePlayerExit (game, exit_side) {
 	}
 
 	gameState = exitingLevel;
+}
+
+
+function handleTestKeyPressed () {
+
+	walls.forEach ( w => maze.removeChild(w) );
+	walls = [];
+	drawWalls({ walls, maze, start_pos, game });
+
 }
 
 /*******************************************************************************

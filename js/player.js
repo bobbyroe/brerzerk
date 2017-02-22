@@ -39,7 +39,7 @@ var getPlayer = (function () {
 		player_sprite.bullet_color = 0x00FF00;
 
 		// CHEAT
-		player_sprite.is_invincible = false;
+		player_sprite.is_invincible = true;
 
 		// public methods
 		player_sprite.tick = playerPending;

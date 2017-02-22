@@ -64,8 +64,29 @@ function onKeyUp (evt) {
 	}
 }
 
+
+/*******************************************************************************
+ * misc testing 
+ *******************************************************************************/
+//
+// play a random robot speach bit ?
+//
+function addTestKey (options_obj) {
+
+	var { pubSub, game } = options_obj;
+	var SPACE = listen('Space');
+	SPACE.press = function () { 
+		// var snds = Object.keys(talking_audio);
+		// var id = _sound.play(snds[Math.floor(Math.random() * snds.length)]); 
+		// var random_rate = Math.random() + 0.5;
+		// _sound.rate(random_rate, id);
+		pubSub.dispatch('TESTING', game);
+	};
+	SPACE.release = function () { /* no op */ };
+}
+
 window.addEventListener("keydown", onKeyDown, false);
 window.addEventListener("keyup", onKeyUp, false);
 
-export default { listen, removeListeners };
+export default { listen, removeListeners, addTestKey };
 
