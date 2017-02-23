@@ -942,16 +942,26 @@ function drawWalls (options_obj) {
 
 	function _findPathToExit (tile) {
 
-		console.log(tile);
-
 		// mark as "open"
-		tile.is_open = true;
+		tile.was_visited = true;
 
 		// are we an exit tile?
 		if (tile.id !== start_index && tile.id === exit_id) {
 
 			// we're done!
 			console.log("found it! ->", exit_id);
+
+			tile.adjacent_tiles.forEach( t => {
+
+				let side = -1;
+				if (t === tile.id - num_cols) { side = 0; }
+				if (t === tile.id + 1) { side = 1; }
+				if (t === tile.id + num_cols) { side = 2; }
+				if (t === tile.id - 1) { side = 3; }
+
+				// only push the "wall" if it's an elidible interior side
+				if (tile.interior_walls.indexOf(side) !== -1) { tile.walls.push(side); }
+			});
 
 		} else if (tile.adjacent_tiles.length === 0) { 
 
@@ -967,8 +977,23 @@ function drawWalls (options_obj) {
 			let next_id = tile.adjacent_tiles[random_index];
 			let next_tile = _getTileWithId(next_id);
 
+			// add walls on remaining sides 
+			let remaining_tiles = tile.adjacent_tiles.filter( t => t !== next_id );
+			remaining_tiles.forEach( t => {
+
+				let side = -1;
+				if (t === tile.id - num_cols) { side = 0; }
+				if (t === tile.id + 1) { side = 1; }
+				if (t === tile.id + num_cols) { side = 2; }
+				if (t === tile.id - 1) { side = 3; }
+
+				// only push the "wall" if it's an elidible interior side
+				if (tile.interior_walls.indexOf(side) !== -1) { tile.walls.push(side); }
+			});
 			// remove the current tile from the list of adjacent tiles
 			next_tile.adjacent_tiles.splice(next_tile.adjacent_tiles.indexOf(tile.id), 1);
+
+			console.log(tile);
 
 			// recurse
 			_findPathToExit(next_tile);
@@ -986,7 +1011,7 @@ function drawWalls (options_obj) {
 		};
 
 		let square = null;
-		if (t.is_open === true) {
+		if (t.was_visited === true) {
 			square = new PIXI.Graphics();
 			square.lineStyle(2, 0x00FF00, 1);
 			square.drawRect(25, 25, game.quad_width - 35, game.quad_height - 35);
@@ -994,6 +1019,12 @@ function drawWalls (options_obj) {
 			square.y = pos.y;
 			square.alpha = 0.2;
 			maze.addChild(square);
+		} else {
+
+			// fill in the rest of the tiles walls
+			t.interior_walls.forEach( n => {
+				t.walls.push(n);
+			});
 		}
 	});
 
@@ -1095,121 +1126,136 @@ function _getTileWithId (id) {
 let game_tiles = [
 	{
 		id: 0,
-		is_open: false,
+		was_visited: false,
 		is_exit: false,
 		walls: [0, 3],
+		interior_walls: [1, 2],
 		pillars: [0, 1, 2, 3],
 		adjacent_tiles: [1, 5],
 	},
 	{
 		id: 1,
-		is_open: false,
+		was_visited: false,
 		is_exit: false,
 		walls: [0],
+		interior_walls: [1, 2],
 		pillars: [1, 2],
 		adjacent_tiles: [2, 6] // exclude 0
 	},
 	{
 		id: 2,
-		is_open: false,
+		was_visited: false,
 		is_exit: true,
 		walls: [],
+		interior_walls: [1, 2],
 		pillars: [1, 2],
 		adjacent_tiles: [1, 3, 7]
 	},
 	{
 		id: 3,
-		is_open: false,
+		was_visited: false,
 		is_exit: false,
 		walls: [0],
+		interior_walls: [1, 2],
 		pillars: [1, 2],
-		adjacent_tiles: [1, 4, 8]
+		adjacent_tiles: [2, 4, 8]
 	},
 	{
 		id: 4,
-		is_open: false,
+		was_visited: false,
 		is_exit: false,
 		walls: [0, 1],
+		interior_walls: [2],
 		pillars: [1, 2],
-		adjacent_tiles: [1, 9]
+		adjacent_tiles: [3, 9]
 	},
 	{
 		id: 5,
-		is_open: false,
+		was_visited: false,
 		is_exit: true,
 		walls: [],
+		interior_walls: [1, 2],
 		pillars: [2, 3],
 		adjacent_tiles: [0, 6, 10]
 	},
 	{
 		id: 6,
-		is_open: false,
+		was_visited: false,
 		is_exit: false,
 		walls: [],
+		interior_walls: [1, 2],
 		pillars: [2],
 		adjacent_tiles: [1, 5, 7, 11]
 	},
 	{
 		id: 7,
-		is_open: false,
+		was_visited: false,
 		is_exit: false,
 		walls: [],
+		interior_walls: [1, 2],
 		pillars: [2],
 		adjacent_tiles: [2, 6, 8, 12]
 	},
 	{
 		id: 8,
-		is_open: false,
+		was_visited: false,
 		is_exit: false,
 		walls: [],
+		interior_walls: [1, 2],
 		pillars: [2],
 		adjacent_tiles: [3, 7, 9, 13]
 	},
 	{
 		id: 9,
-		is_open: false,
+		was_visited: false,
 		is_exit: true,
 		walls: [],
+		interior_walls: [2],
 		pillars: [2],
 		adjacent_tiles: [4, 8, 14]
 	},
 	{
 		id: 10,
-		is_open: false,
+		was_visited: false,
 		is_exit: false,
 		walls: [2, 3],
+		interior_walls: [1],
 		pillars: [2, 3],
 		adjacent_tiles: [5, 11]
 	},
 	{
 		id: 11,
-		is_open: false,
+		was_visited: false,
 		is_exit: false,
 		walls: [2],
+		interior_walls: [1],
 		pillars: [2],
 		adjacent_tiles: [6, 12] // exclude 10
 	},
 	{
 		id: 12,
-		is_open: false,
+		was_visited: false,
 		is_exit: true,
 		walls: [],
+		interior_walls: [1],
 		pillars: [2],
 		adjacent_tiles: [7, 11, 13]
 	},
 	{
 		id: 13,
-		is_open: false,
+		was_visited: false,
 		is_exit: false,
 		walls: [2],
+		interior_walls: [1],
 		pillars: [2],
 		adjacent_tiles: [8, 12, 14]
 	},
 	{
 		id: 14,
-		is_open: false,
+		was_visited: false,
 		is_exit: false,
 		walls: [1, 2],
+		interior_walls: [],
 		pillars: [2],
 		adjacent_tiles: [9, 14]
 	}
