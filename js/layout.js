@@ -63,69 +63,108 @@ export default function drawWalls (options_obj) {
 
 
 	//
-	let start_index = 5;
+	var game_tiles = getGameTiles();
+	let start_ids = [5, 9, 12];
 	let exit_id = 2;
-	let start_tile = _getTileWithId(start_index);
-	_findPathToExit(start_tile);
 
-	function _findPathToExit (tile) {
+	start_ids.forEach( id => {
 
-		// mark as "open"
-		tile.was_visited = true;
+		let start_tile = game_tiles.find( t => t.id === id);
+		_findPathToExit(start_tile, id);
+	});
+	
 
-		// are we an exit tile?
-		if (tile.id !== start_index && tile.id === exit_id) {
+	function _findPathToExit (tile, start_id) {
 
+		if (tile.was_visited === true) {
+
+			// // ... and in this one.
+			// let my_side = -1;
+			// if (next_id === tile.id - num_cols) { my_side = 0; }
+			// if (next_id === tile.id + 1) { my_side = 1; }
+			// if (next_id === tile.id + num_cols) { my_side = 2; }
+			// if (next_id === tile.id - 1) { my_side = 3; }
+
+			// let my_index = tile.walls.indexOf(my_side);
+			// if (my_index !== -1) { tile.walls.splice(my_index, 1); }
 			// we're done!
-			console.log("found it! ->", exit_id);
-
-			tile.adjacent_tiles.forEach( t => {
-
-				let side = -1;
-				if (t === tile.id - num_cols) { side = 0; }
-				if (t === tile.id + 1) { side = 1; }
-				if (t === tile.id + num_cols) { side = 2; }
-				if (t === tile.id - 1) { side = 3; }
-
-				// only push the "wall" if it's an elidible interior side
-				if (tile.interior_walls.indexOf(side) !== -1) { tile.walls.push(side); }
-			});
-
-		} else if (tile.adjacent_tiles.length === 0) { 
-
-			// no more adjacent tiles!!!
-			// start over!
-			console.log("on no!!!");
+			console.log("already good to go! ->", tile.id);
 
 		} else {
 
-			// continue
-			// pick an adjacent tile at random
-			let random_index = Math.floor(Math.random() * tile.adjacent_tiles.length);
-			let next_id = tile.adjacent_tiles[random_index];
-			let next_tile = _getTileWithId(next_id);
+			tile.was_visited = true;
+			let next_tile = _getNextTileFrom(tile.adjacent_tiles, game_tiles);
 
-			// add walls on remaining sides 
-			let remaining_tiles = tile.adjacent_tiles.filter( t => t !== next_id );
-			remaining_tiles.forEach( t => {
+			// are we an exit tile?
+			if (tile.id !== start_id && tile.id === exit_id) {
 
-				let side = -1;
-				if (t === tile.id - num_cols) { side = 0; }
-				if (t === tile.id + 1) { side = 1; }
-				if (t === tile.id + num_cols) { side = 2; }
-				if (t === tile.id - 1) { side = 3; }
+				// we're done!
+				// console.log("found it! ->", exit_id);
 
-				// only push the "wall" if it's an elidible interior side
-				if (tile.interior_walls.indexOf(side) !== -1) { tile.walls.push(side); }
-			});
-			// remove the current tile from the list of adjacent tiles
-			let i = next_tile.adjacent_tiles.indexOf(tile.id);
-			if (i !== -1) { next_tile.adjacent_tiles.splice(i, 1); }
+				tile.adjacent_tiles.forEach( t => {
 
-			console.log("-------------- -", tile);
+					let side = -1;
+					if (t === tile.id - num_cols) { side = 0; }
+					if (t === tile.id + 1) { side = 1; }
+					if (t === tile.id + num_cols) { side = 2; }
+					if (t === tile.id - 1) { side = 3; }
 
-			// recurse
-			_findPathToExit(next_tile);
+					// only push the "wall" if it's an elidible interior side
+					if (tile.interior_walls.indexOf(side) !== -1) { tile.walls.push(side); }
+				});
+
+			} else if (next_tile == null || tile.adjacent_tiles.length === 0) { 
+
+				// no more adjacent tiles!!!
+				// start over!
+				// console.log("on no!!!", tile);
+				tile.adjacent_tiles.forEach( t => {
+
+					let side = -1;
+					if (t === tile.id - num_cols) { side = 0; }
+					if (t === tile.id + 1) { side = 1; }
+					if (t === tile.id + num_cols) { side = 2; }
+					if (t === tile.id - 1) { side = 3; }
+
+					// only push the "wall" if it's an elidible interior side
+					if (tile.interior_walls.indexOf(side) !== -1) { tile.walls.push(side); }
+				});
+
+			} else {
+
+				// add walls on remaining sides 
+				let remaining_tiles = tile.adjacent_tiles.filter( t => t !== next_tile.id );
+				remaining_tiles.forEach( t => {
+
+					let side = -1;
+					if (t === tile.id - num_cols) { side = 0; }
+					if (t === tile.id + 1) { side = 1; }
+					if (t === tile.id + num_cols) { side = 2; }
+					if (t === tile.id - 1) { side = 3; }
+
+					// only push the "wall" if it's an elidible interior side
+					if (tile.interior_walls.indexOf(side) !== -1) { tile.walls.push(side); }
+				});
+				// remove the current tile from the list of adjacent tiles
+				let i = next_tile.adjacent_tiles.indexOf(tile.id);
+				if (i !== -1) { next_tile.adjacent_tiles.splice(i, 1); }
+
+				if (next_tile.was_visited === true) {
+					// break down the wall if need be
+					// ... in the /next/ tile
+					let other_side = -1;
+					if (next_tile.id === tile.id - num_cols) { other_side = 2; }
+					if (next_tile.id === tile.id + 1) { other_side = 3; }
+					if (next_tile.id === tile.id + num_cols) { other_side = 0; }
+					if (next_tile.id === tile.id - 1) { other_side = 2; }
+
+					let other_index = next_tile.walls.indexOf(other_side);
+					if (other_index !== -1) { next_tile.walls.splice(other_index, 1); }
+				}
+				// recurse
+				// console.log("--->", tile);
+				_findPathToExit(next_tile, start_id, exit_id);
+			}
 		}
 	}
 
@@ -150,9 +189,11 @@ export default function drawWalls (options_obj) {
 			maze.addChild(square);
 		} else {
 
+			// let visited_tiles = t.adjacent_tiles.filter( id => game_tiles.find( t => t.id === id).was_visited === true );
+
 			// fill in the rest of the tiles walls
 			t.interior_walls.forEach( n => {
-				t.walls.push(n);
+				if (Math.random() < 0.4) { t.walls.push(n); }
 			});
 		}
 	});
@@ -287,144 +328,165 @@ export default function drawWalls (options_obj) {
 	}
 }
 
-function _getTileWithId (id) {
-	return game_tiles.find( t => t.id === id);
+function _getNextTileFrom (adjacent_tiles, game_tiles) {
+
+	// make a copy ...
+	var available_tiles = adjacent_tiles.slice(0);
+
+	// pick an adjacent tile at random
+	let random_index = Math.floor(Math.random() * available_tiles.length);
+	let next_id = available_tiles[random_index];
+	let next_tile = game_tiles.find( t => t.id === next_id);
+
+	if (next_tile != null && next_tile.was_visited === true) {
+		available_tiles.splice(random_index, 1);
+		// pick another
+		next_tile = _getNextTileFrom(available_tiles, game_tiles);
+	} 
+
+	return next_tile;
 }
 
-let game_tiles = [
-	{
-		id: 0,
-		was_visited: false,
-		is_exit: false,
-		walls: [0, 3],
-		interior_walls: [1, 2],
-		pillars: [0, 1, 2, 3],
-		adjacent_tiles: [1, 5],
-	},
-	{
-		id: 1,
-		was_visited: false,
-		is_exit: false,
-		walls: [0],
-		interior_walls: [1, 2],
-		pillars: [1, 2],
-		adjacent_tiles: [2, 6] // exclude 0
-	},
-	{
-		id: 2,
-		was_visited: false,
-		is_exit: true,
-		walls: [],
-		interior_walls: [1, 2],
-		pillars: [1, 2],
-		adjacent_tiles: [1, 3, 7]
-	},
-	{
-		id: 3,
-		was_visited: false,
-		is_exit: false,
-		walls: [0],
-		interior_walls: [1, 2],
-		pillars: [1, 2],
-		adjacent_tiles: [2, 4, 8]
-	},
-	{
-		id: 4,
-		was_visited: false,
-		is_exit: false,
-		walls: [0, 1],
-		interior_walls: [2],
-		pillars: [1, 2],
-		adjacent_tiles: [3, 9]
-	},
-	{
-		id: 5,
-		was_visited: false,
-		is_exit: true,
-		walls: [],
-		interior_walls: [1, 2],
-		pillars: [2, 3],
-		adjacent_tiles: [0, 6, 10]
-	},
-	{
-		id: 6,
-		was_visited: false,
-		is_exit: false,
-		walls: [],
-		interior_walls: [1, 2],
-		pillars: [2],
-		adjacent_tiles: [1, 5, 7, 11]
-	},
-	{
-		id: 7,
-		was_visited: false,
-		is_exit: false,
-		walls: [],
-		interior_walls: [1, 2],
-		pillars: [2],
-		adjacent_tiles: [2, 6, 8, 12]
-	},
-	{
-		id: 8,
-		was_visited: false,
-		is_exit: false,
-		walls: [],
-		interior_walls: [1, 2],
-		pillars: [2],
-		adjacent_tiles: [3, 7, 9, 13]
-	},
-	{
-		id: 9,
-		was_visited: false,
-		is_exit: true,
-		walls: [],
-		interior_walls: [2],
-		pillars: [2],
-		adjacent_tiles: [4, 8, 14]
-	},
-	{
-		id: 10,
-		was_visited: false,
-		is_exit: false,
-		walls: [2, 3],
-		interior_walls: [1],
-		pillars: [2, 3],
-		adjacent_tiles: [5, 11]
-	},
-	{
-		id: 11,
-		was_visited: false,
-		is_exit: false,
-		walls: [2],
-		interior_walls: [1],
-		pillars: [2],
-		adjacent_tiles: [6, 12] // exclude 10
-	},
-	{
-		id: 12,
-		was_visited: false,
-		is_exit: true,
-		walls: [],
-		interior_walls: [1],
-		pillars: [2],
-		adjacent_tiles: [7, 11, 13]
-	},
-	{
-		id: 13,
-		was_visited: false,
-		is_exit: false,
-		walls: [2],
-		interior_walls: [1],
-		pillars: [2],
-		adjacent_tiles: [8, 12, 14]
-	},
-	{
-		id: 14,
-		was_visited: false,
-		is_exit: false,
-		walls: [1, 2],
-		interior_walls: [],
-		pillars: [2],
-		adjacent_tiles: [9, 14]
-	}
-];
+function getGameTiles () {
+
+	let tiles = [
+		{
+			id: 0,
+			was_visited: false,
+			is_exit: false,
+			walls: [0, 3],
+			interior_walls: [1, 2],
+			pillars: [0, 1, 2, 3],
+			adjacent_tiles: [1, 5],
+		},
+		{
+			id: 1,
+			was_visited: false,
+			is_exit: false,
+			walls: [0],
+			interior_walls: [1, 2],
+			pillars: [1, 2],
+			adjacent_tiles: [2, 6] // exclude 0
+		},
+		{
+			id: 2,
+			was_visited: false,
+			is_exit: true,
+			walls: [],
+			interior_walls: [1, 2],
+			pillars: [1, 2],
+			adjacent_tiles: [1, 3, 7]
+		},
+		{
+			id: 3,
+			was_visited: false,
+			is_exit: false,
+			walls: [0],
+			interior_walls: [1, 2],
+			pillars: [1, 2],
+			adjacent_tiles: [2, 4, 8]
+		},
+		{
+			id: 4,
+			was_visited: false,
+			is_exit: false,
+			walls: [0, 1],
+			interior_walls: [2],
+			pillars: [1, 2],
+			adjacent_tiles: [3, 9]
+		},
+		{
+			id: 5,
+			was_visited: false,
+			is_exit: true,
+			walls: [],
+			interior_walls: [1, 2],
+			pillars: [2, 3],
+			adjacent_tiles: [0, 6, 10]
+		},
+		{
+			id: 6,
+			was_visited: false,
+			is_exit: false,
+			walls: [],
+			interior_walls: [1, 2],
+			pillars: [2],
+			adjacent_tiles: [1, 7, 11] // exclude 5
+		},
+		{
+			id: 7,
+			was_visited: false,
+			is_exit: false,
+			walls: [],
+			interior_walls: [1, 2],
+			pillars: [2],
+			adjacent_tiles: [2, 6, 8, 12]
+		},
+		{
+			id: 8,
+			was_visited: false,
+			is_exit: false,
+			walls: [],
+			interior_walls: [1, 2],
+			pillars: [2],
+			adjacent_tiles: [3, 7, 9, 13]
+		},
+		{
+			id: 9,
+			was_visited: false,
+			is_exit: true,
+			walls: [],
+			interior_walls: [2],
+			pillars: [2],
+			adjacent_tiles: [4, 8, 14]
+		},
+		{
+			id: 10,
+			was_visited: false,
+			is_exit: false,
+			walls: [2, 3],
+			interior_walls: [1],
+			pillars: [2, 3],
+			adjacent_tiles: [5, 11]
+		},
+		{
+			id: 11,
+			was_visited: false,
+			is_exit: false,
+			walls: [2],
+			interior_walls: [1],
+			pillars: [2],
+			adjacent_tiles: [6, 12] // exclude 10
+		},
+		{
+			id: 12,
+			was_visited: false,
+			is_exit: true,
+			walls: [],
+			interior_walls: [1],
+			pillars: [2],
+			adjacent_tiles: [7, 11, 13]
+		},
+		{
+			id: 13,
+			was_visited: false,
+			is_exit: false,
+			walls: [2],
+			interior_walls: [1],
+			pillars: [2],
+			adjacent_tiles: [8, 12, 14]
+		},
+		{
+			id: 14,
+			was_visited: false,
+			is_exit: false,
+			walls: [1, 2],
+			interior_walls: [],
+			pillars: [2],
+			adjacent_tiles: [9, 13]
+		}
+	];
+
+	// "deep copy" clone
+	return JSON.parse(JSON.stringify(tiles));
+}
