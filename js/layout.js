@@ -119,9 +119,10 @@ export default function drawWalls (options_obj) {
 				if (tile.interior_walls.indexOf(side) !== -1) { tile.walls.push(side); }
 			});
 			// remove the current tile from the list of adjacent tiles
-			next_tile.adjacent_tiles.splice(next_tile.adjacent_tiles.indexOf(tile.id), 1);
+			let i = next_tile.adjacent_tiles.indexOf(tile.id);
+			if (i !== -1) { next_tile.adjacent_tiles.splice(i, 1); }
 
-			console.log(tile);
+			console.log("-------------- -", tile);
 
 			// recurse
 			_findPathToExit(next_tile);
