@@ -935,44 +935,56 @@ function drawWalls (options_obj) {
 
 
 	//
-	var game_tiles = getGameTiles();
-	let start_ids = [5, 9, 12];
+	var game_tiles;
 	let exit_id = 2;
+	let _needs_redo = false;
+	let _numTriesToCreateMaze = 1;
+	function _initMazeCreation () {
+		game_tiles = getGameTiles();
+		let start_ids = [5, 9, 12];
 
-	start_ids.forEach( id => {
+		start_ids.forEach( id => {
 
-		let start_tile = game_tiles.find( t => t.id === id);
-		_findPathToExit(start_tile, id);
-	});
-	
+			let start_tile = game_tiles.find( t => t.id === id);
+			_findPathToExit(start_tile, id);
+		});
+
+		if (_needs_redo === true) {
+			_needs_redo = false;
+			_numTriesToCreateMaze += 1;
+			_initMazeCreation();
+		} 
+	}
+
+	_initMazeCreation();
 
 	function _findPathToExit (tile, start_id) {
 
 		if (tile.was_visited === true) {
 
-			// // ... and in this one.
-			// let my_side = -1;
-			// if (next_id === tile.id - num_cols) { my_side = 0; }
-			// if (next_id === tile.id + 1) { my_side = 1; }
-			// if (next_id === tile.id + num_cols) { my_side = 2; }
-			// if (next_id === tile.id - 1) { my_side = 3; }
-
-			// let my_index = tile.walls.indexOf(my_side);
-			// if (my_index !== -1) { tile.walls.splice(my_index, 1); }
-			// we're done!
 			console.log("already good to go! ->", tile.id);
+			if (tile.id === 12) {
+				console.log("********************************");
+				console.log(`It took ${_numTriesToCreateMaze} to create this maze`);
+			}
 
 		} else {
 
 			tile.was_visited = true;
 			let next_tile = _getNextTileFrom(tile.adjacent_tiles, game_tiles);
+			
+			// pick an adjacent tile at random
+			// let random_index = Math.floor(Math.random() * tile.adjacent_tiles.length);
+			// let next_id = tile.adjacent_tiles[random_index];
+			// let next_tile = game_tiles.find( t => t.id === next_id);
 
 			// are we an exit tile?
 			if (tile.id !== start_id && tile.id === exit_id) {
 
 				// we're done!
-				// console.log("found it! ->", exit_id);
+				console.log("found it! ->", exit_id);
 
+				// draw last of the internal walls ...
 				tile.adjacent_tiles.forEach( t => {
 
 					let side = -1;
@@ -987,20 +999,11 @@ function drawWalls (options_obj) {
 
 			} else if (next_tile == null || tile.adjacent_tiles.length === 0) { 
 
-				// no more adjacent tiles!!!
 				// start over!
-				// console.log("on no!!!", tile);
-				tile.adjacent_tiles.forEach( t => {
+				console.log("on no, you need to start over!!!", tile, `(${start_id})`);
 
-					let side = -1;
-					if (t === tile.id - num_cols) { side = 0; }
-					if (t === tile.id + 1) { side = 1; }
-					if (t === tile.id + num_cols) { side = 2; }
-					if (t === tile.id - 1) { side = 3; }
-
-					// only push the "wall" if it's an elidible interior side
-					if (tile.interior_walls.indexOf(side) !== -1) { tile.walls.push(side); }
-				});
+				// flag this sumbitch as broke, and in need of redos
+				_needs_redo = true;
 
 			} else {
 
@@ -1034,7 +1037,7 @@ function drawWalls (options_obj) {
 					if (other_index !== -1) { next_tile.walls.splice(other_index, 1); }
 				}
 				// recurse
-				// console.log("--->", tile);
+				console.log("--->", tile);
 				_findPathToExit(next_tile, start_id, exit_id);
 			}
 		}
@@ -1065,8 +1068,15 @@ function drawWalls (options_obj) {
 
 			// fill in the rest of the tiles walls
 			t.interior_walls.forEach( n => {
-				if (Math.random() < 0.4) { t.walls.push(n); }
+				t.walls.push(n);
 			});
+			square = new PIXI.Graphics();
+			square.lineStyle(2, 0x00FFFF, 1);
+			square.drawRect(25, 25, game.quad_width - 35, game.quad_height - 35);
+			square.x = pos.x;
+			square.y = pos.y;
+			square.alpha = 0.4;
+			maze.addChild(square);
 		}
 	});
 
