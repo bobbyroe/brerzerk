@@ -962,27 +962,22 @@ function drawWalls (options_obj) {
 
 		if (tile.was_visited === true) {
 
-			console.log("already good to go! ->", tile.id);
-			if (tile.id === 12) {
-				console.log("********************************");
-				console.log(`It took ${_numTriesToCreateMaze} to create this maze`);
+			// console.log("already good to go! ->", tile.id);
+			if (_needs_redo === false && tile.id === 12) {
+				// console.log("********************************");
+				console.log(`It took ${_numTriesToCreateMaze} tries to create this maze`);
 			}
 
 		} else {
 
 			tile.was_visited = true;
 			let next_tile = _getNextTileFrom(tile.adjacent_tiles, game_tiles);
-			
-			// pick an adjacent tile at random
-			// let random_index = Math.floor(Math.random() * tile.adjacent_tiles.length);
-			// let next_id = tile.adjacent_tiles[random_index];
-			// let next_tile = game_tiles.find( t => t.id === next_id);
 
 			// are we an exit tile?
 			if (tile.id !== start_id && tile.id === exit_id) {
 
 				// we're done!
-				console.log("found it! ->", exit_id);
+				// console.log("found it! ->", exit_id);
 
 				// draw last of the internal walls ...
 				tile.adjacent_tiles.forEach( t => {
@@ -999,8 +994,7 @@ function drawWalls (options_obj) {
 
 			} else if (next_tile == null || tile.adjacent_tiles.length === 0) { 
 
-				// start over!
-				console.log("on no, you need to start over!!!", tile, `(${start_id})`);
+				// console.log("on no, you need to start over!!!", tile, `(${start_id})`);
 
 				// flag this sumbitch as broke, and in need of redos
 				_needs_redo = true;
@@ -1037,7 +1031,7 @@ function drawWalls (options_obj) {
 					if (other_index !== -1) { next_tile.walls.splice(other_index, 1); }
 				}
 				// recurse
-				console.log("--->", tile);
+				// console.log("--->", tile);
 				_findPathToExit(next_tile, start_id, exit_id);
 			}
 		}
@@ -1046,43 +1040,67 @@ function drawWalls (options_obj) {
 	// DEBUG draw path boxes
 	game_tiles.forEach( t => {
 
-		let column = t.id % num_cols;
-		let cur_row = Math.floor(t.id / num_cols);
-		let pos = {
-			x: 5 + column * game.quad_width,
-			y: 10 + cur_row * game.quad_height
-		};
-
-		let square = null;
-		if (t.was_visited === true) {
-			square = new PIXI.Graphics();
-			square.lineStyle(2, 0x00FF00, 1);
-			square.drawRect(25, 25, game.quad_width - 35, game.quad_height - 35);
-			square.x = pos.x;
-			square.y = pos.y;
-			square.alpha = 0.2;
-			maze.addChild(square);
-		} else {
-
-			// let visited_tiles = t.adjacent_tiles.filter( id => game_tiles.find( t => t.id === id).was_visited === true );
-
-			// fill in the rest of the tiles walls
+		if (t.was_visited === false) {
+			// stoke the walls array with the interior walls too
 			t.interior_walls.forEach( n => {
 				t.walls.push(n);
 			});
-			square = new PIXI.Graphics();
-			square.lineStyle(2, 0x00FFFF, 1);
-			square.drawRect(25, 25, game.quad_width - 35, game.quad_height - 35);
-			square.x = pos.x;
-			square.y = pos.y;
-			square.alpha = 0.4;
-			maze.addChild(square);
+		}
+	});
+
+	game_tiles.forEach( t => {
+
+		// let column = t.id % num_cols;
+		// let cur_row = Math.floor(t.id / num_cols);
+		// let pos = {
+		// 	x: 5 + column * game.quad_width,
+		// 	y: 10 + cur_row * game.quad_height
+		// };
+		// let square = null;
+
+		if (t.was_visited === false) {
+
+			let visited_tiles = t.adjacent_tiles.filter( id => game_tiles.find( t => t.id === id).was_visited === true );
+			let random_index = Math.floor(Math.random() * visited_tiles.length);
+			let random_id = visited_tiles[random_index];
+			let side = -1;
+			if (random_id === t.id - num_cols) { side = 0; }
+			if (random_id === t.id + 1) { side = 1; }
+			if (random_id === t.id + num_cols) { side = 2; }
+			if (random_id === t.id - 1) { side = 3; }
+
+			// if the current tile has this wall ...
+			let index = t.walls.indexOf(side);
+			if (index !== -1) {
+
+				t.walls.splice(index, 1);
+				console.log(t.id, "-->", random_id, `(${side})`);
+			} else {
+
+				let other_tile = game_tiles.find( t => t.id === random_id);
+				// "transpose" the side 
+				let other_side = side < 2 ? side + 2 : side - 2;
+
+				var other_index = other_tile.walls.indexOf(other_side);
+				if (other_index !== -1) { 
+					other_tile.walls.splice(other_index, 1);
+				}
+				console.log("OTHER tile:", other_tile.id, other_index !== -1, other_side);
+			}	
+			
+			t.was_visited = true;
+			// square = new PIXI.Graphics();
+			// square.lineStyle(2, 0xFFFFFF, 1);
+			// square.drawRect(25, 25, game.quad_width - 35, game.quad_height - 35);
+			// square.x = pos.x;
+			// square.y = pos.y;
+			// square.alpha = 0.4;
+			// maze.addChild(square);
 		}
 	});
 
 	// draw!
 	game_tiles.forEach( t => {
-
 		// calculate position for tile 
 		let column = t.id % num_cols;
 		let cur_row = Math.floor(t.id / num_cols);
