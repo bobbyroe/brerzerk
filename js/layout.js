@@ -3,6 +3,8 @@ export default function drawWalls (options_obj) {
 	
 	// unpack
 	let { walls, maze, start_pos, game } = options_obj;
+
+
 	let num_cols = 5;
 	let num_rows = 3;
 	let width = 15;
@@ -110,12 +112,7 @@ export default function drawWalls (options_obj) {
 				// draw last of the internal walls ...
 				tile.adjacent_tiles.forEach( t => {
 
-					let side = -1;
-					if (t === tile.id - num_cols) { side = 0; }
-					if (t === tile.id + 1) { side = 1; }
-					if (t === tile.id + num_cols) { side = 2; }
-					if (t === tile.id - 1) { side = 3; }
-
+					let side = _getNeighborSideIndexFor(t, tile);
 					// only push the "wall" if it's an elidible interior side
 					if (tile.interior_walls.indexOf(side) !== -1) { tile.walls.push(side); }
 				});
@@ -133,12 +130,7 @@ export default function drawWalls (options_obj) {
 				let remaining_tiles = tile.adjacent_tiles.filter( t => t !== next_tile.id );
 				remaining_tiles.forEach( t => {
 
-					let side = -1;
-					if (t === tile.id - num_cols) { side = 0; }
-					if (t === tile.id + 1) { side = 1; }
-					if (t === tile.id + num_cols) { side = 2; }
-					if (t === tile.id - 1) { side = 3; }
-
+					let side = _getNeighborSideIndexFor(t, tile);
 					// only push the "wall" if it's an elidible interior side
 					if (tile.interior_walls.indexOf(side) !== -1) { tile.walls.push(side); }
 				});
@@ -147,14 +139,9 @@ export default function drawWalls (options_obj) {
 				if (i !== -1) { next_tile.adjacent_tiles.splice(i, 1); }
 
 				if (next_tile.was_visited === true) {
-					// break down the wall if need be
-					// ... in the /next/ tile
-					let other_side = -1;
-					if (next_tile.id === tile.id - num_cols) { other_side = 2; }
-					if (next_tile.id === tile.id + 1) { other_side = 3; }
-					if (next_tile.id === tile.id + num_cols) { other_side = 0; }
-					if (next_tile.id === tile.id - 1) { other_side = 2; }
-
+					// break down the wall if need be ... in the /next/ tile
+					// "transpose" the side 
+					let other_side = side < 2 ? side + 2 : side - 2;
 					let other_index = next_tile.walls.indexOf(other_side);
 					if (other_index !== -1) { next_tile.walls.splice(other_index, 1); }
 				}
@@ -177,18 +164,15 @@ export default function drawWalls (options_obj) {
 			let visited_tiles = t.adjacent_tiles.filter( id => game_tiles.find( t => t.id === id).was_visited === true );
 			let random_index = Math.floor(Math.random() * visited_tiles.length);
 			let random_id = visited_tiles[random_index];
-			let side = -1;
-			if (random_id === t.id - num_cols) { side = 0; }
-			if (random_id === t.id + 1) { side = 1; }
-			if (random_id === t.id + num_cols) { side = 2; }
-			if (random_id === t.id - 1) { side = 3; }
+
+			let side = _getNeighborSideIndexFor(random_id, t);
 
 			// if the current tile has this wall ...
 			let index = t.walls.indexOf(side);
 			if (index !== -1) {
 
 				t.walls.splice(index, 1);
-				console.log(t.id, "-->", random_id, `(${side})`);
+				// console.log(t.id, "-->", random_id, `(${side})`);
 			} else {
 
 				let other_tile = game_tiles.find( t => t.id === random_id);
@@ -199,7 +183,7 @@ export default function drawWalls (options_obj) {
 				if (other_index !== -1) { 
 					other_tile.walls.splice(other_index, 1);
 				}
-				console.log("OTHER tile:", other_tile.id, other_index !== -1, other_side);
+				// console.log("OTHER tile:", other_tile.id, other_index !== -1, other_side);
 			}	
 			t.was_visited = true;
 		}
@@ -292,46 +276,57 @@ export default function drawWalls (options_obj) {
 
 	});
 	
-	function _addSide (s) {
+	function _getNeighborSideIndexFor (id, tile) {
+		let side = -1;
 
-		let i = -1; // clockwise position index: 0,1,2,3 = top,right,bottom,left
-		let rect = new PIXI.Graphics();
-		rect.beginFill(0x00CCFF);
+		if (id === t.id - num_cols) { side = 0; }
+		if (id === t.id + 1) { side = 1; }
+		if (id === t.id + num_cols) { side = 2; }
+		if (id === t.id - 1) { side = 3; }
 
-		switch (s) {
-			case 'top': 
-			rect.drawRect(0, 0, game.quad_width, width);
-			rect.x = x_pos;
-			rect.y = y_pos;
-			i = 0;
-			break;
-			case 'right': 
-			rect.drawRect(0, 0, width, game.quad_height);
-			rect.x = x_pos + game.quad_width;
-			rect.y = y_pos;
-			i = 1;
-			break;
-			case 'bottom': 
-			rect.drawRect(0, 0, game.quad_width, width);
-			rect.x = x_pos;
-			rect.y = y_pos + game.quad_height;
-			i = 2;
-			break;
-			case 'left': 
-			rect.drawRect(0, 0, width, game.quad_height);
-			rect.x = x_pos;
-			rect.y = y_pos;
-			i = 3;
-			break;
-		}
-
-		rect.endFill();
-		rect.name = `${col}${row}${i}`; // `Rectangle${h}${w}, ${s}`; // debug
-		maze.addChild(rect);
-
-		// for hit testing
-		walls.push(rect);
+		return side;
 	}
+
+	// function _addSide (s) {
+
+	// 	let i = -1; // clockwise position index: 0,1,2,3 = top,right,bottom,left
+	// 	let rect = new PIXI.Graphics();
+	// 	rect.beginFill(0x00CCFF);
+
+	// 	switch (s) {
+	// 		case 'top': 
+	// 		rect.drawRect(0, 0, game.quad_width, width);
+	// 		rect.x = x_pos;
+	// 		rect.y = y_pos;
+	// 		i = 0;
+	// 		break;
+	// 		case 'right': 
+	// 		rect.drawRect(0, 0, width, game.quad_height);
+	// 		rect.x = x_pos + game.quad_width;
+	// 		rect.y = y_pos;
+	// 		i = 1;
+	// 		break;
+	// 		case 'bottom': 
+	// 		rect.drawRect(0, 0, game.quad_width, width);
+	// 		rect.x = x_pos;
+	// 		rect.y = y_pos + game.quad_height;
+	// 		i = 2;
+	// 		break;
+	// 		case 'left': 
+	// 		rect.drawRect(0, 0, width, game.quad_height);
+	// 		rect.x = x_pos;
+	// 		rect.y = y_pos;
+	// 		i = 3;
+	// 		break;
+	// 	}
+
+	// 	rect.endFill();
+	// 	rect.name = `${col}${row}${i}`; // `Rectangle${h}${w}, ${s}`; // debug
+	// 	maze.addChild(rect);
+
+	// 	// for hit testing
+	// 	walls.push(rect);
+	// }
 }
 
 function _getNextTileFrom (adjacent_tiles, game_tiles) {
