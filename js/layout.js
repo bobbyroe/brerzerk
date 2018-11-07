@@ -279,10 +279,10 @@ export default function drawWalls (options_obj) {
 	function _getNeighborSideIndexFor (id, tile) {
 		let side = -1;
 
-		if (id === t.id - num_cols) { side = 0; }
-		if (id === t.id + 1) { side = 1; }
-		if (id === t.id + num_cols) { side = 2; }
-		if (id === t.id - 1) { side = 3; }
+		if (id === tile.id - num_cols) { side = 0; }
+		if (id === tile.id + 1) { side = 1; }
+		if (id === tile.id + num_cols) { side = 2; }
+		if (id === tile.id - 1) { side = 3; }
 
 		return side;
 	}

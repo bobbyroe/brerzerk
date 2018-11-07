@@ -440,7 +440,7 @@ var getPlayer = (function () {
 		player_sprite.bullet_color = 0x00FF00;
 
 		// CHEAT
-		player_sprite.is_invincible = true;
+		player_sprite.is_invincible = false;
 
 		// public methods
 		player_sprite.tick = playerPending;
@@ -1151,10 +1151,10 @@ function drawWalls (options_obj) {
 	function _getNeighborSideIndexFor (id, tile) {
 		let side = -1;
 
-		if (id === t.id - num_cols) { side = 0; }
-		if (id === t.id + 1) { side = 1; }
-		if (id === t.id + num_cols) { side = 2; }
-		if (id === t.id - 1) { side = 3; }
+		if (id === tile.id - num_cols) { side = 0; }
+		if (id === tile.id + 1) { side = 1; }
+		if (id === tile.id + num_cols) { side = 2; }
+		if (id === tile.id - 1) { side = 3; }
 
 		return side;
 	}

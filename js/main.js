@@ -1,4 +1,4 @@
-import Events from "./Events.js";
+import Events from "./events.js";
 import keyboard from "./keyboard";
 import { hitTestAll } from "./utils.js";
 import getBullet from "./bullet.js";
